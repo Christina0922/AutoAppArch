@@ -87,10 +87,6 @@ export default function AppPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
-      <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center tracking-tight">
-        <span className="text-gray-600">키워드</span>로 <span className="font-bold">앱 설계안</span> <span className="text-gray-600">자동</span> 생성하기
-      </h1>
-
       {!result ? (
         <div className="bg-white rounded-lg border border-gray-100 p-8">
           <KeywordInputForm 
