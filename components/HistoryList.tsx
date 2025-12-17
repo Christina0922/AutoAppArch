@@ -17,17 +17,15 @@ export default function HistoryList({ plans, onDelete }: HistoryListProps) {
   if (sortedPlans.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
-        <div className="flex flex-col items-center justify-center">
-          <p className="text-base text-gray-500 mb-4">
-            저장된 설계안이 없습니다.
-          </p>
-          <Link
-            href="/app"
-            className="text-base text-gray-600 hover:text-gray-900 font-medium transition-colors"
-          >
-            새 설계안 만들기 →
-          </Link>
-        </div>
+        <p className="text-base text-gray-500 mb-4">
+          저장된 설계안이 없습니다.
+        </p>
+        <Link
+          href="/app"
+          className="text-base text-gray-600 hover:text-gray-900 font-medium transition-colors"
+        >
+          새 설계안 만들기 →
+        </Link>
       </div>
     );
   }
