@@ -43,18 +43,18 @@ export default function HistoryPage() {
         저장된 <span className="font-bold">앱 설계안</span>
       </h1>
       {plans.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-100 p-16 text-center">
-          <p className="text-base text-gray-600 mb-2 leading-relaxed">
-            아직 저장된 <span className="font-medium text-gray-900">앱 설계안</span>이 없습니다.
+        <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center min-h-[400px]">
+          <p className="text-base text-gray-600 mb-2 leading-relaxed text-center">
+            아직 저장된 <span className="font-bold">앱 설계안</span>이 없습니다.
           </p>
-          <p className="text-base text-gray-500 mb-8 leading-relaxed">
-            <span className="font-medium text-gray-700">키워드</span> 몇 개만 입력하면 바로 <span className="font-medium text-gray-700">자동</span> 생성할 수 있습니다.
+          <p className="text-base text-gray-500 mb-8 leading-relaxed text-center">
+            <span className="font-bold">키워드</span> 몇 개만 입력하면 바로 <span className="font-bold">자동</span> 생성할 수 있습니다.
           </p>
           <Link
             href="/app"
             className="inline-block h-12 px-8 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
           >
-            설계안 자동 생성하기
+            <span className="font-bold">설계안 자동 생성하기</span>
           </Link>
         </div>
       ) : (
