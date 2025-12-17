@@ -41,7 +41,7 @@ export function generatePlan(
 
   // 수익 모델
   const monetization = {
-    model: ["freemium", "subscription"] as const,
+    model: ["freemium", "subscription"] as ("freemium" | "subscription" | "b2b")[],
     revenueTriggers: [
       "프리미엄 기능 사용 시도",
       "월간 구독 플랜 확인",
