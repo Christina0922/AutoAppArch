@@ -59,11 +59,27 @@ export default function PricingPage() {
                 <span className="text-3xl font-semibold text-gray-900">₩0</span>
                 <span className="text-xs text-gray-500 ml-2">/월</span>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
                 기본 <span className="font-medium text-gray-900">앱 설계안</span>을
                 <br />
                 <span className="font-medium text-gray-900">자동</span>으로 생성할 수 있습니다.
               </p>
+              <div className="border-t border-gray-100 pt-4">
+                <ul className="space-y-2 text-xs text-gray-600">
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>설계안 미리보기</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>월 3개 설계안 생성</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>기본 히스토리 저장</span>
+                  </li>
+                </ul>
+              </div>
             </div>
             <Link
               href="/app"
@@ -84,7 +100,7 @@ export default function PricingPage() {
                 <span className="text-3xl font-semibold text-gray-900">₩9,900</span>
                 <span className="text-xs text-gray-500 ml-2">/월</span>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed mb-3">
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
                 이 단계에서는
                 <br />
                 앱을 만들기 위한 설계가 모두 완성됩니다.
@@ -92,6 +108,30 @@ export default function PricingPage() {
                 <br />
                 아이디어를 확정하기에 충분한 단계입니다.
               </p>
+              <div className="border-t border-gray-100 pt-4">
+                <ul className="space-y-2 text-xs text-gray-600">
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>상세 설계안 전체 보기</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>무제한 설계안 생성</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>PDF 내보내기</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>우선 지원</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>고급 템플릿 사용</span>
+                  </li>
+                </ul>
+              </div>
             </div>
             <button className="w-full h-10 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight">
               이 설계안으로 계속 진행하기
@@ -116,7 +156,7 @@ export default function PricingPage() {
                 <span className="text-3xl font-semibold text-gray-900">₩14,900</span>
                 <span className="text-xs text-gray-500 ml-2">/월</span>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed mb-2">
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
                 이 단계에서는
                 <br />
                 이 설계안을 바로 개발로 옮길 수 있습니다.
@@ -124,7 +164,35 @@ export default function PricingPage() {
                 <br />
                 실제로 앱을 만들 사람들을 위한 최종 단계입니다.
               </p>
-              <p className="text-xs text-gray-400 leading-relaxed mb-3">
+              <div className="border-t border-gray-100 pt-4">
+                <ul className="space-y-2 text-xs text-gray-600">
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>Pro 기능 모두 포함</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>실행 가능한 상세 명세서</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>API 명세서 생성</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>데이터베이스 스키마 설계</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>개발팀 협업 도구 연동</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-gray-900 mr-2 font-medium">✓</span>
+                    <span>전담 지원</span>
+                  </li>
+                </ul>
+              </div>
+              <p className="text-xs text-gray-400 leading-relaxed mt-3">
                 이 단계는 실제로 앱을 만들 사용자들에게 선택됩니다.
               </p>
             </div>
