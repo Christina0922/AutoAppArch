@@ -94,22 +94,24 @@ export default function HistoryPage() {
           저장된 <span className="font-bold">앱 설계안</span>
         </h1>
         <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
-          <p className="text-base text-gray-600 mb-4">
-            히스토리를 불러오지 못했습니다.
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={handleRetry}
-              className="h-12 px-6 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors"
-            >
-              다시 시도
-            </button>
-            <button
-              onClick={handleRefresh}
-              className="h-12 px-6 bg-white text-gray-900 text-base font-medium rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              새로고침
-            </button>
+          <div className="flex flex-col items-center justify-center gap-4">
+            <p className="text-base text-gray-600">
+              히스토리를 불러오지 못했습니다.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleRetry}
+                className="h-12 px-6 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors"
+              >
+                다시 시도
+              </button>
+              <button
+                onClick={handleRefresh}
+                className="h-12 px-6 bg-white text-gray-900 text-base font-medium rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                새로고침
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -124,22 +126,24 @@ export default function HistoryPage() {
           저장된 <span className="font-bold">앱 설계안</span>
         </h1>
         <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
-          <p className="text-base text-gray-600 mb-4">
-            히스토리를 불러오지 못했습니다.
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={handleRetry}
-              className="h-12 px-6 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors"
-            >
-              다시 시도
-            </button>
-            <button
-              onClick={handleRefresh}
-              className="h-12 px-6 bg-white text-gray-900 text-base font-medium rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              새로고침
-            </button>
+          <div className="flex flex-col items-center justify-center gap-4">
+            <p className="text-base text-gray-600">
+              히스토리를 불러오지 못했습니다.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleRetry}
+                className="h-12 px-6 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors"
+              >
+                다시 시도
+              </button>
+              <button
+                onClick={handleRefresh}
+                className="h-12 px-6 bg-white text-gray-900 text-base font-medium rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                새로고침
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -154,18 +158,20 @@ export default function HistoryPage() {
       </h1>
       {plans.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
-          <p className="text-base text-gray-600 mb-2 leading-relaxed">
-            아직 저장된 <span className="font-bold">앱 설계안</span>이 없습니다.
-          </p>
-          <p className="text-base text-gray-500 mb-8 leading-relaxed">
-            <span className="font-bold">키워드</span> 몇 개만 입력하면 바로 <span className="font-bold">자동</span> 생성할 수 있습니다.
-          </p>
-          <Link
-            href="/app"
-            className="inline-block h-12 px-8 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
-          >
-            <span className="font-bold">설계안 만들기</span>
-          </Link>
+          <div className="flex flex-col items-center justify-center gap-6">
+            <p className="text-base text-gray-600 leading-relaxed">
+              아직 저장된 <span className="font-bold">앱 설계안</span>이 없습니다.
+            </p>
+            <p className="text-base text-gray-500 leading-relaxed">
+              <span className="font-bold">키워드</span> 몇 개만 입력하면 바로 <span className="font-bold">자동</span> 생성할 수 있습니다.
+            </p>
+            <Link
+              href="/app"
+              className="inline-block h-12 px-8 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
+            >
+              <span className="font-bold">설계안 만들기</span>
+            </Link>
+          </div>
         </div>
       ) : (
         <HistoryList plans={plans} onDelete={handleDelete} />
