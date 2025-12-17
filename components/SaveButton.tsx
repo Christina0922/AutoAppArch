@@ -60,7 +60,7 @@ export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
             onClick={handleCreateNew}
             className="w-full h-12 bg-white text-gray-900 text-base font-medium rounded-md border border-gray-200 hover:bg-gray-50 transition-colors tracking-tight"
           >
-            다른 설계안 만들어보기
+            다른 키워드로 설계안 만들기
           </button>
         </div>
         <p className="text-sm text-gray-400 text-center leading-relaxed">

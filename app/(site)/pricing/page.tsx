@@ -29,16 +29,16 @@ export default function PricingPage() {
         </h1>
         <div className="bg-gray-50 border border-gray-100 rounded-md p-10 mb-8">
           <p className="text-base text-gray-600 leading-relaxed text-center mb-8">
-            지금 단계에서는
+            AutoAppArch는
             <br />
-            아이디어의 방향과 구조가 완성됩니다.
+            기본 <span className="font-medium text-gray-900">앱 설계안</span>까지는 무료로 <span className="font-medium text-gray-900">자동</span> 생성할 수 있습니다.
             <br />
             <br />
-            대부분의 사용자는
+            이 설계를
             <br />
-            이 설계를 실제 구현 단계로 가져가기 전까지는
+            실제 구현 단계까지 가져가고 싶을 때
             <br />
-            무료로 충분히 진행합니다.
+            다음 단계를 선택하면 됩니다.
           </p>
           <div className="text-center">
             <button
@@ -59,6 +59,11 @@ export default function PricingPage() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Free Plan */}
           <div className="bg-white rounded-lg border border-gray-100 p-10">
+            <div className="mb-4">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                현재 단계
+              </span>
+            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">무료</h3>
             <div className="mb-8">
               <span className="text-3xl font-semibold text-gray-900">₩0</span>
@@ -90,7 +95,7 @@ export default function PricingPage() {
               href="/app"
               className="block w-full h-12 bg-gray-100 text-gray-900 text-base font-medium rounded-md hover:bg-gray-200 transition-colors tracking-tight text-center flex items-center justify-center"
             >
-              무료로 시작하기
+              무료로 계속 사용하기
             </Link>
           </div>
 
@@ -103,6 +108,11 @@ export default function PricingPage() {
                 : "border-gray-200"
             }`}
           >
+            <div className="mb-4">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                다음 단계
+              </span>
+            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">Pro</h3>
             <div className="mb-8">
               <span className="text-3xl font-semibold text-gray-900">₩9,900</span>

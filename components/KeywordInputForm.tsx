@@ -5,11 +5,13 @@ import { useState } from "react";
 interface KeywordInputFormProps {
   onSubmit: (keywords: string[], selectedType: "app" | "web") => void;
   isLoading?: boolean;
+  loadingMessage?: string;
 }
 
 export default function KeywordInputForm({
   onSubmit,
   isLoading = false,
+  loadingMessage = "",
 }: KeywordInputFormProps) {
   const [keywords, setKeywords] = useState<string[]>([""]);
   const [selectedType, setSelectedType] = useState<"app" | "web">("app");
@@ -42,6 +44,12 @@ export default function KeywordInputForm({
     }
     onSubmit(validKeywords, selectedType);
   };
+
+  const placeholders = [
+    "예: 영어, 공부",
+    "예: 분실물, 지도",
+    "예: 다이어트, 기록",
+  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -76,9 +84,11 @@ export default function KeywordInputForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-          키워드 입력 (2~3개 권장)
-        </label>
+        <div className="mb-4">
+          <p className="text-lg font-semibold text-gray-900 mb-2">
+            단어(<span className="text-gray-600">키워드</span>) 몇 개만 입력하세요
+          </p>
+        </div>
         <div className="space-y-3">
           {keywords.map((keyword, index) => (
             <div key={index} className="flex gap-3">
@@ -86,7 +96,7 @@ export default function KeywordInputForm({
                 type="text"
                 value={keyword}
                 onChange={(e) => handleKeywordChange(index, e.target.value)}
-                placeholder={`키워드 ${index + 1} (예: 학습, 영어, 공부)`}
+                placeholder={placeholders[index] || `키워드 ${index + 1}`}
                 className="flex-1 px-4 py-3 text-base border border-gray-200 rounded-md focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors bg-white"
                 disabled={isLoading}
               />
@@ -120,7 +130,7 @@ export default function KeywordInputForm({
         disabled={isLoading}
         className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? "생성 중..." : "설계안 생성하기"}
+        {isLoading ? loadingMessage || "생성 중..." : "앱 설계안 자동 생성하기"}
       </button>
     </form>
   );

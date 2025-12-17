@@ -64,7 +64,7 @@ export default function HistoryDetailPage() {
         </p>
       </div>
       
-      <PlanDetail result={plan.result} showProgress={true} />
+      <PlanDetail result={plan.result} keywords={plan.keywords} showProgress={true} />
       
       <div className="mt-8 bg-white rounded-lg border border-gray-100 p-8">
         <button

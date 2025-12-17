@@ -4,12 +4,25 @@ import { PlanResult } from "@/lib/types";
 
 interface PlanDetailProps {
   result: PlanResult;
+  keywords?: string[];
   showProgress?: boolean; // 진척 단계 표시 여부
 }
 
-export default function PlanDetail({ result, showProgress = false }: PlanDetailProps) {
+export default function PlanDetail({ result, keywords = [], showProgress = false }: PlanDetailProps) {
   return (
     <div className="space-y-6">
+      {/* 자동 생성된 앱 설계안 헤더 - 고정 요소 */}
+      <div className="bg-white rounded-lg border border-gray-100 p-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">
+          자동 생성된 <span className="text-gray-600">앱 설계안</span>
+        </h1>
+        {keywords.length > 0 && (
+          <p className="text-sm text-gray-500 mt-2">
+            입력 <span className="font-medium text-gray-700">키워드</span>: {keywords.join(", ")}
+          </p>
+        )}
+      </div>
+
       {/* 진척 단계 표시 */}
       {showProgress && (
         <div className="bg-white rounded-lg border border-gray-100 p-8">
@@ -43,17 +56,17 @@ export default function PlanDetail({ result, showProgress = false }: PlanDetailP
       )}
 
       <div className="bg-white rounded-lg border border-gray-100 p-8">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-3 tracking-tight">{result.title}</h1>
+        <h2 className="text-xl font-semibold text-gray-900 mb-3 tracking-tight">{result.title}</h2>
         <p className="text-base text-gray-500 leading-relaxed">{result.tagline}</p>
       </div>
 
       {result.sectionsForRendering.map((section, idx) => (
         <div
           key={idx}
-          className="bg-white rounded-lg border border-gray-100 p-8"
+          className="bg-gray-50 rounded-md p-8 border border-gray-100"
         >
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-6">
-            {section.heading}
+          <h2 className="text-base font-bold text-gray-900 mb-6 tracking-tight">
+            [ {section.heading} ]
           </h2>
           <ul className="space-y-3">
             {section.bullets.map((bullet, bulletIdx) => (

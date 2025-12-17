@@ -15,6 +15,7 @@ export default function AppPage() {
   const searchParams = useSearchParams();
   const [result, setResult] = useState<SavedPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const [showDetail, setShowDetail] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [isPro] = useState(false); // MVP에서는 항상 false
@@ -34,7 +35,23 @@ export default function AppPage() {
 
   const handleSubmit = async (keywords: string[], selectedType: "app" | "web") => {
     setIsLoading(true);
+    
+    // 첫 번째 로딩 메시지
+    setLoadingMessage("키워드를 분석 중입니다…");
+    
+    // 0.4~0.6초 후 두 번째 메시지로 변경
+    setTimeout(() => {
+      setLoadingMessage("앱 설계안을 자동으로 생성하고 있습니다…");
+    }, 600);
+    
     try {
+      // 최소 0.8초, 최대 1.2초 대기 (자동화 체감)
+      const minDelay = 800;
+      const maxDelay = 1200;
+      const delay = minDelay + Math.random() * (maxDelay - minDelay);
+      
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      
       // 실제로는 API 호출이지만, MVP에서는 로컬 함수 사용
       const planResult = generatePlan(keywords, selectedType);
       const newPlan: SavedPlan = {
@@ -51,6 +68,7 @@ export default function AppPage() {
       alert("설계안 생성에 실패했습니다.");
     } finally {
       setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -70,12 +88,16 @@ export default function AppPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
       <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center tracking-tight">
-        앱 설계안 생성하기
+        <span className="text-gray-600">키워드</span>로 <span className="font-bold">앱 설계안</span> <span className="text-gray-600">자동</span> 생성하기
       </h1>
 
       {!result ? (
         <div className="bg-white rounded-lg border border-gray-100 p-8">
-          <KeywordInputForm onSubmit={handleSubmit} isLoading={isLoading} />
+          <KeywordInputForm 
+            onSubmit={handleSubmit} 
+            isLoading={isLoading}
+            loadingMessage={loadingMessage}
+          />
         </div>
       ) : (
         <div className="space-y-6">
@@ -83,6 +105,7 @@ export default function AppPage() {
             <>
               <PlanPreviewCard
                 result={result.result}
+                keywords={result.keywords}
                 onViewDetail={isFromHistory ? handleContinue : undefined}
                 isPro={isPro}
                 showContinueButton={isFromHistory}
@@ -96,7 +119,7 @@ export default function AppPage() {
             </>
           ) : (
             <>
-              <PlanDetail result={result.result} />
+              <PlanDetail result={result.result} keywords={result.keywords} />
               {/* 상세 보기에서도 저장 버튼은 첫 생성 시에만 표시 */}
               {!isFromHistory && (
                 <div className="bg-white rounded-lg border border-gray-100 p-8">
