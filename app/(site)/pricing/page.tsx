@@ -48,58 +48,76 @@ export default function PricingPage() {
           다음 단계 선택
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {/* Free - 현재 단계 */}
+          {/* Free - 기본 설계 단계 */}
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="mb-4">
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">
-                현재 단계
+                기본 설계 단계
               </span>
-              <h3 className="text-xl font-semibold text-gray-900 mb-1 tracking-tight">무료</h3>
-              <div className="mb-4">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">무료</h3>
+              <div className="mb-3">
                 <span className="text-3xl font-semibold text-gray-900">₩0</span>
                 <span className="text-xs text-gray-500 ml-2">/월</span>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                기본 <span className="font-medium text-gray-900">앱 설계안</span>을
-                <br />
-                <span className="font-medium text-gray-900">자동</span>으로 생성할 수 있습니다.
+              {/* 단계 선언 문장 */}
+              <p className="text-sm font-medium text-gray-900 mb-4 leading-relaxed">
+                아이디어의 방향과 구조를 잡는 단계
               </p>
-              <div className="border-t border-gray-100 pt-4">
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                <span className="font-medium text-gray-900">키워드</span> 몇 개만 입력하면
+                <br />
+                앱 설계의 방향과 구조를
+                <br />
+                <span className="font-medium text-gray-900">자동</span>으로 확인할 수 있습니다.
+              </p>
+              <div className="border-t border-gray-100 pt-4 mb-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  이 단계에서 할 수 있는 것
+                </p>
                 <ul className="space-y-2 text-xs text-gray-600">
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>설계안 미리보기</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span><span className="font-medium text-gray-900">키워드</span> 기반 앱 구조 <span className="font-medium text-gray-900">자동</span> 생성</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>월 3개 설계안 생성</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>핵심 개념과 방향 정리</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>기본 히스토리 저장</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>기본 설계안 화면 미리보기</span>
                   </li>
                 </ul>
               </div>
+              <p className="text-xs text-gray-400 leading-relaxed mb-4">
+                설계 방향을 잡는 데에는
+                <br />
+                무료로도 충분합니다.
+              </p>
             </div>
             <Link
               href="/app"
               className="block w-full h-10 bg-gray-100 text-gray-900 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors tracking-tight text-center flex items-center justify-center"
             >
-              무료로 계속 사용하기
+              무료로 시작하기
             </Link>
           </div>
 
           {/* Pro - 설계 완성 단계 */}
-          <div className="bg-white rounded-lg border border-gray-100 p-6">
+          <div className="bg-white rounded-lg border-2 border-gray-900 p-6">
             <div className="mb-4">
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">
                 설계 완성 단계
               </span>
-              <h3 className="text-xl font-semibold text-gray-900 mb-1 tracking-tight">Pro</h3>
-              <div className="mb-4">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">Pro</h3>
+              <div className="mb-3">
                 <span className="text-3xl font-semibold text-gray-900">₩9,900</span>
                 <span className="text-xs text-gray-500 ml-2">/월</span>
               </div>
+              {/* 단계 선언 문장 */}
+              <p className="text-sm font-medium text-gray-900 mb-4 leading-relaxed">
+                앱 설계를 완성하는 단계
+              </p>
               <p className="text-sm text-gray-600 leading-relaxed mb-4">
                 이 단계에서는
                 <br />
@@ -108,27 +126,26 @@ export default function PricingPage() {
                 <br />
                 아이디어를 확정하기에 충분한 단계입니다.
               </p>
-              <div className="border-t border-gray-100 pt-4">
+              <div className="border-t border-gray-100 pt-4 mb-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  이 단계에서 할 수 있는 것
+                </p>
                 <ul className="space-y-2 text-xs text-gray-600">
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>상세 설계안 전체 보기</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>앱 설계 전체 구조 완성</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>무제한 설계안 생성</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>기능 흐름과 핵심 화면 정리</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>PDF 내보내기</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>수익 구조와 핵심 행동 명확화</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>우선 지원</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>고급 템플릿 사용</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>설계안 저장 및 반복 생성</span>
                   </li>
                 </ul>
               </div>
@@ -151,11 +168,15 @@ export default function PricingPage() {
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">
                 실행 준비 완료 단계
               </span>
-              <h3 className="text-xl font-semibold text-gray-900 mb-1 tracking-tight">Premium</h3>
-              <div className="mb-4">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">Premium</h3>
+              <div className="mb-3">
                 <span className="text-3xl font-semibold text-gray-900">₩14,900</span>
                 <span className="text-xs text-gray-500 ml-2">/월</span>
               </div>
+              {/* 단계 선언 문장 */}
+              <p className="text-sm font-medium text-gray-900 mb-4 leading-relaxed">
+                실제 개발을 시작하기 위한 단계
+              </p>
               <p className="text-sm text-gray-600 leading-relaxed mb-4">
                 이 단계에서는
                 <br />
@@ -164,36 +185,35 @@ export default function PricingPage() {
                 <br />
                 실제로 앱을 만들 사람들을 위한 최종 단계입니다.
               </p>
-              <div className="border-t border-gray-100 pt-4">
+              <div className="border-t border-gray-100 pt-4 mb-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  이 단계에서 할 수 있는 것
+                </p>
                 <ul className="space-y-2 text-xs text-gray-600">
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>Pro 기능 모두 포함</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>설계안을 실행 기준으로 최종 정리</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>실행 가능한 상세 명세서</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>외부 전달 가능한 설계 형태 확보</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>API 명세서 생성</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>개발자·외주·팀과 바로 공유 가능</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>데이터베이스 스키마 설계</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>개발팀 협업 도구 연동</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-gray-900 mr-2 font-medium">✓</span>
-                    <span>전담 지원</span>
+                    <span className="text-gray-900 mr-2 font-medium">•</span>
+                    <span>실제 제작을 전제로 한 최종 설계</span>
                   </li>
                 </ul>
               </div>
-              <p className="text-xs text-gray-400 leading-relaxed mt-3">
-                이 단계는 실제로 앱을 만들 사용자들에게 선택됩니다.
+              <p className="text-xs text-gray-400 leading-relaxed mb-4">
+                이 단계는
+                <br />
+                아이디어를 실제 앱으로 만들기로
+                <br />
+                결정한 사용자들이 선택합니다.
               </p>
             </div>
             <button className="w-full h-10 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight">
