@@ -16,7 +16,7 @@ export default function HistoryList({ plans, onDelete }: HistoryListProps) {
 
   if (sortedPlans.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
         <p className="text-base text-gray-500 mb-4">
           저장된 설계안이 없습니다.
         </p>

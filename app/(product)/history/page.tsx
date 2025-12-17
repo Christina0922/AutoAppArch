@@ -93,8 +93,8 @@ export default function HistoryPage() {
         <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center tracking-tight">
           저장된 <span className="font-bold">앱 설계안</span>
         </h1>
-        <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center min-h-[400px]">
-          <p className="text-base text-gray-600 mb-4 text-center">
+        <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
+          <p className="text-base text-gray-600 mb-4">
             히스토리를 불러오지 못했습니다.
           </p>
           <div className="flex gap-3">
@@ -123,8 +123,8 @@ export default function HistoryPage() {
         <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center tracking-tight">
           저장된 <span className="font-bold">앱 설계안</span>
         </h1>
-        <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center min-h-[400px]">
-          <p className="text-base text-gray-600 mb-4 text-center">
+        <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
+          <p className="text-base text-gray-600 mb-4">
             히스토리를 불러오지 못했습니다.
           </p>
           <div className="flex gap-3">
@@ -153,11 +153,11 @@ export default function HistoryPage() {
         저장된 <span className="font-bold">앱 설계안</span>
       </h1>
       {plans.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center min-h-[400px]">
-          <p className="text-base text-gray-600 mb-2 leading-relaxed text-center">
+        <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
+          <p className="text-base text-gray-600 mb-2 leading-relaxed">
             아직 저장된 <span className="font-bold">앱 설계안</span>이 없습니다.
           </p>
-          <p className="text-base text-gray-500 mb-8 leading-relaxed text-center">
+          <p className="text-base text-gray-500 mb-8 leading-relaxed">
             <span className="font-bold">키워드</span> 몇 개만 입력하면 바로 <span className="font-bold">자동</span> 생성할 수 있습니다.
           </p>
           <Link
