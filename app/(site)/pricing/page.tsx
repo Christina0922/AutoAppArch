@@ -49,12 +49,37 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* 하단: 단계 선택 영역 (Pro / Premium 2개만) */}
-      <div className="max-w-5xl mx-auto">
+      {/* 하단: 단계 선택 영역 (무료 / Pro / Premium 3개) */}
+      <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl font-semibold text-gray-900 mb-12 text-center tracking-tight">
           다음 단계 선택
         </h2>
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Free - 현재 단계 */}
+          <div className="bg-white rounded-lg border border-gray-100 p-10">
+            <div className="mb-6">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                현재 단계
+              </span>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">무료</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-semibold text-gray-900">₩0</span>
+                <span className="text-sm text-gray-500 ml-2">/월</span>
+              </div>
+              <p className="text-base text-gray-600 leading-relaxed">
+                기본 <span className="font-medium text-gray-900">앱 설계안</span>을
+                <br />
+                <span className="font-medium text-gray-900">자동</span>으로 생성할 수 있습니다.
+              </p>
+            </div>
+            <Link
+              href="/app"
+              className="block w-full h-12 bg-gray-100 text-gray-900 text-base font-medium rounded-md hover:bg-gray-200 transition-colors tracking-tight text-center flex items-center justify-center"
+            >
+              무료로 계속 사용하기
+            </Link>
+          </div>
+
           {/* Pro - 설계 완성 단계 */}
           <div className="bg-white rounded-lg border border-gray-100 p-10">
             <div className="mb-6">
