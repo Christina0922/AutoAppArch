@@ -1,21 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getAllPlans } from "@/lib/storage";
 
 export default function PricingPage() {
   const router = useRouter();
   const [highlightPremium, setHighlightPremium] = useState(false);
+  const [hasPlan, setHasPlan] = useState(false);
+
+  useEffect(() => {
+    // 설계안이 있는지 확인
+    const plans = getAllPlans();
+    setHasPlan(plans.length > 0);
+  }, []);
 
   const handleContinueClick = () => {
-    setHighlightPremium(true);
-    setTimeout(() => {
-      const premiumCard = document.getElementById("premium-card");
-      if (premiumCard) {
-        premiumCard.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 100);
+    if (hasPlan) {
+      setHighlightPremium(true);
+      setTimeout(() => {
+        const premiumCard = document.getElementById("premium-card");
+        if (premiumCard) {
+          premiumCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+    } else {
+      router.push("/app");
+    }
   };
 
   return (
@@ -36,7 +48,7 @@ export default function PricingPage() {
               onClick={handleContinueClick}
               className="h-10 px-6 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
             >
-              이 설계안으로 계속 진행하기
+              {hasPlan ? "이 설계안으로 계속 진행하기" : "설계안 만들기"}
             </button>
           </div>
         </div>
@@ -227,9 +239,11 @@ export default function PricingPage() {
         <p className="text-xs text-gray-500 mb-1">
           Pro와 Premium 요금제는 14일 무료 체험을 제공합니다.
         </p>
-        <p className="text-xs text-gray-400">
-          * 현재는 MVP 단계로 실제 결제는 진행되지 않습니다.
-        </p>
+        <div className="bg-gray-50 border border-gray-200 rounded-md p-3 inline-block mt-2">
+          <p className="text-xs text-gray-400">
+            * 현재는 MVP 단계로 실제 결제는 진행되지 않습니다.
+          </p>
+        </div>
       </div>
     </div>
   );

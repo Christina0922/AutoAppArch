@@ -24,6 +24,7 @@ export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
         onSaved();
       }
     } catch (error) {
+      console.error("저장 실패:", error);
       alert("저장에 실패했습니다.");
       setIsSaving(false);
     }
@@ -35,7 +36,6 @@ export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
 
   const handleCreateNew = () => {
     router.push("/app");
-    // 페이지 새로고침으로 초기화
     setTimeout(() => {
       window.location.reload();
     }, 100);
@@ -46,7 +46,7 @@ export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
       <div className="space-y-4">
         <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center">
           <p className="text-base font-medium text-gray-900 mb-1">
-            설계안이 저장되었습니다.
+            설계안이 저장되었습니다. (히스토리에서 확인)
           </p>
         </div>
         <div className="space-y-3">

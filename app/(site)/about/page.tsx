@@ -35,6 +35,27 @@ export default function AboutPage() {
           </div>
         </section>
 
+        <section className="bg-white rounded-lg border border-gray-100 p-10">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">누가 쓰나요?</h2>
+          <p className="text-base text-gray-600 leading-relaxed mb-4">
+            기획자, 교육자, 1인 개발자 등 아이디어는 있지만 체계적인 설계 문서를 작성하기 어려운 분들이 사용합니다.
+          </p>
+        </section>
+
+        <section className="bg-white rounded-lg border border-gray-100 p-10">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">무엇이 나오나요?</h2>
+          <p className="text-base text-gray-600 leading-relaxed mb-4">
+            타깃 사용자, 핵심 행동, 수익 모델, 데이터 저장, 리스크 요소를 포함한 완전한 <span className="font-bold text-gray-900">앱 설계안</span>이 생성됩니다.
+          </p>
+        </section>
+
+        <section className="bg-white rounded-lg border border-gray-100 p-10">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">어디에 쓰나요?</h2>
+          <p className="text-base text-gray-600 leading-relaxed">
+            개발자에게 전달하거나, 외주 의뢰 시, 또는 내부 기획 문서로 활용할 수 있습니다.
+          </p>
+        </section>
+
         <div className="text-center pt-8">
           <Link
             href="/app"

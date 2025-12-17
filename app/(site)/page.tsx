@@ -1,6 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
 export default function HomePage() {
+  const [showExample, setShowExample] = useState(false);
+
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8">
       {/* Hero Section */}
@@ -37,31 +42,50 @@ export default function HomePage() {
             </div>
           </div>
           
+          {/* 예시 보기 토글 */}
           <div className="bg-white rounded-lg border border-gray-100 p-8">
-            <div className="text-left">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                자동 생성된 <span className="text-gray-600">앱 설계안</span>
-              </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                입력 <span className="font-medium text-gray-700">키워드</span>: 영어, 공부
-              </p>
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-md p-4 border border-gray-100">
-                  <h4 className="text-sm font-bold text-gray-900 mb-2">[ 타깃 사용자 ]</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• 아이디어는 있으나 요구사항을 못 쓰는 사람</li>
-                    <li>• 스타트업 창업 초기 기획자</li>
-                    <li>• 학습 앱을 만들고 싶은 교육자</li>
-                  </ul>
-                </div>
-                <div className="bg-gray-50 rounded-md p-4 border border-gray-100">
-                  <h4 className="text-sm font-bold text-gray-900 mb-2">[ 핵심 행동 ]</h4>
-                  <p className="text-sm text-gray-600">
-                    영어 학습 관련 기능을 통해 사용자가 주요 목표를 달성하는 행동
+            <button
+              onClick={() => setShowExample(!showExample)}
+              className="w-full text-left mb-4 flex items-center justify-between"
+            >
+              <span className="text-base font-medium text-gray-900">
+                {showExample ? "예시 숨기기" : "샘플 미리보기"}
+              </span>
+              <span className="text-gray-400">
+                {showExample ? "▲" : "▼"}
+              </span>
+            </button>
+            {showExample && (
+              <div className="text-left">
+                <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-xs font-semibold text-yellow-800 uppercase tracking-wider">
+                    샘플
                   </p>
                 </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  자동 생성된 <span className="text-gray-600">앱 설계안</span>
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  입력 <span className="font-medium text-gray-700">키워드</span>: 영어, 공부
+                </p>
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-md p-4 border border-gray-100">
+                    <h4 className="text-sm font-bold text-gray-900 mb-2">[ 타깃 사용자 ]</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• 아이디어는 있으나 요구사항을 못 쓰는 사람</li>
+                      <li>• 스타트업 창업 초기 기획자</li>
+                      <li>• 학습 앱을 만들고 싶은 교육자</li>
+                    </ul>
+                  </div>
+                  <div className="bg-gray-50 rounded-md p-4 border border-gray-100">
+                    <h4 className="text-sm font-bold text-gray-900 mb-2">[ 핵심 행동 ]</h4>
+                    <p className="text-sm text-gray-600">
+                      영어 학습 관련 기능을 통해 사용자가 주요 목표를 달성하는 행동
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
