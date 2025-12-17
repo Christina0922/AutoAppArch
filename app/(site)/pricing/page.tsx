@@ -6,16 +6,14 @@ import { useRouter } from "next/navigation";
 
 export default function PricingPage() {
   const router = useRouter();
-  const [highlightPro, setHighlightPro] = useState(false);
+  const [highlightPremium, setHighlightPremium] = useState(false);
 
   const handleContinueClick = () => {
-    // 무료 사용자는 그대로 진행
-    // 조건 충족 시 Pro 안내로 연결 (내부 로직)
-    setHighlightPro(true);
+    setHighlightPremium(true);
     setTimeout(() => {
-      const proCard = document.getElementById("pro-card");
-      if (proCard) {
-        proCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      const premiumCard = document.getElementById("premium-card");
+      if (premiumCard) {
+        premiumCard.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }, 100);
   };
@@ -51,97 +49,69 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* 하단: 요금제 선택 영역 (무료 / Pro 2개만) */}
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-8 text-center tracking-tight">
-          요금제
+      {/* 하단: 단계 선택 영역 (Pro / Premium 2개만) */}
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-12 text-center tracking-tight">
+          다음 단계 선택
         </h2>
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Free Plan */}
+          {/* Pro - 설계 완성 단계 */}
           <div className="bg-white rounded-lg border border-gray-100 p-10">
-            <div className="mb-4">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                현재 단계
+            <div className="mb-6">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                설계 완성 단계
               </span>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">Pro</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-semibold text-gray-900">₩9,900</span>
+                <span className="text-sm text-gray-500 ml-2">/월</span>
+              </div>
+              <p className="text-base text-gray-600 leading-relaxed mb-4">
+                이 단계에서는
+                <br />
+                앱을 만들기 위한 설계가 모두 완성됩니다.
+                <br />
+                <br />
+                아이디어를 확정하기에 충분한 단계입니다.
+              </p>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">무료</h3>
-            <div className="mb-8">
-              <span className="text-3xl font-semibold text-gray-900">₩0</span>
-              <span className="text-sm text-gray-500 ml-2">/월</span>
-            </div>
-            <ul className="space-y-4 mb-10 text-base text-gray-600">
-              <li className="flex items-start">
-                <span className="text-gray-900 mr-3 font-medium">✓</span>
-                <span>설계안 미리보기</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-gray-900 mr-3 font-medium">✓</span>
-                <span>월 3개 설계안 생성</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-gray-900 mr-3 font-medium">✓</span>
-                <span>기본 히스토리 저장</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-gray-300 mr-3">✗</span>
-                <span className="text-gray-400">상세 설계안 보기</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-gray-300 mr-3">✗</span>
-                <span className="text-gray-400">PDF 내보내기</span>
-              </li>
-            </ul>
-            <Link
-              href="/app"
-              className="block w-full h-12 bg-gray-100 text-gray-900 text-base font-medium rounded-md hover:bg-gray-200 transition-colors tracking-tight text-center flex items-center justify-center"
-            >
-              무료로 계속 사용하기
-            </Link>
+            <button className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight">
+              이 설계안으로 계속 진행하기
+            </button>
           </div>
 
-          {/* Pro Plan */}
+          {/* Premium - 실행 준비 완료 단계 */}
           <div
-            id="pro-card"
+            id="premium-card"
             className={`bg-white rounded-lg border-2 p-10 transition-all duration-500 ${
-              highlightPro
+              highlightPremium
                 ? "border-gray-900 shadow-lg scale-105"
                 : "border-gray-200"
             }`}
           >
-            <div className="mb-4">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                다음 단계
+            <div className="mb-6">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                실행 준비 완료 단계
               </span>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">Premium</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-semibold text-gray-900">₩14,900</span>
+                <span className="text-sm text-gray-500 ml-2">/월</span>
+              </div>
+              <p className="text-base text-gray-600 leading-relaxed mb-3">
+                이 단계에서는
+                <br />
+                이 설계안을 바로 개발로 옮길 수 있습니다.
+                <br />
+                <br />
+                실제로 앱을 만들 사람들을 위한 최종 단계입니다.
+              </p>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                이 단계는 실제로 앱을 만들 사용자들에게 선택됩니다.
+              </p>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">Pro</h3>
-            <div className="mb-8">
-              <span className="text-3xl font-semibold text-gray-900">₩9,900</span>
-              <span className="text-sm text-gray-500 ml-2">/월</span>
-            </div>
-            <ul className="space-y-4 mb-10 text-base text-gray-600">
-              <li className="flex items-start">
-                <span className="text-gray-900 mr-3 font-medium">✓</span>
-                <span>상세 설계안 전체 보기</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-gray-900 mr-3 font-medium">✓</span>
-                <span>무제한 설계안 생성</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-gray-900 mr-3 font-medium">✓</span>
-                <span>PDF 내보내기</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-gray-900 mr-3 font-medium">✓</span>
-                <span>우선 지원</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-gray-900 mr-3 font-medium">✓</span>
-                <span>고급 템플릿 사용</span>
-              </li>
-            </ul>
             <button className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight">
-              이 설계안으로 계속 진행하기 (유료)
+              실행 단계까지 완료하기
             </button>
           </div>
         </div>
