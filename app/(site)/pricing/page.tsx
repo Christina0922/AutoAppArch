@@ -137,7 +137,7 @@ export default function PricingPage() {
 
       <div className="mt-6 text-center">
         <p className="text-xs text-gray-500 mb-1">
-          모든 요금제는 14일 무료 체험을 제공합니다.
+          Pro와 Premium 요금제는 14일 무료 체험을 제공합니다.
         </p>
         <p className="text-xs text-gray-400">
           * 현재는 MVP 단계로 실제 결제는 진행되지 않습니다.
