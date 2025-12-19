@@ -70,7 +70,7 @@ export default function Footer() {
         </div>
         <div className="mt-16 pt-8 border-t border-gray-100">
           <p className="text-sm text-gray-400 text-center">
-            © 2024 AutoAppArch. All rights reserved.
+            © 2026 AutoAppArch. All rights reserved.
           </p>
         </div>
       </div>

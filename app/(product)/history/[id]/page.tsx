@@ -14,15 +14,19 @@ export default function HistoryDetailPage() {
   const [plan, setPlan] = useState<SavedPlan | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [isPro] = useState(false); // MVP에서는 항상 false
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (params.id && typeof params.id === "string") {
       const foundPlan = getPlanById(params.id);
       if (foundPlan) {
         setPlan(foundPlan);
+        setError(null);
       } else {
-        alert("설계안을 찾을 수 없습니다.");
-        router.push("/history");
+        setError("설계안을 찾을 수 없습니다.");
+        setTimeout(() => {
+          router.push("/history");
+        }, 2000);
       }
     }
   }, [params.id, router]);
@@ -37,11 +41,26 @@ export default function HistoryDetailPage() {
     }
   };
 
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
+        <div className="bg-white rounded-lg border border-red-200 p-12 text-center">
+          <p className="text-base text-red-600 mb-4" role="alert">
+            {error}
+          </p>
+          <p className="text-sm text-gray-500">
+            히스토리 페이지로 이동합니다...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!plan) {
     return (
       <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
         <div className="bg-white rounded-lg border border-gray-100 p-12 text-center">
-          <p className="text-base text-gray-500">로딩 중...</p>
+          <p className="text-base text-gray-500" aria-live="polite">로딩 중...</p>
         </div>
       </div>
     );
@@ -69,7 +88,8 @@ export default function HistoryDetailPage() {
       <div className="mt-8 bg-white rounded-lg border border-gray-100 p-8">
         <button
           onClick={handleContinue}
-          className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
+          className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+          aria-label="이 설계안으로 계속 진행하기"
         >
           이 설계안으로 계속 진행하기
         </button>

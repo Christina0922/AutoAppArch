@@ -44,6 +44,11 @@ export default function KeywordInputForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // 로딩 중이면 중복 제출 방지
+    if (isLoading) {
+      return;
+    }
+    
     // 정규화
     const normalized = normalizeKeywords(keywordInput);
     
@@ -124,6 +129,7 @@ export default function KeywordInputForm({
                 onClick={() => handleExampleClick(chip.keywords)}
                 disabled={isLoading}
                 className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={`예시 키워드 사용: ${chip.text}`}
               >
                 {chip.text}
               </button>
@@ -138,12 +144,17 @@ export default function KeywordInputForm({
             className="w-full px-4 py-3 text-base border border-gray-200 rounded-md focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors bg-white resize-none"
             rows={3}
             disabled={isLoading}
+            aria-label="키워드 입력"
+            aria-describedby={validationError ? "keyword-error" : normalizeKeywords(keywordInput).length === 1 ? "keyword-warning" : undefined}
+            aria-invalid={!!validationError}
           />
           {validationError && (
-            <p className="text-sm text-red-600">{validationError}</p>
+            <p id="keyword-error" className="text-sm text-red-600" role="alert">
+              {validationError}
+            </p>
           )}
           {normalizeKeywords(keywordInput).length === 1 && !validationError && (
-            <p className="text-sm text-amber-600">
+            <p id="keyword-warning" className="text-sm text-amber-600">
               💡 2개 이상의 키워드를 권장합니다. 더 정확한 설계안이 생성됩니다.
             </p>
           )}
@@ -153,7 +164,8 @@ export default function KeywordInputForm({
       <button
         type="submit"
         disabled={isLoading || !isValid}
-        className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+        aria-label={isLoading ? "앱 설계안 생성 중" : "앱 설계안 자동 생성하기"}
       >
         {isLoading ? loadingMessage || "생성 중..." : "앱 설계안 자동 생성하기"}
       </button>

@@ -46,7 +46,8 @@ export default function PricingPage() {
           <div className="text-center">
             <button
               onClick={handleContinueClick}
-              className="h-10 px-6 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
+              className="h-10 px-6 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              aria-label={hasPlan ? "이 설계안으로 계속 진행하기" : "설계안 만들기"}
             >
               {hasPlan ? "이 설계안으로 계속 진행하기" : "설계안 만들기"}
             </button>
@@ -162,7 +163,10 @@ export default function PricingPage() {
                 </ul>
               </div>
             </div>
-            <button className="w-full h-10 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight">
+            <button
+              className="w-full h-10 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              aria-label="Pro 플랜: 이 설계안으로 계속 진행하기"
+            >
               이 설계안으로 계속 진행하기
             </button>
           </div>
@@ -228,7 +232,10 @@ export default function PricingPage() {
                 결정한 사용자들이 선택합니다.
               </p>
             </div>
-            <button className="w-full h-10 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight">
+            <button
+              className="w-full h-10 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              aria-label="Premium 플랜: 실행 단계까지 완료하기"
+            >
               실행 단계까지 완료하기
             </button>
           </div>

@@ -112,7 +112,8 @@ export default function PlanPreviewCard({
       {onViewDetail && (
         <button
           onClick={onViewDetail}
-          className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
+          className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+          aria-label="이 설계안으로 계속 진행하기"
         >
           이 설계안으로 계속 진행하기
         </button>

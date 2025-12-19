@@ -18,7 +18,8 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
           <Link
             href="/app"
-            className="h-14 px-10 bg-gray-900 text-white text-lg font-medium rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center tracking-tight"
+            className="h-14 px-10 bg-gray-900 text-white text-lg font-medium rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            aria-label="앱 설계안 만들기 시작하기"
           >
             지금 시작하기
           </Link>
@@ -36,7 +37,12 @@ export default function HomePage() {
                   예: 영어, 공부
                 </div>
               </div>
-              <button className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md">
+              <button
+                className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                aria-label="샘플 데모: 앱 설계안 자동 생성하기"
+                disabled
+                aria-disabled="true"
+              >
                 앱 설계안 자동 생성하기
               </button>
             </div>
@@ -46,12 +52,14 @@ export default function HomePage() {
           <div className="bg-white rounded-lg border border-gray-100 p-8">
             <button
               onClick={() => setShowExample(!showExample)}
-              className="w-full text-left mb-4 flex items-center justify-between"
+              className="w-full text-left mb-4 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 rounded-md p-2 -m-2"
+              aria-label={showExample ? "샘플 예시 숨기기" : "샘플 예시 보기"}
+              aria-expanded={showExample}
             >
               <span className="text-base font-medium text-gray-900">
                 {showExample ? "예시 숨기기" : "샘플 미리보기"}
               </span>
-              <span className="text-gray-400">
+              <span className="text-gray-400" aria-hidden="true">
                 {showExample ? "▲" : "▼"}
               </span>
             </button>

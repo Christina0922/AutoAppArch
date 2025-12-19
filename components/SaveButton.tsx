@@ -52,13 +52,15 @@ export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
         <div className="space-y-3">
           <button
             onClick={handleViewSaved}
-            className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
+            className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            aria-label="저장된 설계안 보기"
           >
             내 설계안 바로 보기
           </button>
           <button
             onClick={handleCreateNew}
-            className="w-full h-12 bg-white text-gray-900 text-base font-medium rounded-md border border-gray-200 hover:bg-gray-50 transition-colors tracking-tight"
+            className="w-full h-12 bg-white text-gray-900 text-base font-medium rounded-md border border-gray-200 hover:bg-gray-50 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            aria-label="새 설계안 만들기"
           >
             다른 키워드로 설계안 만들기
           </button>
@@ -74,7 +76,8 @@ export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
     <button
       onClick={handleSave}
       disabled={isSaving}
-      className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+      aria-label={isSaving ? "설계안 저장 중" : "설계안 저장하기"}
     >
       {isSaving ? "저장 중..." : "설계안 저장하기"}
     </button>

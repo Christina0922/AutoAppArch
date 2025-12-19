@@ -54,7 +54,8 @@ export default function HistoryList({ plans, onDelete }: HistoryListProps) {
             {onDelete && (
               <button
                 onClick={() => onDelete(plan.id)}
-                className="ml-4 px-4 py-2 text-base text-gray-500 hover:text-gray-900 transition-colors"
+                className="ml-4 px-4 py-2 text-base text-gray-500 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 rounded-md"
+                aria-label={`${plan.result.title} 설계안 삭제`}
               >
                 삭제
               </button>
