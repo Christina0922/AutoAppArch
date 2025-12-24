@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SavedPlan } from "@/lib/types";
-import { savePlan } from "@/lib/storage";
+import { SavedPlan, Session } from "@/lib/types";
+import { savePlan, saveSession } from "@/lib/storage";
 
 interface SaveButtonProps {
-  plan: SavedPlan;
+  plan?: SavedPlan;
+  session?: Session;
   onSaved?: () => void;
 }
 
-export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
+export default function SaveButton({ plan, session, onSaved }: SaveButtonProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
@@ -18,7 +19,13 @@ export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
   const handleSave = () => {
     setIsSaving(true);
     try {
-      savePlan(plan);
+      if (session) {
+        saveSession(session);
+      } else if (plan) {
+        savePlan(plan);
+      } else {
+        throw new Error("plan 또는 session이 필요합니다.");
+      }
       setSaved(true);
       if (onSaved) {
         onSaved();
@@ -31,7 +38,10 @@ export default function SaveButton({ plan, onSaved }: SaveButtonProps) {
   };
 
   const handleViewSaved = () => {
-    router.push(`/history/${plan.id}`);
+    const id = session?.id || plan?.id;
+    if (id) {
+      router.push(`/history/${id}`);
+    }
   };
 
   const handleCreateNew = () => {

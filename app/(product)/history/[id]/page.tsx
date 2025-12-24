@@ -2,26 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { SavedPlan } from "@/lib/types";
-import { getPlanById } from "@/lib/storage";
-import PlanDetail from "@/components/PlanDetail";
+import { SavedPlan, Session } from "@/lib/types";
+import { getPlanById, getSessionById } from "@/lib/storage";
+import IdeaTree from "@/components/IdeaTree";
 import PaywallModal from "@/components/PaywallModal";
 import Link from "next/link";
 
 export default function HistoryDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const [session, setSession] = useState<Session | null>(null);
   const [plan, setPlan] = useState<SavedPlan | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [isPro] = useState(false); // MVP에서는 항상 false
   const [error, setError] = useState<string | null>(null);
+  const [isLegacyPlan, setIsLegacyPlan] = useState(false);
 
   useEffect(() => {
     if (params.id && typeof params.id === "string") {
+      // 먼저 Session으로 시도
+      const foundSession = getSessionById(params.id);
+      if (foundSession) {
+        setSession(foundSession);
+        setError(null);
+        setIsLegacyPlan(false);
+        return;
+      }
+
+      // Session이 없으면 기존 Plan으로 시도 (하위 호환성)
       const foundPlan = getPlanById(params.id);
       if (foundPlan) {
         setPlan(foundPlan);
         setError(null);
+        setIsLegacyPlan(true);
       } else {
         setError("설계안을 찾을 수 없습니다.");
         setTimeout(() => {
@@ -31,10 +44,26 @@ export default function HistoryDetailPage() {
     }
   }, [params.id, router]);
 
+  // Session 업데이트 (트리에서 변경 시)
+  const handleNodesChange = (nodes: any[]) => {
+    if (!session) return;
+    setSession({ ...session, nodes });
+    // 자동 저장은 생략 (읽기 전용 모드)
+  };
+
+  const handleSelectionChange = (selectedIds: string[]) => {
+    if (!session) return;
+    setSession({ ...session, selectedNodeIds: selectedIds });
+  };
+
   const handleContinue = () => {
     if (isPro) {
-      // Pro 사용자는 상세 보기로 이동
-      router.push(`/app?planId=${plan?.id}`);
+      // Pro 사용자는 세션 계속하기
+      if (session) {
+        router.push(`/app?sessionId=${session.id}`);
+      } else if (plan) {
+        router.push(`/app?planId=${plan.id}`);
+      }
     } else {
       // 무료 사용자는 요금제 모달 표시
       setShowPaywall(true);
@@ -43,7 +72,7 @@ export default function HistoryDetailPage() {
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
         <div className="bg-white rounded-lg border border-red-200 p-12 text-center">
           <p className="text-base text-red-600 mb-4" role="alert">
             {error}
@@ -56,9 +85,10 @@ export default function HistoryDetailPage() {
     );
   }
 
-  if (!plan) {
+  // 로딩 중
+  if (!session && !plan) {
     return (
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
         <div className="bg-white rounded-lg border border-gray-100 p-12 text-center">
           <p className="text-base text-gray-500" aria-live="polite">로딩 중...</p>
         </div>
@@ -66,36 +96,150 @@ export default function HistoryDetailPage() {
     );
   }
 
-  return (
-    <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
-      <div className="mb-8">
-        <Link
-          href="/history"
-          className="text-base text-gray-500 hover:text-gray-900 font-medium mb-6 inline-block transition-colors"
-        >
-          ← 목록으로 돌아가기
-        </Link>
-        <p className="text-sm text-gray-400 mb-1">
-          생성일: {new Date(plan.createdAt).toLocaleString("ko-KR")}
-        </p>
-        <p className="text-sm text-gray-400">
-          키워드: {plan.keywords.join(", ")}
-        </p>
-      </div>
-      
-      <PlanDetail result={plan.result} keywords={plan.keywords} showProgress={true} />
-      
-      <div className="mt-8 bg-white rounded-lg border border-gray-100 p-8">
-        <button
-          onClick={handleContinue}
-          className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-          aria-label="이 설계안으로 계속 진행하기"
-        >
-          이 설계안으로 계속 진행하기
-        </button>
-      </div>
+  // 기존 Plan 형태 (하위 호환성, 레거시)
+  if (plan && isLegacyPlan) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
+        <div className="mb-8">
+          <Link
+            href="/history"
+            className="text-base text-gray-500 hover:text-gray-900 font-medium mb-6 inline-block transition-colors"
+          >
+            ← 목록으로 돌아가기
+          </Link>
+          <p className="text-sm text-gray-400 mb-1">
+            생성일: {new Date(plan.createdAt).toLocaleString("ko-KR")}
+          </p>
+          <p className="text-sm text-gray-400">
+            키워드: {plan.keywords.join(", ")}
+          </p>
+        </div>
+        
+        <div className="bg-white rounded-lg border border-gray-100 p-8 mb-8">
+          <p className="text-base text-gray-600 mb-4">
+            이 설계안은 이전 버전의 형식입니다. 새로운 마인드맵 형식으로 전환하려면 새로 생성해주세요.
+          </p>
+        </div>
+        
+        <div className="bg-white rounded-lg border border-gray-100 p-8">
+          <button
+            onClick={handleContinue}
+            className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            aria-label="이 설계안으로 계속 진행하기"
+          >
+            이 설계안으로 계속 진행하기
+          </button>
+        </div>
 
-      <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
-    </div>
-  );
+        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
+      </div>
+    );
+  }
+
+  // 새로운 Session 형태 (트리 UI)
+  if (session) {
+    // 최종 후보 노드들 찾기
+    const getFinalCandidates = (): any[] => {
+      if (!session || session.selectedNodeIds.length === 0) return [];
+      
+      const selectedNodes = session.nodes.filter((n) =>
+        session.selectedNodeIds.includes(n.id)
+      );
+      if (selectedNodes.length === 0) return [];
+
+      const maxLevel = Math.max(...selectedNodes.map((n) => n.level));
+      return selectedNodes.filter((n) => n.level === maxLevel);
+    };
+
+    const finalCandidates = getFinalCandidates();
+    const hasFinalCandidates = finalCandidates.length > 0;
+
+    return (
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
+        <div className="mb-8">
+          <Link
+            href="/history"
+            className="text-base text-gray-500 hover:text-gray-900 font-medium mb-6 inline-block transition-colors"
+          >
+            ← 목록으로 돌아가기
+          </Link>
+          <div className="bg-white rounded-lg border border-gray-100 p-6 mb-6">
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">
+              마인드맵 아이디어 트리
+            </h1>
+            <p className="text-sm text-gray-400 mb-1">
+              생성일: {new Date(session.createdAt).toLocaleString("ko-KR")}
+            </p>
+            <p className="text-sm text-gray-400">
+              키워드: <span className="font-medium text-gray-700">{session.keywords.join(", ")}</span>
+              {session.selectedType && (
+                <span className="ml-3">
+                  유형: <span className="font-medium text-gray-700">
+                    {session.selectedType === "app" ? "모바일 앱" : "웹 서비스"}
+                  </span>
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* 트리 UI */}
+        <IdeaTree
+          sessionId={session.id}
+          initialNodes={session.nodes}
+          initialSelectedIds={session.selectedNodeIds}
+          keywords={session.keywords}
+          selectedType={session.selectedType || "app"}
+          onNodesChange={handleNodesChange}
+          onSelectionChange={handleSelectionChange}
+        />
+
+        {/* 최종 후보 표시 (있는 경우) */}
+        {hasFinalCandidates && (
+          <div className="mt-8 bg-white rounded-lg border-2 border-gray-900 p-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 tracking-tight">
+              최종 후보 선택 완료
+            </h3>
+            <div className="mb-6 space-y-2">
+              {finalCandidates.map((node) => (
+                <div
+                  key={node.id}
+                  className="bg-gray-50 rounded-md p-4 border border-gray-200"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-gray-900">
+                          {node.label}
+                        </span>
+                      </div>
+                      <h4 className="text-base font-semibold text-gray-900 mb-1">
+                        {node.title}
+                      </h4>
+                      <p className="text-sm text-gray-600">{node.summary}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 계속 진행하기 버튼 */}
+        <div className="mt-8 bg-white rounded-lg border border-gray-100 p-8">
+          <button
+            onClick={handleContinue}
+            className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            aria-label="이 세션으로 계속 진행하기"
+          >
+            이 세션으로 계속 진행하기
+          </button>
+        </div>
+
+        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
+      </div>
+    );
+  }
+
+  return null;
 }

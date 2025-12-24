@@ -2,29 +2,32 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { SavedPlan } from "@/lib/types";
-import { getAllPlans, deletePlan } from "@/lib/storage";
+import { SavedPlan, Session } from "@/lib/types";
+import { getAllPlans, deletePlan, getAllSessions, deleteSession } from "@/lib/storage";
 import HistoryList from "@/components/HistoryList";
 
 type LoadingState = "loading" | "success" | "error" | "timeout";
 
 export default function HistoryPage() {
   const [plans, setPlans] = useState<SavedPlan[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
 
   useEffect(() => {
-    const loadPlans = async () => {
+    const loadHistory = async () => {
       try {
         // 타임아웃 설정 (6초)
         const timeoutId = setTimeout(() => {
           setLoadingState("timeout");
         }, 6000);
 
-        // localStorage는 동기이지만, 에러 처리를 위해 try-catch 사용
+        // Session과 Plan 모두 로드
         const loadedPlans = getAllPlans();
+        const loadedSessions = getAllSessions();
         
         clearTimeout(timeoutId);
         setPlans(loadedPlans);
+        setSessions(loadedSessions);
         setLoadingState("success");
       } catch (error) {
         console.error("히스토리 로딩 실패:", error);
@@ -32,14 +35,16 @@ export default function HistoryPage() {
       }
     };
 
-    loadPlans();
+    loadHistory();
   }, []);
 
   const handleRetry = () => {
     setLoadingState("loading");
     try {
       const loadedPlans = getAllPlans();
+      const loadedSessions = getAllSessions();
       setPlans(loadedPlans);
+      setSessions(loadedSessions);
       setLoadingState("success");
     } catch (error) {
       console.error("히스토리 재시도 실패:", error);
@@ -51,11 +56,23 @@ export default function HistoryPage() {
     window.location.reload();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDeletePlan = (id: string) => {
     if (confirm("정말 삭제하시겠습니까?")) {
       try {
         deletePlan(id);
         setPlans(getAllPlans());
+      } catch (error) {
+        console.error("삭제 실패:", error);
+        alert("삭제에 실패했습니다.");
+      }
+    }
+  };
+
+  const handleDeleteSession = (id: string) => {
+    if (confirm("정말 삭제하시겠습니까?")) {
+      try {
+        deleteSession(id);
+        setSessions(getAllSessions());
       } catch (error) {
         console.error("삭제 실패:", error);
         alert("삭제에 실패했습니다.");
@@ -150,13 +167,15 @@ export default function HistoryPage() {
     );
   }
 
+  const totalCount = plans.length + sessions.length;
+
   // 성공 상태
   return (
     <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
       <h1 className="text-3xl font-semibold text-gray-900 mb-12 text-center tracking-tight">
         저장된 <span className="font-bold">앱 설계안</span>
       </h1>
-      {plans.length === 0 ? (
+      {totalCount === 0 ? (
         <div className="bg-white rounded-lg border border-gray-100 p-16 flex flex-col items-center justify-center text-center min-h-[400px]">
           <div className="flex flex-col items-center justify-center gap-6">
             <p className="text-base text-gray-600 leading-relaxed">
@@ -174,7 +193,81 @@ export default function HistoryPage() {
           </div>
         </div>
       ) : (
-        <HistoryList plans={plans} onDelete={handleDelete} />
+        <div className="space-y-8">
+          {/* Session 목록 (새로운 마인드맵 형식) */}
+          {sessions.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 tracking-tight">
+                마인드맵 세션 ({sessions.length})
+              </h2>
+              <div className="space-y-4">
+                {sessions
+                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  .map((session) => (
+                    <div
+                      key={session.id}
+                      className="bg-white rounded-lg border border-gray-100 p-8 hover:border-gray-200 transition-colors"
+                    >
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2 tracking-tight">
+                            마인드맵 아이디어 트리
+                          </h3>
+                          <p className="text-base text-gray-500 mb-3">
+                            <span className="font-medium text-gray-700">키워드</span>: {session.keywords.join(", ")}
+                            {session.selectedType && (
+                              <span className="ml-3">
+                                유형: <span className="font-medium text-gray-700">
+                                  {session.selectedType === "app" ? "모바일 앱" : "웹 서비스"}
+                                </span>
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-sm text-gray-400 mb-2">
+                            노드 {session.nodes.length}개, 선택 {session.selectedNodeIds.length}개
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            {new Date(session.createdAt).toLocaleString("ko-KR")}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteSession(session.id)}
+                          className="ml-4 px-4 py-2 text-base text-gray-500 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 rounded-md"
+                          aria-label={`세션 ${session.id} 삭제`}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                      <div className="flex gap-4">
+                        <Link
+                          href={`/history/${session.id}`}
+                          className="text-base text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                        >
+                          보기 →
+                        </Link>
+                        <Link
+                          href={`/app?sessionId=${session.id}`}
+                          className="text-base text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                        >
+                          계속 진행하기 →
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Plan 목록 (기존 형식, 하위 호환성) */}
+          {plans.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 tracking-tight">
+                기존 설계안 ({plans.length})
+              </h2>
+              <HistoryList plans={plans} onDelete={handleDeletePlan} />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
