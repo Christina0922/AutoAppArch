@@ -39,33 +39,38 @@ export default function PlanPreviewCard({
         </div>
 
         <div className="space-y-6 mb-6">
-          <div className="bg-gray-50 rounded-md p-6 border border-gray-100">
-            <h3 className="text-base font-bold text-gray-900 mb-3 tracking-tight">
-              [ 타깃 사용자 ]
-            </h3>
-            <ul className="space-y-2 text-base text-gray-600">
-              {result.targetUsers.slice(0, 3).map((user, idx) => (
-                <li key={idx} className="flex items-start">
-                  <span className="text-gray-400 mr-2">•</span>
-                  <span>{user}</span>
-                </li>
-              ))}
-              {result.targetUsers.length > 3 && (
-                <li className="text-gray-400 text-sm">
-                  외 {result.targetUsers.length - 3}개...
-                </li>
-              )}
-            </ul>
-          </div>
-
-          <div className="bg-gray-50 rounded-md p-6 border border-gray-100">
-            <h3 className="text-base font-bold text-gray-900 mb-3 tracking-tight">
-              [ 핵심 행동 ]
-            </h3>
-            <p className="text-base text-gray-600 leading-relaxed">
-              {result.coreAction}
-            </p>
-          </div>
+          {/* [사용자 관점] 섹션만 미리보기로 표시 */}
+          {result.sectionsForRendering
+            .filter((s) => s.heading.startsWith("[사용자 관점]"))
+            .slice(0, 2)
+            .map((section, idx) => {
+              const cleanHeading = section.heading.replace("[사용자 관점] ", "");
+              return (
+                <div
+                  key={idx}
+                  className="bg-gray-50 rounded-md p-6 border border-gray-200"
+                >
+                  <h3 className="text-base font-bold text-gray-900 mb-3 tracking-tight">
+                    {cleanHeading}
+                  </h3>
+                  {section.bullets.length > 0 && (
+                    <ul className="space-y-2 text-base text-gray-600">
+                      {section.bullets.slice(0, 3).map((bullet, bulletIdx) => (
+                        <li key={bulletIdx} className="flex items-start">
+                          <span className="text-gray-400 mr-2">•</span>
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
+                      {section.bullets.length > 3 && (
+                        <li className="text-gray-400 text-sm">
+                          외 {section.bullets.length - 3}개...
+                        </li>
+                      )}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
         </div>
       </div>
     );
@@ -80,33 +85,35 @@ export default function PlanPreviewCard({
       </div>
 
       <div className="space-y-6 mb-8">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            타깃 사용자
-          </h3>
-          <ul className="space-y-2 text-base text-gray-600">
-            {result.targetUsers.slice(0, 3).map((user, idx) => (
-              <li key={idx} className="flex items-start">
-                <span className="text-gray-400 mr-2">•</span>
-                <span>{user}</span>
-              </li>
-            ))}
-            {result.targetUsers.length > 3 && (
-              <li className="text-gray-400 text-sm">
-                외 {result.targetUsers.length - 3}개...
-              </li>
-            )}
-          </ul>
-        </div>
-
-        <div>
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            핵심 행동
-          </h3>
-          <p className="text-base text-gray-600 leading-relaxed">
-            {result.coreAction}
-          </p>
-        </div>
+        {/* [사용자 관점] 섹션만 미리보기로 표시 */}
+        {result.sectionsForRendering
+          .filter((s) => s.heading.startsWith("[사용자 관점]"))
+          .slice(0, 2)
+          .map((section, idx) => {
+            const cleanHeading = section.heading.replace("[사용자 관점] ", "");
+            return (
+              <div key={idx}>
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                  {cleanHeading}
+                </h3>
+                {section.bullets.length > 0 && (
+                  <ul className="space-y-2 text-base text-gray-600">
+                    {section.bullets.slice(0, 3).map((bullet, bulletIdx) => (
+                      <li key={bulletIdx} className="flex items-start">
+                        <span className="text-gray-400 mr-2">•</span>
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                    {section.bullets.length > 3 && (
+                      <li className="text-gray-400 text-sm">
+                        외 {section.bullets.length - 3}개...
+                      </li>
+                    )}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
       </div>
 
       {onViewDetail && (

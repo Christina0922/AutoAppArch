@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { SavedPlan, Session } from "@/lib/types";
 import { getPlanById, getSessionById } from "@/lib/storage";
+import { shouldBypassPaywall } from "@/lib/paywall";
 import IdeaTree from "@/components/IdeaTree";
 import PaywallModal from "@/components/PaywallModal";
 import Link from "next/link";
@@ -64,10 +65,26 @@ export default function HistoryDetailPage() {
       } else if (plan) {
         router.push(`/app?planId=${plan.id}`);
       }
-    } else {
-      // 무료 사용자는 요금제 모달 표시
-      setShowPaywall(true);
+      return;
     }
+    
+    // 우회 모드가 활성화되어 있으면 바로 진행
+    if (shouldBypassPaywall()) {
+      if (session) {
+        router.push(`/app?sessionId=${session.id}`);
+      } else if (plan) {
+        router.push(`/app?planId=${plan.id}`);
+      }
+      return;
+    }
+    
+    // 일반 모드에서는 요금제 모달 표시
+    setShowPaywall(true);
+  };
+
+  // PRO 보기 버튼 클릭 핸들러
+  const handleShowPro = () => {
+    setShowPaywall(true);
   };
 
   if (error) {
@@ -96,10 +113,11 @@ export default function HistoryDetailPage() {
     );
   }
 
-  // 기존 Plan 형태 (하위 호환성, 레거시)
+  // 기존 Plan 형태는 더 이상 지원하지 않음 (레거시 제거)
+  // Plan이 발견되면 에러 표시
   if (plan && isLegacyPlan) {
     return (
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-16">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
         <div className="mb-8">
           <Link
             href="/history"
@@ -107,31 +125,21 @@ export default function HistoryDetailPage() {
           >
             ← 목록으로 돌아가기
           </Link>
-          <p className="text-sm text-gray-400 mb-1">
-            생성일: {new Date(plan.createdAt).toLocaleString("ko-KR")}
-          </p>
-          <p className="text-sm text-gray-400">
-            키워드: {plan.keywords.join(", ")}
-          </p>
         </div>
-        
-        <div className="bg-white rounded-lg border border-gray-100 p-8 mb-8">
-          <p className="text-base text-gray-600 mb-4">
-            이 설계안은 이전 버전의 형식입니다. 새로운 마인드맵 형식으로 전환하려면 새로 생성해주세요.
+        <div className="bg-white rounded-lg border border-red-200 p-12 text-center">
+          <p className="text-base text-red-600 mb-4" role="alert">
+            이 설계안은 이전 버전 형식입니다.
           </p>
-        </div>
-        
-        <div className="bg-white rounded-lg border border-gray-100 p-8">
-          <button
-            onClick={handleContinue}
-            className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-            aria-label="이 설계안으로 계속 진행하기"
+          <p className="text-sm text-gray-500 mb-6">
+            새로운 마인드맵 형식으로 다시 생성해주세요.
+          </p>
+          <Link
+            href="/app"
+            className="inline-block px-6 h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors"
           >
-            이 설계안으로 계속 진행하기
-          </button>
+            새로 만들기
+          </Link>
         </div>
-
-        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
       </div>
     );
   }
@@ -225,7 +233,7 @@ export default function HistoryDetailPage() {
           </div>
         )}
 
-        {/* 계속 진행하기 버튼 */}
+        {/* 계속 진행하기 버튼 - 히스토리에서는 계속 진행만 가능 */}
         <div className="mt-8 bg-white rounded-lg border border-gray-100 p-8">
           <button
             onClick={handleContinue}

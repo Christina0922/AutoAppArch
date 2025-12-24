@@ -13,6 +13,7 @@ interface IdeaTreeProps {
   onNodesChange: (nodes: Node[]) => void;
   onSelectionChange: (selectedIds: string[]) => void;
   onRegenerate?: (parentId: string) => void;
+  onFinalize?: () => void; // 최종 안으로 만들기 콜백
 }
 
 export default function IdeaTree({
@@ -24,6 +25,7 @@ export default function IdeaTree({
   onNodesChange,
   onSelectionChange,
   onRegenerate,
+  onFinalize,
 }: IdeaTreeProps) {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
@@ -167,13 +169,30 @@ export default function IdeaTree({
 
           return (
             <div key={level} className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 tracking-tight">
-                  {level === 2 ? "1차 아이디어" : `${level - 1}차 분기 아이디어`}
-                </h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-600 text-white">
+                    {level === 2 ? "1" : level - 1}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 tracking-tight">
+                      {level === 2 ? "1차 아이디어" : `${level - 1}차 분기 아이디어`}
+                    </h3>
+                    {level === 2 && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        키워드를 기준으로 생성된 초기 아이디어입니다
+                      </p>
+                    )}
+                    {level > 2 && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        선택된 상위 안을 기준으로 생성된 분기 아이디어입니다
+                      </p>
+                    )}
+                  </div>
+                </div>
                 {level > 2 && (
                   <p className="text-sm text-gray-500">
-                    {levelNodes.length}개의 안이 생성되었습니다
+                    총 {levelNodes.length}개
                   </p>
                 )}
               </div>
@@ -181,16 +200,19 @@ export default function IdeaTree({
               {level === 2 ? (
                 // 레벨 2: 그리드 레이아웃
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {levelNodes.map((node) => (
-                    <IdeaCard
-                      key={node.id}
-                      node={node}
-                      isSelected={selectedIds.has(node.id)}
-                      onToggle={() => toggleNodeSelection(node.id)}
-                      hasChildren={nodes.some((n) => n.parentId === node.id)}
-                      onRegenerate={() => regenerateChildren(node.id)}
-                    />
-                  ))}
+                  {levelNodes.map((node) => {
+                    const levelColor = getLevelColor(node.level);
+                    return (
+                      <IdeaCard
+                        key={node.id}
+                        node={node}
+                        isSelected={selectedIds.has(node.id)}
+                        onToggle={() => toggleNodeSelection(node.id)}
+                        hasChildren={nodes.some((n) => n.parentId === node.id)}
+                        onRegenerate={() => regenerateChildren(node.id)}
+                      />
+                    );
+                  })}
                 </div>
               ) : (
                 // 레벨 3 이상: 부모별로 그룹화하여 트리 형태
@@ -202,14 +224,37 @@ export default function IdeaTree({
                     const children = levelNodes.filter((n) => n.parentId === parentId);
                     if (!parent) return null;
 
+                    const isParentSelected = selectedIds.has(parent.id);
+                    
                     return (
                       <div key={parentId} className="space-y-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span className="font-medium">{parent.label}</span>
-                          <span>→</span>
-                          <span>{children.length}개의 하위 안</span>
+                        <div className={`flex items-center gap-3 p-3 rounded-lg border-2 ${
+                          isParentSelected 
+                            ? "bg-gray-50 border-gray-300" 
+                            : "bg-white border-gray-100"
+                        }`}>
+                          <div className={`flex items-center gap-2 ${
+                            isParentSelected ? "text-gray-900 font-semibold" : "text-gray-600"
+                          }`}>
+                            <span className="text-base">{parent.label}</span>
+                            <span className="text-gray-400">({parent.title})</span>
+                          </div>
+                          <span className="text-gray-400">→</span>
+                          <span className="text-sm text-gray-500">
+                            {children.length}개의 하위 안 생성됨
+                          </span>
+                          {isParentSelected && (
+                            <span className="ml-auto px-2 py-1 text-xs bg-blue-600 text-white rounded">
+                              선택됨
+                            </span>
+                          )}
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ml-6">
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 ml-8 border-l-2 pl-6 ${
+                          level === 3 ? "border-l-green-300" :
+                          level === 4 ? "border-l-purple-300" :
+                          level === 5 ? "border-l-orange-300" :
+                          "border-l-gray-200"
+                        }`}>
                           {children.map((node) => (
                             <IdeaCard
                               key={node.id}
@@ -230,23 +275,31 @@ export default function IdeaTree({
           );
         })}
 
-      {/* 다음 레벨 생성 버튼 */}
+      {/* 선택 후 마무리/계속 진행 선택 */}
       {canGenerateNext && (
-        <div className="bg-white rounded-lg border border-gray-100 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-base font-medium text-gray-900 mb-1">
-                선택된 아이디어를 기준으로 다음 분기를 생성하시겠습니까?
-              </p>
-              <p className="text-sm text-gray-500">
-                {selectedNodes.length}개의 아이디어가 선택되었습니다
-              </p>
-            </div>
+        <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
+          <div className="mb-4">
+            <p className="text-base font-medium text-gray-900 mb-1">
+              {selectedNodes.length}개의 아이디어가 선택되었습니다
+            </p>
+            <p className="text-sm text-gray-500">
+              여기서 마무리할까요, 아니면 계속 진행할까요?
+            </p>
+          </div>
+          <div className="flex gap-3">
+            {onFinalize && (
+              <button
+                onClick={onFinalize}
+                className="flex-1 h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              >
+                여기서 마무리하기
+              </button>
+            )}
             <button
               onClick={generateNextLevel}
-              className="px-6 h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              className="flex-1 h-12 bg-white text-gray-900 text-base font-medium rounded-md border-2 border-gray-900 hover:bg-gray-50 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
             >
-              다음 분기 생성하기
+              계속 진행하기 (다음 분기 생성)
             </button>
           </div>
         </div>
@@ -254,6 +307,11 @@ export default function IdeaTree({
     </div>
   );
 }
+
+// 레벨별 색상 매핑 (모두 gray로 통일)
+const getLevelColor = (level: number) => {
+  return { border: "border-gray-300", bg: "bg-gray-50", text: "text-gray-700" };
+};
 
 // 아이디어 카드 컴포넌트
 interface IdeaCardProps {
@@ -271,12 +329,30 @@ function IdeaCard({
   hasChildren,
   onRegenerate,
 }: IdeaCardProps) {
+  // 레벨별 색상 클래스 (선택 시 Primary 컬러 사용)
+  const getBorderClass = () => {
+    if (isSelected) {
+      return "border-blue-600";
+    }
+    return "border-gray-300";
+  };
+  
+  const getBgClass = () => {
+    if (!isSelected) return "bg-white";
+    return "bg-gray-50";
+  };
+  
+  const getTextClass = () => {
+    if (!isSelected) return "text-gray-900";
+    return "text-gray-700";
+  };
+  
   return (
     <div
-      className={`bg-white rounded-lg border-2 p-6 cursor-pointer transition-all ${
+      className={`${getBgClass()} rounded-lg border-2 p-6 cursor-pointer transition-all ${
         isSelected
-          ? "border-gray-900 shadow-md"
-          : "border-gray-100 hover:border-gray-300"
+          ? `${getBorderClass()} shadow-md`
+          : `${getBorderClass()} hover:opacity-80 opacity-60`
       }`}
       onClick={onToggle}
     >
@@ -285,7 +361,7 @@ function IdeaCard({
           <div
             className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
               isSelected
-                ? "bg-gray-900 border-gray-900"
+                ? "bg-blue-600 border-blue-600"
                 : "border-gray-300 bg-white"
             }`}
           >
@@ -305,7 +381,7 @@ function IdeaCard({
               </svg>
             )}
           </div>
-          <span className="text-sm font-semibold text-gray-900">
+          <span className={`text-sm font-semibold ${getTextClass()}`}>
             {node.label}
           </span>
         </div>

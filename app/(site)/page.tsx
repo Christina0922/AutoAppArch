@@ -1,10 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import KeywordInputForm from "@/components/KeywordInputForm";
+import ExampleFlowDemo from "@/components/ExampleFlowDemo";
 
 export default function HomePage() {
   const [showExample, setShowExample] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (keywords: string[], selectedType: "app" | "web") => {
+    // 키워드와 타입을 URL 파라미터로 전달하여 /app 페이지로 이동
+    const params = new URLSearchParams({
+      keywords: keywords.join(","),
+      type: selectedType,
+    });
+    router.push(`/app?${params.toString()}`);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -15,37 +29,15 @@ export default function HomePage() {
           <br />
           <span className="font-bold text-gray-900">앱 설계안</span>이 <span className="font-bold text-gray-900">자동</span>으로 생성됩니다
         </h1>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
-          <Link
-            href="/app"
-            className="h-14 px-10 bg-gray-900 text-white text-lg font-medium rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-            aria-label="앱 설계안 만들기 시작하기"
-          >
-            지금 시작하기
-          </Link>
-        </div>
 
-        {/* 인라인 데모 */}
+        {/* 실제 작동하는 입력 폼 */}
         <div className="max-w-3xl mx-auto">
           <div className="bg-white rounded-lg border border-gray-100 p-8 mb-6">
-            <div className="text-left mb-6">
-              <p className="text-base font-medium text-gray-700 mb-4">
-                단어(<span className="font-bold text-gray-900">키워드</span>) 몇 개만 입력하세요
-              </p>
-              <div className="flex gap-3 mb-4">
-                <div className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-md text-base text-gray-400">
-                  예: 영어, 공부
-                </div>
-              </div>
-              <button
-                className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-                aria-label="샘플 데모: 앱 설계안 자동 생성하기"
-                disabled
-                aria-disabled="true"
-              >
-                앱 설계안 자동 생성하기
-              </button>
-            </div>
+            <KeywordInputForm
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              loadingMessage={loadingMessage}
+            />
           </div>
           
           {/* 예시 보기 토글 */}
@@ -53,11 +45,11 @@ export default function HomePage() {
             <button
               onClick={() => setShowExample(!showExample)}
               className="w-full text-left mb-4 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 rounded-md p-2 -m-2"
-              aria-label={showExample ? "샘플 예시 숨기기" : "샘플 예시 보기"}
+              aria-label={showExample ? "예시 숨기기" : "예시 보기"}
               aria-expanded={showExample}
             >
               <span className="text-base font-medium text-gray-900">
-                {showExample ? "예시 숨기기" : "샘플 미리보기"}
+                {showExample ? "예시 숨기기" : "프로세스 예시 보기"}
               </span>
               <span className="text-gray-400" aria-hidden="true">
                 {showExample ? "▲" : "▼"}
@@ -67,31 +59,16 @@ export default function HomePage() {
               <div className="text-left">
                 <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-xs font-semibold text-yellow-800 uppercase tracking-wider">
-                    샘플
+                    데모
                   </p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  자동 생성된 <span className="text-gray-600">앱 설계안</span>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  마인드맵 프로세스 <span className="text-gray-600">데모</span>
                 </h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  입력 <span className="font-medium text-gray-700">키워드</span>: 영어, 공부
+                  아래 예시를 통해 <span className="font-medium text-gray-700">선택 → 분기 생성 → 선택 → 분기 생성</span> 프로세스를 체험해보세요.
                 </p>
-                <div className="space-y-4">
-                  <div className="bg-gray-50 rounded-md p-4 border border-gray-100">
-                    <h4 className="text-sm font-bold text-gray-900 mb-2">[ 타깃 사용자 ]</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• 아이디어는 있으나 요구사항을 못 쓰는 사람</li>
-                      <li>• 스타트업 창업 초기 기획자</li>
-                      <li>• 학습 앱을 만들고 싶은 교육자</li>
-                    </ul>
-                  </div>
-                  <div className="bg-gray-50 rounded-md p-4 border border-gray-100">
-                    <h4 className="text-sm font-bold text-gray-900 mb-2">[ 핵심 행동 ]</h4>
-                    <p className="text-sm text-gray-600">
-                      영어 학습 관련 기능을 통해 사용자가 주요 목표를 달성하는 행동
-                    </p>
-                  </div>
-                </div>
+                <ExampleFlowDemo />
               </div>
             )}
           </div>

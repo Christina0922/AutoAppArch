@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Link from "next/link";
+// 테스트 중: 요금제 링크 숨김
+// import Link from "next/link";
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -164,16 +165,17 @@ export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {
         </div>
 
         <div className="flex gap-3">
-          <Link
+          {/* 테스트 중: 요금제 보기 버튼 숨김 */}
+          {/* <Link
             href="/pricing"
             className="flex-1 h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight flex items-center justify-center"
           >
             요금제 보기
-          </Link>
+          </Link> */}
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="px-6 h-12 text-base text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors tracking-tight"
+            className="w-full h-12 text-base text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors tracking-tight"
             aria-label="모달 닫기"
           >
             닫기

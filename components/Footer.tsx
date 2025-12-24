@@ -49,14 +49,15 @@ export default function Footer() {
                   소개
                 </Link>
               </li>
-              <li>
+              {/* 테스트 중: 요금제 링크 숨김 */}
+              {/* <li>
                 <Link
                   href="/pricing"
                   className="text-base text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   요금제
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           <div>
