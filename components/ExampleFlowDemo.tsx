@@ -90,7 +90,10 @@ export default function ExampleFlowDemo() {
     }
 
     setNodes([...updatedNodes, ...newNodes]);
-    setExpandedLevels(new Set([...expandedLevels, nextLevel]));
+    // Set을 펼치지 말고, Set 복사 후 add 사용
+    const nextExpanded = new Set(expandedLevels);
+    nextExpanded.add(nextLevel);
+    setExpandedLevels(nextExpanded);
   };
 
   // 레벨별로 노드 그룹화
@@ -382,7 +385,11 @@ export default function ExampleFlowDemo() {
             <button
               onClick={() => {
                 setShowAllLevels(true);
-                setExpandedLevels(new Set([...expandedLevels, 3, 4]));
+                // Set을 펼치지 말고, Set 복사 후 add 사용
+                const nextExpanded = new Set(expandedLevels);
+                nextExpanded.add(3);
+                nextExpanded.add(4);
+                setExpandedLevels(nextExpanded);
                 // 선택된 1차 아이디어들에 대해 2차 생성
                 nodesByLevel[2]
                   ?.filter((n) => selectedIds.has(n.id))
