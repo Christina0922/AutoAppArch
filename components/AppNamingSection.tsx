@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AppNaming } from "@/lib/types";
+import { AppNaming, AppNamingCandidate } from "@/lib/types";
 
 interface AppNamingSectionProps {
   appNaming: AppNaming;
@@ -117,7 +117,7 @@ export default function AppNamingSection({
 
             {expandedGroups.has(groupName) && (
               <div className="p-6 space-y-4">
-                {candidates.map((candidate, idx) => (
+                {candidates.map((candidate: AppNamingCandidate, idx: number) => (
                   <div
                     key={idx}
                     className="bg-white rounded-md p-4 border border-gray-200"
