@@ -89,7 +89,7 @@ export default function AppNamingSection({
       </h2>
 
       <div className="space-y-6">
-        {Object.entries(appNaming.premium).map(([groupName, candidates]) => (
+        {(Object.entries(appNaming.premium) as [string, AppNamingCandidate[]][]).map(([groupName, candidates]) => (
           <div key={groupName} className="border border-gray-200 rounded-md">
             <button
               onClick={() => toggleGroup(groupName)}
