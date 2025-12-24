@@ -89,7 +89,9 @@ export default function AppNamingSection({
       </h2>
 
       <div className="space-y-6">
-        {(Object.entries(appNaming.premium) as [string, AppNamingCandidate[]][]).map(([groupName, candidates]) => (
+        {(Object.keys(appNaming.premium) as Array<keyof typeof appNaming.premium>).map((groupName) => {
+          const candidates: AppNamingCandidate[] = appNaming.premium[groupName];
+          return (
           <div key={groupName} className="border border-gray-200 rounded-md">
             <button
               onClick={() => toggleGroup(groupName)}
@@ -143,7 +145,8 @@ export default function AppNamingSection({
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <p className="text-xs text-gray-500 text-center mt-6">
