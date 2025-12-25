@@ -34,13 +34,13 @@ export default function PlanPreviewCard({
         </div>
 
         <div className="mb-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-3 tracking-tight">{result.title}</h3>
-          <p className="text-base text-gray-500 leading-relaxed">{result.tagline}</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3 tracking-tight">{(result.title as string) ?? ""}</h3>
+          <p className="text-base text-gray-500 leading-relaxed">{(result.tagline as string) ?? ""}</p>
         </div>
 
         <div className="flex-1 flex flex-col space-y-6">
           {/* [사용자 관점] 섹션만 미리보기로 표시 */}
-          {result.sectionsForRendering
+          {((result.sectionsForRendering as Array<{ heading: string; bullets: string[] }>) || [])
             .filter((s) => s.heading.startsWith("[사용자 관점]"))
             .slice(0, 2)
             .map((section, idx) => {
@@ -80,13 +80,13 @@ export default function PlanPreviewCard({
   return (
     <div className="h-full flex flex-col bg-white rounded-lg border border-gray-100 p-8">
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-3 tracking-tight">{result.title}</h2>
-        <p className="text-base text-gray-500 leading-relaxed">{result.tagline}</p>
+         <h2 className="text-2xl font-semibold text-gray-900 mb-3 tracking-tight">{(result.title as string) ?? ""}</h2>
+         <p className="text-base text-gray-500 leading-relaxed">{(result.tagline as string) ?? ""}</p>
       </div>
 
       <div className="flex-1 flex flex-col space-y-6 mb-8">
         {/* [사용자 관점] 섹션만 미리보기로 표시 */}
-        {result.sectionsForRendering
+        {((result.sectionsForRendering as Array<{ heading: string; bullets: string[] }>) || [])
           .filter((s) => s.heading.startsWith("[사용자 관점]"))
           .slice(0, 2)
           .map((section, idx) => {

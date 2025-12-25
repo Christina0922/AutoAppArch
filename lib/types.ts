@@ -61,3 +61,24 @@ export type PlanResult = {
   raw?: unknown;
   [key: string]: unknown;
 };
+
+export type AppNamingCandidate = {
+  name: string;
+  reason: string;
+  tagline: string;
+};
+
+export type AppNamingPreview = {
+  name: string;
+  tagline: string;
+  reason: string;
+};
+
+export type AppNaming = {
+  preview: AppNamingPreview;
+  premium: {
+    literal: AppNamingCandidate[];
+    brand: AppNamingCandidate[];
+    short: AppNamingCandidate[];
+  };
+};

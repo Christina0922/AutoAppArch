@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { PlanResult } from "@/lib/types";
 import AppNamingSection from "./AppNamingSection";
 
@@ -12,14 +13,43 @@ interface PlanDetailProps {
   finalSelected?: boolean; // 최종 확정 여부
 }
 
-export default function PlanDetail({
-  result,
-  keywords = [],
-  showProgress = false,
-  isPremium = false,
-  onShowPaywall = () => {},
-  finalSelected = false,
-}: PlanDetailProps) {
+function ProgressSection(): React.ReactElement {
+  return (
+    <div className="bg-white rounded-lg border border-gray-100 p-8">
+      <p className="text-base text-gray-600 mb-6 leading-relaxed">
+        현재 이 설계안은 <strong className="text-gray-900 font-medium">'기본 구조 단계'</strong>에 있습니다.
+      </p>
+      <div>
+        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+          설계 진행 단계
+        </h3>
+        <div className="space-y-4">
+          <div className="flex items-center">
+            <span className="text-gray-900 mr-4 text-base font-medium">✓</span>
+            <span className="text-base text-gray-600">① 아이디어 구조화</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-gray-900 mr-4 text-base font-medium">✓</span>
+            <span className="text-base text-gray-600">② 핵심 기능 정리</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-gray-300 mr-4 text-base">◻</span>
+            <span className="text-base text-gray-400">③ 화면 흐름 설계</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-gray-300 mr-4 text-base">◻</span>
+            <span className="text-base text-gray-400">④ 구현 준비 단계</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PlanDetail(props: PlanDetailProps): JSX.Element {
+  const { result, keywords = [], showProgress = false, isPremium = false, onShowPaywall = () => {}, finalSelected = false } = props;
+  const shouldShowProgress: boolean = Boolean(showProgress as boolean);
+  
   return (
     <div className="space-y-6">
       {/* 상단 안내 */}
@@ -42,48 +72,20 @@ export default function PlanDetail({
       </div>
 
       {/* 진척 단계 표시 */}
-      {showProgress && (
-        <div className="bg-white rounded-lg border border-gray-100 p-8">
-          <p className="text-base text-gray-600 mb-6 leading-relaxed">
-            현재 이 설계안은 <strong className="text-gray-900 font-medium">'기본 구조 단계'</strong>에 있습니다.
-          </p>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-              설계 진행 단계
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <span className="text-gray-900 mr-4 text-base font-medium">✓</span>
-                <span className="text-base text-gray-600">① 아이디어 구조화</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-900 mr-4 text-base font-medium">✓</span>
-                <span className="text-base text-gray-600">② 핵심 기능 정리</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-300 mr-4 text-base">◻</span>
-                <span className="text-base text-gray-400">③ 화면 흐름 설계</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-300 mr-4 text-base">◻</span>
-                <span className="text-base text-gray-400">④ 구현 준비 단계</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {shouldShowProgress ? <ProgressSection /> : (null as any)}
 
       <div className="bg-white rounded-lg border border-gray-100 p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-3 tracking-tight">{result.title}</h2>
-        <p className="text-base text-gray-500 leading-relaxed">{result.tagline}</p>
+        <h2 className="text-xl font-semibold text-gray-900 mb-3 tracking-tight">{(result.title as string) ?? ""}</h2>
+        <p className="text-base text-gray-500 leading-relaxed">{(result.tagline as string) ?? ""}</p>
       </div>
 
       {/* [사용자 관점]과 [개발자 관점] 섹션 분리 */}
       {(() => {
-        const userSections = result.sectionsForRendering.filter((s) =>
+        const sectionsForRendering = (result.sectionsForRendering as Array<{ heading: string; bullets: string[] }>) || [];
+        const userSections = sectionsForRendering.filter((s) =>
           s.heading.startsWith("[사용자 관점]")
         );
-        const developerSections = result.sectionsForRendering.filter((s) =>
+        const developerSections = sectionsForRendering.filter((s) =>
           s.heading.startsWith("[개발자 관점]")
         );
 
@@ -169,7 +171,7 @@ export default function PlanDetail({
       {/* 앱 이름 추천 섹션 - 최종 확정 후에만 표시 */}
       {finalSelected && result.appNaming && (
         <AppNamingSection
-          appNaming={result.appNaming}
+          appNaming={result.appNaming as any}
           isPremium={isPremium}
           onShowPaywall={onShowPaywall}
         />

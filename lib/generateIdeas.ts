@@ -164,7 +164,7 @@ export function generateNextLevelIdeas(
   const keywordStr = keywords.join(" + ");
   const isApp = selectedType === "app";
   const typeStr = isApp ? "앱" : "웹 서비스";
-  const level = parentNode.level + 1;
+  const level = (parentNode.level as number) + 1;
 
   // 레벨별 라벨 패턴
   const labelPatterns: { [key: number]: string[] } = {
@@ -179,27 +179,27 @@ export function generateNextLevelIdeas(
   const childIdeas = [
     {
       label: labels[0],
-      title: `${parentNode.label}의 기본 구성`,
+      title: `${(parentNode.label as string) ?? ""}의 기본 구성`,
       summary: `${parentNode.title}의 핵심 기능을 구현하는 기본적인 접근 방식입니다.`,
     },
     {
       label: labels[1],
-      title: `${parentNode.label}의 확장 버전`,
+      title: `${(parentNode.label as string) ?? ""}의 확장 버전`,
       summary: `${parentNode.title}에 추가 기능과 고급 옵션을 포함한 확장 구성입니다.`,
     },
     {
       label: labels[2],
-      title: `${parentNode.label}의 최적화 버전`,
+      title: `${(parentNode.label as string) ?? ""}의 최적화 버전`,
       summary: `${parentNode.title}을 성능과 효율성 측면에서 최적화한 구성입니다.`,
     },
     {
       label: labels[3],
-      title: `${parentNode.label}의 혁신적 접근`,
+      title: `${(parentNode.label as string) ?? ""}의 혁신적 접근`,
       summary: `${parentNode.title}을 독창적이고 차별화된 방식으로 구현한 구성입니다.`,
     },
     {
       label: labels[4],
-      title: `${parentNode.label}의 실용적 구현`,
+      title: `${(parentNode.label as string) ?? ""}의 실용적 구현`,
       summary: `${parentNode.title}을 실제 사용 시나리오에 맞춰 실용적으로 구성한 버전입니다.`,
     },
   ];
@@ -213,7 +213,7 @@ export function generateNextLevelIdeas(
     summary: idea.summary,
     meta: {
       prompt: `${parentNode.title}의 하위 아이디어: ${idea.label}`,
-      parentTitle: parentNode.title,
+      parentTitle: parentNode.title as string,
     },
   }));
 }

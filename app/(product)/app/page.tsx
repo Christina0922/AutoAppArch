@@ -210,7 +210,7 @@ export default function AppPage() {
 
   // 최종 후보 선택 후 주제 생성
   const handleGenerateTopic = async () => {
-    if (!session) return;
+    if (!session || !session.nodes || !session.selectedNodeIds) return;
     
     setIsFinalized(true);
     setFinalizationProgress(0);
@@ -218,12 +218,12 @@ export default function AppPage() {
     
     // 선택된 최말단 노드들 찾기
     const selectedNodes = session.nodes.filter((n) => 
-      session.selectedNodeIds.includes(n.id)
+      session.selectedNodeIds!.includes(n.id)
     );
     const maxLevel = selectedNodes.length > 0 
-      ? Math.max(...selectedNodes.map((n) => n.level))
+      ? Math.max(...selectedNodes.map((n) => (n.level as number) ?? 0))
       : 0;
-    const finalCandidates = selectedNodes.filter((n) => n.level === maxLevel);
+    const finalCandidates = selectedNodes.filter((n) => (n.level as number) === maxLevel);
     
     // 진행률 업데이트 (30%)
     setFinalizationProgress(30);
@@ -254,7 +254,7 @@ export default function AppPage() {
 
   // 주제 확인 후 최종 설계안 생성 및 저장
   const handleConfirmTopic = async () => {
-    if (!session || !generatedTopic) return;
+    if (!session || !generatedTopic || !session.nodes || !session.selectedNodeIds) return;
     
     setIsFinalized(true);
     setFinalizationProgress(0);
@@ -262,12 +262,12 @@ export default function AppPage() {
     
     // 선택된 최말단 노드들 찾기
     const selectedNodes = session.nodes.filter((n) => 
-      session.selectedNodeIds.includes(n.id)
+      session.selectedNodeIds!.includes(n.id)
     );
     const maxLevel = selectedNodes.length > 0 
-      ? Math.max(...selectedNodes.map((n) => n.level))
+      ? Math.max(...selectedNodes.map((n) => (n.level as number) ?? 0))
       : 0;
-    const finalCandidates = selectedNodes.filter((n) => n.level === maxLevel);
+    const finalCandidates = selectedNodes.filter((n) => (n.level as number) === maxLevel);
     
     // 진행률 업데이트 (30%)
     setFinalizationProgress(30);
@@ -299,7 +299,7 @@ export default function AppPage() {
     const appNaming = generateAppNaming(
       session.keywords ?? [],
       normalizeAppType(session.selectedType),
-      finalCandidates.map((n) => ({ title: n.title, summary: n.summary }))
+      finalCandidates.map((n) => ({ title: n.title, summary: (n.summary as string) ?? "" }))
     );
     planResult.appNaming = appNaming;
     
@@ -342,15 +342,15 @@ export default function AppPage() {
 
   // 최종 후보 노드들 찾기 (최하위 레벨의 선택된 노드들)
   const getFinalCandidates = (): Node[] => {
-    if (!session || session.selectedNodeIds.length === 0) return [];
+    if (!session || !session.nodes || !session.selectedNodeIds || session.selectedNodeIds.length === 0) return [];
     
     const selectedNodes = session.nodes.filter((n) =>
-      session.selectedNodeIds.includes(n.id)
+      session.selectedNodeIds!.includes(n.id)
     );
     if (selectedNodes.length === 0) return [];
 
-    const maxLevel = Math.max(...selectedNodes.map((n) => n.level));
-    return selectedNodes.filter((n) => n.level === maxLevel);
+    const maxLevel = Math.max(...selectedNodes.map((n) => (n.level as number) ?? 0));
+    return selectedNodes.filter((n) => (n.level as number) === maxLevel);
   };
 
   const finalCandidates = getFinalCandidates();
@@ -375,7 +375,7 @@ export default function AppPage() {
                 마인드맵 아이디어 생성
               </h2>
               <p className="text-sm text-gray-500 mb-4">
-                키워드: <span className="font-medium text-gray-700">{session.keywords.join(", ")}</span>
+                키워드: <span className="font-medium text-gray-700">{(session.keywords || []).join(", ")}</span>
                 {session.selectedType && (
                   <span className="ml-3">
                     유형: <span className="font-medium text-gray-700">
@@ -394,7 +394,7 @@ export default function AppPage() {
           </div>
 
           {/* 1차 아이디어 재생성 버튼 */}
-          {session.nodes.some((n) => n.level === 2) && (
+          {session.nodes && session.nodes.some((n) => (n.level as number) === 2) && (
             <div className="bg-white rounded-lg border border-gray-100 p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -420,9 +420,9 @@ export default function AppPage() {
           {!showFinalPlan && (
             <IdeaTree
               sessionId={session.id}
-              initialNodes={session.nodes}
-              initialSelectedIds={session.selectedNodeIds}
-              keywords={session.keywords}
+              initialNodes={session.nodes || []}
+              initialSelectedIds={session.selectedNodeIds || []}
+              keywords={session.keywords || []}
               selectedType={normalizeAppType(session.selectedType)}
               onNodesChange={handleNodesChange}
               onSelectionChange={handleSelectionChange}
@@ -497,13 +497,13 @@ export default function AppPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm font-semibold text-gray-900">
-                                {node.label}
+                                {(node.label as string) ?? ""}
                               </span>
                             </div>
                             <h4 className="text-base font-semibold text-gray-900 mb-1">
                               {node.title}
                             </h4>
-                            <p className="text-sm text-gray-600">{node.summary}</p>
+                            <p className="text-sm text-gray-600">{(node.summary as string) ?? ""}</p>
                           </div>
                         </div>
                       </div>
@@ -519,22 +519,22 @@ export default function AppPage() {
                     <button
                       onClick={() => {
                         // 테스트 중: 선택된 노드들의 하위 분기 재생성
-                        if (!session) return;
+                        if (!session || !session.nodes || !session.selectedNodeIds) return;
                         
                         const selectedNodes = session.nodes.filter((n) => 
-                          session.selectedNodeIds.includes(n.id)
+                          session.selectedNodeIds!.includes(n.id)
                         );
                         if (selectedNodes.length === 0) return;
                         
-                        const maxLevel = Math.max(...selectedNodes.map((n) => n.level));
-                        const leafNodes = selectedNodes.filter((n) => n.level === maxLevel);
+                        const maxLevel = Math.max(...selectedNodes.map((n) => (n.level as number) ?? 0));
+                        const leafNodes = selectedNodes.filter((n) => (n.level as number) === maxLevel);
                         
                         // 각 최말단 노드의 부모에 대해 재생성
                         leafNodes.forEach((leafNode) => {
                           if (leafNode.parentId) {
                             // 재생성 로직은 IdeaTree 컴포넌트에서 처리되므로
                             // 여기서는 선택을 해제하여 다시 선택할 수 있도록 함
-                            const newSelectedIds = session.selectedNodeIds.filter(
+                            const newSelectedIds = (session.selectedNodeIds || []).filter(
                               (id) => id !== leafNode.id
                             );
                             updateSession(
@@ -686,7 +686,7 @@ export default function AppPage() {
               </div>
               <PlanDetail 
                 result={finalPlanResult} 
-                keywords={session.keywords}
+                keywords={session.keywords || []}
                 showProgress={true}
                 isPremium={isPro || shouldBypassPaywall()}
                 onShowPaywall={() => setShowPaywall(true)}

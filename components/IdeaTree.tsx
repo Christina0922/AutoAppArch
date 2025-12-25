@@ -61,7 +61,7 @@ export default function IdeaTree({
       // 하위 노드들도 모두 선택 해제
       const removeChildren = (id: string) => {
         nodes
-          .filter((n) => n.parentId === id)
+          .filter((n) => (n.parentId as string | null) === id)
           .forEach((child) => {
             newSelected.delete(child.id);
             removeChildren(child.id);
@@ -83,7 +83,7 @@ export default function IdeaTree({
 
     selectedNodes.forEach((parent) => {
       // 이미 자식이 있으면 생성하지 않음 (재생성은 별도 버튼으로)
-      const hasChildren = nodes.some((n) => n.parentId === parent.id);
+      const hasChildren = nodes.some((n) => (n.parentId as string | null) === parent.id);
       if (hasChildren) return;
 
       const children = generateNextLevelIdeas(
@@ -109,7 +109,7 @@ export default function IdeaTree({
     const removeDescendants = (id: string): string[] => {
       const toRemove: string[] = [];
       nodes.forEach((n) => {
-        if (n.parentId === id) {
+        if ((n.parentId as string | null) === id) {
           toRemove.push(n.id);
           toRemove.push(...removeDescendants(n.id));
         }
@@ -135,10 +135,11 @@ export default function IdeaTree({
 
   // 레벨별로 노드 그룹화
   const nodesByLevel = nodes.reduce((acc, node) => {
-    if (!acc[node.level]) {
-      acc[node.level] = [];
+    const level = node.level as number;
+    if (!acc[level]) {
+      acc[level] = [];
     }
-    acc[node.level].push(node);
+    acc[level].push(node);
     return acc;
   }, {} as Record<number, Node[]>);
 
@@ -182,9 +183,9 @@ export default function IdeaTree({
 
   const finalCount = finalIds.length;
   const finalSelectedNodes = nodes.filter((n) => finalIds.includes(n.id));
-  const maxSelectedLevel = finalSelectedNodes.length > 0
-    ? Math.max(...finalSelectedNodes.map((n) => n.level))
-    : 0;
+    const maxSelectedLevel = finalSelectedNodes.length > 0
+      ? Math.max(...finalSelectedNodes.map((n) => (n.level as number) ?? 0))
+      : 0;
 
   // 다음 레벨 생성 가능 여부 (최종 선택된 노드들이 최대 레벨에 있을 때)
   const canGenerateNext = finalCount > 0 && maxSelectedLevel === maxLevel;
@@ -198,7 +199,7 @@ export default function IdeaTree({
         .map((level) => {
           const levelNodes = nodesByLevel[level];
           const parentNodes = level === 2 ? [] : levelNodes.map((n) => {
-            const parent = nodes.find((p) => p.id === n.parentId);
+            const parent = nodes.find((p) => p.id === (n.parentId as string | null));
             return parent ? { node: n, parent } : null;
           }).filter((item): item is { node: Node; parent: Node } => item !== null);
 
@@ -236,14 +237,14 @@ export default function IdeaTree({
                 // 레벨 2: 그리드 레이아웃
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {levelNodes.map((node) => {
-                    const levelColor = getLevelColor(node.level);
+                    const levelColor = getLevelColor(node.level as number);
                     return (
                       <IdeaCard
                         key={node.id}
                         node={node}
                         isSelected={selectedIds.has(node.id)}
                         onToggle={() => toggleNodeSelection(node.id)}
-                        hasChildren={nodes.some((n) => n.parentId === node.id)}
+                        hasChildren={nodes.some((n) => (n.parentId as string | null) === node.id)}
                         onRegenerate={() => regenerateChildren(node.id)}
                       />
                     );
@@ -253,10 +254,10 @@ export default function IdeaTree({
                 // 레벨 3 이상: 부모별로 그룹화하여 트리 형태
                 <div className="space-y-8">
                   {Array.from(
-                    new Set(levelNodes.map((n) => n.parentId))
+                    new Set(levelNodes.map((n) => n.parentId as string | null).filter((id): id is string => id !== null))
                   ).map((parentId) => {
                     const parent = nodes.find((p) => p.id === parentId);
-                    const children = levelNodes.filter((n) => n.parentId === parentId);
+                    const children = levelNodes.filter((n) => (n.parentId as string | null) === parentId);
                     if (!parent) return null;
 
                     const isParentSelected = selectedIds.has(parent.id);
@@ -271,7 +272,7 @@ export default function IdeaTree({
                           <div className={`flex items-center gap-2 ${
                             isParentSelected ? "text-gray-900 font-semibold" : "text-gray-600"
                           }`}>
-                            <span className="text-base">{parent.label}</span>
+                            <span className="text-base">{(parent.label as string) ?? ""}</span>
                             <span className="text-gray-400">({parent.title})</span>
                           </div>
                           <span className="text-gray-400">→</span>
@@ -296,7 +297,7 @@ export default function IdeaTree({
                               node={node}
                               isSelected={selectedIds.has(node.id)}
                               onToggle={() => toggleNodeSelection(node.id)}
-                              hasChildren={nodes.some((n) => n.parentId === node.id)}
+                              hasChildren={nodes.some((n) => (n.parentId as string | null) === node.id)}
                               onRegenerate={() => regenerateChildren(node.id)}
                             />
                           ))}
@@ -417,7 +418,7 @@ function IdeaCard({
             )}
           </div>
           <span className={`text-sm font-semibold ${getTextClass()}`}>
-            {node.label}
+            {(node.label as string) ?? ""}
           </span>
         </div>
         {hasChildren && onRegenerate && (
@@ -436,7 +437,7 @@ function IdeaCard({
       <h4 className="text-base font-semibold text-gray-900 mb-2 tracking-tight">
         {node.title}
       </h4>
-      <p className="text-sm text-gray-600 leading-relaxed">{node.summary}</p>
+      <p className="text-sm text-gray-600 leading-relaxed">{(node.summary as string) ?? ""}</p>
     </div>
   );
 }

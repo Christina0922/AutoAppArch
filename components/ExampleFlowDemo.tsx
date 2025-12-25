@@ -15,8 +15,8 @@ export default function ExampleFlowDemo() {
     return FIRST_LEVEL_IDEAS.map((idea, idx) => ({
       ...idea,
       id: `level2-${idx + 1}`,
-      parentId: null,
-    }));
+      parentId: null as string | null,
+    } as unknown as Node));
   });
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -32,7 +32,7 @@ export default function ExampleFlowDemo() {
       // 하위 노드들도 모두 선택 해제
       const removeChildren = (id: string) => {
         nodes
-          .filter((n) => n.parentId === id)
+          .filter((n) => (n.parentId as string | null) === id)
           .forEach((child) => {
             newSelected.delete(child.id);
             removeChildren(child.id);
@@ -50,35 +50,35 @@ export default function ExampleFlowDemo() {
     const parent = nodes.find((n) => n.id === parentId);
     if (!parent) return;
 
-    const nextLevel = parent.level + 1;
-    const existingChildren = nodes.filter((n) => n.parentId === parentId);
+    const nextLevel = (parent.level as number) + 1;
+    const existingChildren = nodes.filter((n) => (n.parentId as string | null) === parentId);
     
     // 재생성이 아니고 이미 자식이 있으면 생성하지 않음
     if (!regenerate && existingChildren.length > 0) return;
 
     // 재생성인 경우 기존 자식 노드 제거
     let updatedNodes = regenerate 
-      ? nodes.filter((n) => n.parentId !== parentId)
+      ? nodes.filter((n) => (n.parentId as string | null) !== parentId)
       : [...nodes];
 
     let newNodes: Node[] = [];
     
     if (nextLevel === 3) {
       // 2차 생성
-      const templates = generateSecondLevel(parent.label);
+      const templates = generateSecondLevel(parent.label as string);
       newNodes = templates.map((template, idx) => ({
         ...template,
         id: regenerate 
           ? `level3-${parentId}-${idx}-${Date.now()}` 
           : `level3-${parentId}-${idx}`,
         parentId: parentId,
-      }));
+      } as unknown as Node));
     } else if (nextLevel === 4) {
       // 3차 생성
-      const grandParent = nodes.find((n) => n.id === parent.parentId);
+      const grandParent = nodes.find((n) => n.id === (parent.parentId as string | null));
       const templates = generateThirdLevel(
-        parent.label,
-        grandParent?.label || ""
+        parent.label as string,
+        (grandParent?.label as string) || ""
       );
       newNodes = templates.map((template, idx) => ({
         ...template,
@@ -86,7 +86,7 @@ export default function ExampleFlowDemo() {
           ? `level4-${parentId}-${idx}-${Date.now()}` 
           : `level4-${parentId}-${idx}`,
         parentId: parentId,
-      }));
+      } as unknown as Node));
     }
 
     setNodes([...updatedNodes, ...newNodes]);
@@ -99,10 +99,11 @@ export default function ExampleFlowDemo() {
   // 레벨별로 노드 그룹화
   const nodesByLevel = useMemo(() => {
     return nodes.reduce((acc, node) => {
-      if (!acc[node.level]) {
-        acc[node.level] = [];
+      const level = node.level as number;
+      if (!acc[level]) {
+        acc[level] = [];
       }
-      acc[node.level].push(node);
+      acc[level].push(node);
       return acc;
     }, {} as Record<number, Node[]>);
   }, [nodes]);
@@ -112,17 +113,17 @@ export default function ExampleFlowDemo() {
     const selectedNodes = nodes.filter((n) => selectedIds.has(n.id));
     if (selectedNodes.length === 0) return [];
 
-    const maxLevel = Math.max(...selectedNodes.map((n) => n.level));
-    const candidates = selectedNodes.filter((n) => n.level === maxLevel);
+    const maxLevel = Math.max(...selectedNodes.map((n) => (n.level as number) ?? 0));
+    const candidates = selectedNodes.filter((n) => (n.level as number) === maxLevel);
 
     // 각 후보의 경로 생성
     return candidates.map((candidate) => {
-      const path: string[] = [candidate.label];
+      const path: string[] = [candidate.label as string];
       let current = candidate;
       while (current.parentId) {
-        const parent = nodes.find((n) => n.id === current.parentId);
+        const parent = nodes.find((n) => n.id === (current.parentId as string | null));
         if (parent) {
-          path.unshift(parent.label);
+          path.unshift(parent.label as string);
           current = parent;
         } else {
           break;
@@ -174,11 +175,12 @@ export default function ExampleFlowDemo() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-max sm:min-w-0">
               {levelNodes.map((node) => {
                 const isSelected = selectedIds.has(node.id);
-                const hasChildren = nodes.some((n) => n.parentId === node.id);
+                const hasChildren = nodes.some((n) => (n.parentId as string | null) === node.id);
                 const canGenerateNext = isSelected && !hasChildren && level < 4;
 
                 const isCardExpanded = expandedCards.has(node.id);
-                const hasDetails = node.meta?.features && node.meta.features.length > 0;
+                const features = (node.meta?.features as string[] | undefined) || [];
+                const hasDetails = features.length > 0;
                 const showDetails = isCardExpanded || !hasDetails; // 상세 정보가 없으면 항상 표시
 
                 return (
@@ -220,7 +222,7 @@ export default function ExampleFlowDemo() {
                               )}
                             </div>
                             <span className="text-sm font-semibold text-gray-900">
-                              {node.label}
+                              {(node.label as string) ?? ""}
                             </span>
                           </div>
                         </div>
@@ -229,7 +231,7 @@ export default function ExampleFlowDemo() {
                         </h4>
                         {/* 한 줄 컨셉 */}
                         <p className="text-xs text-gray-600 leading-relaxed mb-3">
-                          {node.summary}
+                          {(node.summary as string) ?? ""}
                         </p>
                       </div>
 
@@ -239,13 +241,13 @@ export default function ExampleFlowDemo() {
                           {showDetails ? (
                             <>
                               {/* 핵심 기능 */}
-                              {node.meta?.features && node.meta.features.length > 0 && (
+                              {hasDetails && (
                                 <div className="mb-3">
                                   <p className="text-xs font-semibold text-gray-700 mb-1.5">
                                     핵심 기능
                                   </p>
                                   <ul className="space-y-1">
-                                    {node.meta.features.map((feature, idx) => (
+                                    {features.map((feature, idx) => (
                                       <li key={idx} className="text-xs text-gray-600 flex items-start">
                                         <span className="text-gray-400 mr-1.5 mt-0.5">•</span>
                                         <span>{feature}</span>
@@ -255,13 +257,13 @@ export default function ExampleFlowDemo() {
                                 </div>
                               )}
                               {/* 사용자 가치/차별점 */}
-                              {node.meta?.value && (
+                              {(node.meta?.value as string | undefined) && (
                                 <div className="bg-gray-50 rounded p-2">
                                   <p className="text-xs font-semibold text-gray-700 mb-1">
                                     차별점
                                   </p>
                                   <p className="text-xs text-gray-600 leading-relaxed">
-                                    {node.meta.value}
+                                    {(node.meta?.value as string) ?? ""}
                                   </p>
                                 </div>
                               )}
@@ -294,13 +296,13 @@ export default function ExampleFlowDemo() {
                           )}
                           {/* 데스크톱에서는 항상 표시 */}
                           <div className="hidden sm:block">
-                            {node.meta?.features && node.meta.features.length > 0 && (
+                            {hasDetails && (
                               <div className="mb-3">
                                 <p className="text-xs font-semibold text-gray-700 mb-1.5">
                                   핵심 기능
                                 </p>
                                 <ul className="space-y-1">
-                                  {node.meta.features.map((feature, idx) => (
+                                  {features.map((feature, idx) => (
                                     <li key={idx} className="text-xs text-gray-600 flex items-start">
                                       <span className="text-gray-400 mr-1.5 mt-0.5">•</span>
                                       <span>{feature}</span>
@@ -309,13 +311,13 @@ export default function ExampleFlowDemo() {
                                 </ul>
                               </div>
                             )}
-                            {node.meta?.value && (
+                            {(node.meta?.value as string | undefined) && (
                               <div className="bg-gray-50 rounded p-2">
                                 <p className="text-xs font-semibold text-gray-700 mb-1">
                                   차별점
                                 </p>
                                 <p className="text-xs text-gray-600 leading-relaxed">
-                                  {node.meta.value}
+                                  {(node.meta?.value as string) ?? ""}
                                 </p>
                               </div>
                             )}
@@ -394,7 +396,7 @@ export default function ExampleFlowDemo() {
                 nodesByLevel[2]
                   ?.filter((n) => selectedIds.has(n.id))
                   .forEach((node) => {
-                    if (!nodes.some((n) => n.parentId === node.id)) {
+                    if (!nodes.some((n) => (n.parentId as string | null) === node.id)) {
                       generateNextLevel(node.id);
                     }
                   });
@@ -434,7 +436,7 @@ export default function ExampleFlowDemo() {
                       {candidate.node.title}
                     </h4>
                     <p className="text-xs text-gray-600">
-                      {candidate.node.summary}
+                      {(candidate.node.summary as string) ?? ""}
                     </p>
                   </div>
                 </div>
@@ -458,13 +460,14 @@ export default function ExampleFlowDemo() {
               onClick={() => {
                 // 선택된 최말단 노드들의 부모 노드들에 대해 재생성
                 const selectedNodes = nodes.filter((n) => selectedIds.has(n.id));
-                const maxLevel = Math.max(...selectedNodes.map((n) => n.level));
-                const leafNodes = selectedNodes.filter((n) => n.level === maxLevel);
+                const maxLevel = Math.max(...selectedNodes.map((n) => (n.level as number) ?? 0));
+                const leafNodes = selectedNodes.filter((n) => (n.level as number) === maxLevel);
                 
                 // 각 최말단 노드의 부모에 대해 재생성
                 leafNodes.forEach((leafNode) => {
-                  if (leafNode.parentId) {
-                    generateNextLevel(leafNode.parentId, true);
+                  const parentId = leafNode.parentId as string | null;
+                  if (parentId) {
+                    generateNextLevel(parentId, true);
                   }
                 });
                 

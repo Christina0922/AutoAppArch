@@ -149,15 +149,15 @@ export default function HistoryDetailPage() {
   if (session) {
     // 최종 후보 노드들 찾기
     const getFinalCandidates = (): any[] => {
-      if (!session || session.selectedNodeIds.length === 0) return [];
+      if (!session || !session.nodes || !session.selectedNodeIds || session.selectedNodeIds.length === 0) return [];
       
       const selectedNodes = session.nodes.filter((n) =>
-        session.selectedNodeIds.includes(n.id)
+        session.selectedNodeIds!.includes(n.id)
       );
       if (selectedNodes.length === 0) return [];
 
-      const maxLevel = Math.max(...selectedNodes.map((n) => n.level));
-      return selectedNodes.filter((n) => n.level === maxLevel);
+      const maxLevel = Math.max(...selectedNodes.map((n) => (n.level as number) ?? 0));
+      return selectedNodes.filter((n) => (n.level as number) === maxLevel);
     };
 
     const finalCandidates = getFinalCandidates();
@@ -180,7 +180,7 @@ export default function HistoryDetailPage() {
               생성일: {new Date(session.createdAt).toLocaleString("ko-KR")}
             </p>
             <p className="text-sm text-gray-400">
-              키워드: <span className="font-medium text-gray-700">{session.keywords.join(", ")}</span>
+              키워드: <span className="font-medium text-gray-700">{(session.keywords || []).join(", ")}</span>
               {session.selectedType && (
                 <span className="ml-3">
                   유형: <span className="font-medium text-gray-700">
@@ -195,9 +195,9 @@ export default function HistoryDetailPage() {
         {/* 트리 UI */}
         <IdeaTree
           sessionId={session.id}
-          initialNodes={session.nodes}
-          initialSelectedIds={session.selectedNodeIds}
-          keywords={session.keywords}
+          initialNodes={session.nodes || []}
+          initialSelectedIds={session.selectedNodeIds || []}
+          keywords={session.keywords || []}
           selectedType={normalizeAppType(session.selectedType)}
           onNodesChange={handleNodesChange}
           onSelectionChange={handleSelectionChange}
@@ -219,13 +219,13 @@ export default function HistoryDetailPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-semibold text-gray-900">
-                          {node.label}
+                          {(node.label as string) ?? ""}
                         </span>
                       </div>
                       <h4 className="text-base font-semibold text-gray-900 mb-1">
                         {node.title}
                       </h4>
-                      <p className="text-sm text-gray-600">{node.summary}</p>
+                      <p className="text-sm text-gray-600">{(node.summary as string) ?? ""}</p>
                     </div>
                   </div>
                 </div>

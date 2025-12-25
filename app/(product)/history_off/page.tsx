@@ -231,7 +231,7 @@ export default function HistoryPage() {
                               마인드맵 아이디어 트리
                             </h3>
                             <p className="text-base text-gray-500 mb-3">
-                              <span className="font-medium text-gray-700">키워드</span>: {session.keywords.join(", ")}
+                              <span className="font-medium text-gray-700">키워드</span>: {(session.keywords || []).join(", ")}
                               {session.selectedType && (
                                 <span className="ml-3">
                                   유형: <span className="font-medium text-gray-700">
@@ -241,7 +241,7 @@ export default function HistoryPage() {
                               )}
                             </p>
                             <p className="text-sm text-gray-400 mb-2">
-                              노드 {session.nodes.length}개, 선택 {session.selectedNodeIds.length}개
+                              노드 {(session.nodes || []).length}개, 선택 {(session.selectedNodeIds || []).length}개
                             </p>
                             <p className="text-sm text-gray-400">
                               {new Date(session.createdAt).toLocaleString("ko-KR")}
