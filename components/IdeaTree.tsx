@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Node } from "@/lib/types";
+import { Node, AppType } from "@/lib/types";
 import { generateNextLevelIdeas } from "@/lib/generateIdeas";
 
 interface IdeaTreeProps {
@@ -9,7 +9,7 @@ interface IdeaTreeProps {
   initialNodes: Node[];
   initialSelectedIds: string[];
   keywords: string[];
-  selectedType: "app" | "web";
+  selectedType: AppType;
   onNodesChange: (nodes: Node[]) => void;
   onSelectionChange: (selectedIds: string[]) => void;
   onRegenerate?: (parentId: string) => void;

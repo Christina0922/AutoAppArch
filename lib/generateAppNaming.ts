@@ -1,4 +1,4 @@
-import { AppNaming, AppNamingCandidate, AppNamingPreview } from "./types";
+import { AppNaming, AppNamingCandidate, AppNamingPreview, AppType } from "./types";
 import { normalizeKey } from "./normalizeKey";
 
 function cleanTitle(raw: string) {
@@ -36,7 +36,7 @@ function dedupeByTitle<T extends { name?: string; title?: string; label?: string
 
 export function generateAppNaming(
   keywords: string[],
-  selectedType: "app" | "web",
+  selectedType: AppType,
   finalCandidates: Array<{ title: string; summary: string }>
 ): AppNaming {
   const keywordStr = keywords.join(" ");

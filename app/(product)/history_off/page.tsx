@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { SavedPlan, Session } from "@/lib/types";
+import type { SavedPlan } from '@/lib/types';
+import type { Session } from "@/lib/types";
 import { getAllPlans, deletePlan, getAllSessions, deleteSession } from "@/lib/storage";
 import HistoryList from "@/components/HistoryList";
 
@@ -173,6 +174,9 @@ export default function HistoryPage() {
 
   const totalCount = plans.length + sessions.length;
 
+  // 타입 강제: SavedPlan[]로 확정
+  const typedPlans = (plans ?? []) as SavedPlan[];
+
   // 성공 상태
   return (
     <div className="flex-1 flex flex-col">
@@ -272,12 +276,12 @@ export default function HistoryPage() {
             )}
 
             {/* Plan 목록 (기존 형식, 하위 호환성) */}
-            {plans.length > 0 && (
+            {typedPlans.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-4 tracking-tight">
-                  기존 설계안 ({plans.length})
+                  기존 설계안 ({typedPlans.length})
                 </h2>
-                <HistoryList plans={plans} onDelete={handleDeletePlan} />
+                <HistoryList plans={typedPlans} onDelete={handleDeletePlan} />
               </div>
             )}
             </div>

@@ -1,4 +1,4 @@
-import { Node } from "./types";
+import { Node, AppType } from "./types";
 
 export interface GeneratedTopic {
   title: string;
@@ -10,7 +10,7 @@ export interface GeneratedTopic {
 
 export function generateTopic(
   keywords: string[],
-  selectedType: "app" | "web",
+  selectedType: AppType,
   selectedNodes: Node[]
 ): GeneratedTopic {
   const keywordStr = keywords.join(", ");

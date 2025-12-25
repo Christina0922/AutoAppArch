@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Session, Node, PlanResult } from "@/lib/types";
+import { Session, Node, PlanResult, AppType } from "@/lib/types";
 import { getSessionById, saveSession } from "@/lib/storage";
 import { generateFirstLevelIdeas } from "@/lib/generateIdeas";
 import { generatePlan } from "@/lib/generatePlan";
 import { generateTopic, GeneratedTopic } from "@/lib/generateTopic";
 import { generateAppNaming } from "@/lib/generateAppNaming";
 import { shouldBypassPaywall } from "@/lib/paywall";
+import { normalizeAppType } from "@/lib/appType";
 import KeywordInputForm from "@/components/KeywordInputForm";
 import IdeaTree from "@/components/IdeaTree";
 import SaveButton from "@/components/SaveButton";
@@ -50,7 +51,7 @@ export default function AppPage() {
     
     // URL 파라미터로 키워드가 전달된 경우 자동으로 처리
     const keywordsParam = searchParams.get("keywords");
-    const typeParam = searchParams.get("type") as "app" | "web" | null;
+    const typeParam = searchParams.get("type") as AppType | null;
     
     if (keywordsParam && !session && !isLoading && processedKeywordsRef.current !== keywordsParam) {
       const keywords = keywordsParam.split(",").filter(k => k.trim().length > 0);
@@ -117,7 +118,7 @@ export default function AppPage() {
   };
 
   // 키워드 입력 후 1차 아이디어 생성
-  const handleSubmit = async (keywords: string[], selectedType: "app" | "web") => {
+  const handleSubmit = async (keywords: string[], selectedType: AppType) => {
     setIsLoading(true);
     setLoadingMessage("키워드를 분석 중입니다…");
 
@@ -174,9 +175,12 @@ export default function AppPage() {
     
     setTimeout(() => {
       // 모든 노드 제거하고 새로운 1차 아이디어만 생성 (하위 노드 모두 제거)
+      const selectedType: "app" | "web" =
+        session.selectedType === "web" ? "web" : "app";
+      
       const newNodes = generateFirstLevelIdeas(
-        session.keywords,
-        session.selectedType || "app",
+        session.keywords ?? [],
+        selectedType,
         7,
         newSeed
       );
@@ -232,8 +236,8 @@ export default function AppPage() {
     await new Promise((resolve) => setTimeout(resolve, 400));
     
     const topic = generateTopic(
-      session.keywords,
-      session.selectedType || "app",
+      session.keywords ?? [],
+      normalizeAppType(session.selectedType),
       finalCandidates
     );
     
@@ -278,8 +282,8 @@ export default function AppPage() {
     // 선택된 노드들의 정보를 종합하여 설계안 생성
     const selectedTitles = finalCandidates.map((n) => n.title).join(", ");
     const planResult: PlanResult = generatePlan(
-      session.keywords,
-      session.selectedType || "app",
+      session.keywords ?? [],
+      normalizeAppType(session.selectedType),
       selectedTitles
     );
     
@@ -293,8 +297,8 @@ export default function AppPage() {
     
     // 앱 이름 추천 생성 (최종 확정 후에만)
     const appNaming = generateAppNaming(
-      session.keywords,
-      session.selectedType || "app",
+      session.keywords ?? [],
+      normalizeAppType(session.selectedType),
       finalCandidates.map((n) => ({ title: n.title, summary: n.summary }))
     );
     planResult.appNaming = appNaming;
@@ -419,7 +423,7 @@ export default function AppPage() {
               initialNodes={session.nodes}
               initialSelectedIds={session.selectedNodeIds}
               keywords={session.keywords}
-              selectedType={session.selectedType || "app"}
+              selectedType={normalizeAppType(session.selectedType)}
               onNodesChange={handleNodesChange}
               onSelectionChange={handleSelectionChange}
               onFinalize={handleGenerateTopic}

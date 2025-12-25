@@ -1,4 +1,4 @@
-import { Node } from "./types";
+import { Node, AppType } from "./types";
 
 /**
  * 1차 아이디어 여러 개 생성 (레벨 2)
@@ -6,7 +6,7 @@ import { Node } from "./types";
  */
 export function generateFirstLevelIdeas(
   keywords: string[],
-  selectedType: "app" | "web" = "app",
+  selectedType: AppType = "app",
   count: number = 7,
   seed?: number // 재생성 시 다른 결과를 위해 시드 사용
 ): Node[] {
@@ -158,7 +158,7 @@ export function generateFirstLevelIdeas(
 export function generateNextLevelIdeas(
   parentNode: Node,
   keywords: string[],
-  selectedType: "app" | "web" = "app",
+  selectedType: AppType = "app",
   count: number = 5
 ): Node[] {
   const keywordStr = keywords.join(" + ");

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import HistoryList, { type SavedPlan } from "@/components/HistoryList";
+import HistoryList from "@/components/HistoryList";
+import type { SavedPlan } from "@/lib/types";
 
 function safeJsonParse(raw: string | null) {
   if (!raw) return null;
@@ -96,6 +97,9 @@ export default function HistoryPage() {
   };
 
   const isEmpty = items.length === 0;
+  
+  // 타입 강제: SavedPlan[]로 확정
+  const plans = (items ?? []) as SavedPlan[];
 
   return (
     <div className="flex-1 flex flex-col">
@@ -128,7 +132,7 @@ export default function HistoryPage() {
       ) : (
         <div className="px-4 py-10">
           <div className="mx-auto w-full max-w-6xl">
-            <HistoryList plans={items} onDelete={handleDelete} />
+            <HistoryList plans={plans} onDelete={handleDelete} />
           </div>
         </div>
       )}

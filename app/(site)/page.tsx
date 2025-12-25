@@ -6,6 +6,7 @@ import KeywordInputForm from "@/components/KeywordInputForm";
 import ExampleFlowDemo from "@/components/ExampleFlowDemo";
 import PlanPreviewCard from "@/components/PlanPreviewCard";
 import { generatePlan } from "@/lib/generatePlan";
+import type { AppType } from "@/lib/types";
 
 export default function HomePage() {
   const [showExample, setShowExample] = useState(false);
@@ -13,7 +14,7 @@ export default function HomePage() {
   const [loadingMessage, setLoadingMessage] = useState("");
   const router = useRouter();
 
-  const handleSubmit = async (keywords: string[], selectedType: "app" | "web") => {
+  const handleSubmit = async (keywords: string[], selectedType: AppType) => {
     // 키워드와 타입을 URL 파라미터로 전달하여 /app 페이지로 이동
     const params = new URLSearchParams({
       keywords: keywords.join(","),

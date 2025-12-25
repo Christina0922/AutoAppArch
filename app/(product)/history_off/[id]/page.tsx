@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { SavedPlan, Session } from "@/lib/types";
 import { getPlanById, getSessionById } from "@/lib/storage";
 import { shouldBypassPaywall } from "@/lib/paywall";
+import { normalizeAppType } from "@/lib/appType";
 import IdeaTree from "@/components/IdeaTree";
 import PaywallModal from "@/components/PaywallModal";
 import Link from "next/link";
@@ -197,7 +198,7 @@ export default function HistoryDetailPage() {
           initialNodes={session.nodes}
           initialSelectedIds={session.selectedNodeIds}
           keywords={session.keywords}
-          selectedType={session.selectedType || "app"}
+          selectedType={normalizeAppType(session.selectedType)}
           onNodesChange={handleNodesChange}
           onSelectionChange={handleSelectionChange}
         />

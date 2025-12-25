@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import type { AppType } from "@/lib/types";
 
 interface KeywordInputFormProps {
-  onSubmit: (keywords: string[], selectedType: "app" | "web") => void;
+  onSubmit: (keywords: string[], selectedType: AppType) => void;
   isLoading?: boolean;
   loadingMessage?: string;
 }
@@ -22,7 +23,7 @@ export default function KeywordInputForm({
   loadingMessage = "",
 }: KeywordInputFormProps) {
   const [keywordInput, setKeywordInput] = useState("");
-  const [selectedType, setSelectedType] = useState<"app" | "web">("app");
+  const [selectedType, setSelectedType] = useState<AppType>("app");
   const [validationError, setValidationError] = useState("");
 
   const exampleChips = [
@@ -95,7 +96,7 @@ export default function KeywordInputForm({
               type="radio"
               value="app"
               checked={selectedType === "app"}
-              onChange={(e) => setSelectedType(e.target.value as "app" | "web")}
+              onChange={(e) => setSelectedType(e.target.value as AppType)}
               className="mr-3 w-4 h-4 text-gray-900 focus:ring-gray-900"
               disabled={isLoading}
             />
@@ -106,7 +107,7 @@ export default function KeywordInputForm({
               type="radio"
               value="web"
               checked={selectedType === "web"}
-              onChange={(e) => setSelectedType(e.target.value as "app" | "web")}
+              onChange={(e) => setSelectedType(e.target.value as AppType)}
               className="mr-3 w-4 h-4 text-gray-900 focus:ring-gray-900"
               disabled={isLoading}
             />
