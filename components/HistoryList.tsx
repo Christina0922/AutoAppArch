@@ -1,49 +1,74 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
-export type SavedDesign = {
+export type SavedPlan = {
   id: string;
-  title: string;
-  keywords: string[];
-  createdAt: string;
-  raw?: any;
+  title?: string;
+  keywords?: string[] | string;
+  createdAt?: string;
+  updatedAt?: string;
+  summary?: string;
+  // 다른 필드가 더 있어도 구조적 타이핑이라 문제 없음
+  [key: string]: unknown;
 };
 
 type Props = {
-  items: SavedDesign[];
+  plans: SavedPlan[];
+  onDelete: (id: string) => void;
 };
 
-export default function HistoryList({ items }: Props) {
+export default function HistoryList({ plans, onDelete }: Props) {
+  if (!plans || plans.length === 0) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
+        저장된 설계안이 없습니다.
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      {items.map((it) => (
-        <div key={it.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-base font-bold">{it.title}</h2>
-              <p className="mt-1 text-xs text-gray-500">{it.createdAt}</p>
+    <div className="space-y-3">
+      {plans.map((plan) => (
+        <div
+          key={plan.id}
+          className="flex items-start justify-between gap-3 rounded-xl border border-gray-200 bg-white p-4"
+        >
+          <div className="min-w-0">
+            <div className="font-semibold text-gray-900">
+              {(plan.title as string) || '제목 없음'}
             </div>
-            <div className="text-xs text-gray-400">#{it.id}</div>
+
+            {plan.summary ? (
+              <div className="mt-1 text-sm text-gray-600">
+                {String(plan.summary)}
+              </div>
+            ) : null}
+
+            {plan.keywords ? (
+              <div className="mt-2 text-xs text-gray-500">
+                {Array.isArray(plan.keywords)
+                  ? plan.keywords.join(', ')
+                  : String(plan.keywords)}
+              </div>
+            ) : null}
+
+            {(plan.createdAt || plan.updatedAt) ? (
+              <div className="mt-2 text-xs text-gray-400">
+                {plan.updatedAt ? `수정: ${String(plan.updatedAt)}` : null}
+                {plan.updatedAt && plan.createdAt ? ' · ' : null}
+                {plan.createdAt ? `생성: ${String(plan.createdAt)}` : null}
+              </div>
+            ) : null}
           </div>
 
-          <div className="mt-4">
-            <p className="text-xs font-semibold text-gray-700">입력 키워드</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {it.keywords.length ? (
-                it.keywords.map((k, idx) => (
-                  <span
-                    key={`${it.id}-${idx}`}
-                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-700"
-                  >
-                    {k}
-                  </span>
-                ))
-              ) : (
-                <span className="text-xs text-gray-500">키워드 정보 없음</span>
-              )}
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => onDelete(plan.id)}
+            className="shrink-0 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          >
+            삭제
+          </button>
         </div>
       ))}
     </div>

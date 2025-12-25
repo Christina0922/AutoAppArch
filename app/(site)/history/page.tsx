@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import HistoryList, { type SavedDesign } from "@/components/HistoryList";
+import HistoryList, { type SavedPlan } from "@/components/HistoryList";
 
 function safeJsonParse(raw: string | null) {
   if (!raw) return null;
@@ -52,7 +52,7 @@ function toDisplayDate(value: any): string {
   return "";
 }
 
-function normalizeSavedDesigns(items: any[]): SavedDesign[] {
+function normalizeSavedDesigns(items: any[]): SavedPlan[] {
   return items.map((it, idx) => {
     const id =
       (typeof it?.id === "string" && it.id) ||
@@ -70,12 +70,12 @@ function normalizeSavedDesigns(items: any[]): SavedDesign[] {
     const createdAt =
       toDisplayDate(it?.createdAt ?? it?.created_at ?? it?.date ?? it?.created) || "방금 전";
 
-    return { id, title, keywords, createdAt, raw: it };
+    return { id, title, keywords, createdAt };
   });
 }
 
 export default function HistoryPage() {
-  const [items, setItems] = useState<SavedDesign[]>([]);
+  const [items, setItems] = useState<SavedPlan[]>([]);
 
   useEffect(() => {
     let found: any[] = [];
@@ -89,6 +89,11 @@ export default function HistoryPage() {
     }
     setItems(normalizeSavedDesigns(found));
   }, []);
+
+  const handleDelete = (id: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+    // localStorage에서도 제거 (선택사항)
+  };
 
   const isEmpty = items.length === 0;
 
@@ -123,7 +128,7 @@ export default function HistoryPage() {
       ) : (
         <div className="px-4 py-10">
           <div className="mx-auto w-full max-w-6xl">
-            <HistoryList items={items} />
+            <HistoryList plans={items} onDelete={handleDelete} />
           </div>
         </div>
       )}
