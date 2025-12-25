@@ -145,14 +145,49 @@ export default function IdeaTree({
   // 최대 레벨 찾기
   const maxLevel = Math.max(...Object.keys(nodesByLevel).map(Number), 0);
 
-  // 선택된 노드들의 최하위 레벨 찾기
-  const selectedNodes = nodes.filter((n) => selectedIds.has(n.id));
-  const maxSelectedLevel = selectedNodes.length > 0
-    ? Math.max(...selectedNodes.map((n) => n.level))
+  // 최종 선택된 노드들 찾기 (가장 마지막 단계의 선택된 노드들만)
+  type StageKey = "stage1" | "stage2" | "stage3" | "stage4" | "stage5";
+  
+  function getFinalSelectedIds(params: {
+    stage1SelectedIds: string[];
+    stage2SelectedIds: string[];
+    stage3SelectedIds: string[];
+    stage4SelectedIds?: string[];
+    stage5SelectedIds?: string[];
+  }) {
+    const { stage1SelectedIds, stage2SelectedIds, stage3SelectedIds, stage4SelectedIds, stage5SelectedIds } = params;
+
+    // 가장 마지막 단계에 선택이 있으면 그게 최종
+    if (stage5SelectedIds && stage5SelectedIds.length > 0) return { finalStage: "stage5" as StageKey, finalIds: stage5SelectedIds };
+    if (stage4SelectedIds && stage4SelectedIds.length > 0) return { finalStage: "stage4" as StageKey, finalIds: stage4SelectedIds };
+    if (stage3SelectedIds.length > 0) return { finalStage: "stage3" as StageKey, finalIds: stage3SelectedIds };
+    if (stage2SelectedIds.length > 0) return { finalStage: "stage2" as StageKey, finalIds: stage2SelectedIds };
+    return { finalStage: "stage1" as StageKey, finalIds: stage1SelectedIds };
+  }
+
+  // 레벨별 선택된 노드 ID 추출
+  const stage1SelectedIds = nodes.filter((n) => selectedIds.has(n.id) && n.level === 2).map((n) => n.id);
+  const stage2SelectedIds = nodes.filter((n) => selectedIds.has(n.id) && n.level === 3).map((n) => n.id);
+  const stage3SelectedIds = nodes.filter((n) => selectedIds.has(n.id) && n.level === 4).map((n) => n.id);
+  const stage4SelectedIds = nodes.filter((n) => selectedIds.has(n.id) && n.level === 5).map((n) => n.id);
+  const stage5SelectedIds = nodes.filter((n) => selectedIds.has(n.id) && n.level === 6).map((n) => n.id);
+
+  const { finalStage, finalIds } = getFinalSelectedIds({
+    stage1SelectedIds,
+    stage2SelectedIds,
+    stage3SelectedIds,
+    stage4SelectedIds,
+    stage5SelectedIds,
+  });
+
+  const finalCount = finalIds.length;
+  const finalSelectedNodes = nodes.filter((n) => finalIds.includes(n.id));
+  const maxSelectedLevel = finalSelectedNodes.length > 0
+    ? Math.max(...finalSelectedNodes.map((n) => n.level))
     : 0;
 
-  // 다음 레벨 생성 가능 여부
-  const canGenerateNext = selectedNodes.length > 0 && maxSelectedLevel === maxLevel;
+  // 다음 레벨 생성 가능 여부 (최종 선택된 노드들이 최대 레벨에 있을 때)
+  const canGenerateNext = finalCount > 0 && maxSelectedLevel === maxLevel;
 
   return (
     <div className="space-y-8">
@@ -280,7 +315,7 @@ export default function IdeaTree({
         <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
           <div className="mb-4">
             <p className="text-base font-medium text-gray-900 mb-1">
-              {selectedNodes.length}개의 아이디어가 선택되었습니다
+              최종 선택 {finalCount}개{finalStage !== "stage1" && " (마지막 단계 기준)"}
             </p>
             <p className="text-sm text-gray-500">
               여기서 마무리할까요, 아니면 계속 진행할까요?

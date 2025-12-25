@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import HistoryList, { type SavedDesign } from "@/components/HistoryList";
 
@@ -14,8 +13,6 @@ function safeJsonParse(raw: string | null) {
 }
 
 const STORAGE_KEYS = [
-  // 프로젝트마다 저장 키가 다를 수 있어서 후보를 여러 개 둡니다.
-  // 실제 키를 알고 계시면 맨 위에 하나만 남기고 정리하셔도 됩니다.
   "autoapparch_history",
   "autoAppArch_history",
   "savedDesigns",
@@ -41,15 +38,8 @@ function normalizeToArray(parsed: any): any[] {
 }
 
 function toKeywords(value: any): string[] {
-  if (Array.isArray(value)) {
-    return value.map((v) => String(v).trim()).filter(Boolean);
-  }
-  if (typeof value === "string") {
-    return value
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
+  if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
+  if (typeof value === "string") return value.split(",").map((s) => s.trim()).filter(Boolean);
   return [];
 }
 
@@ -69,8 +59,9 @@ function normalizeSavedDesigns(items: any[]): SavedDesign[] {
       (typeof it?._id === "string" && it._id) ||
       `local-${idx}`;
 
-    const keywords =
-      toKeywords(it?.keywords ?? it?.keyword ?? it?.tags ?? it?.inputs ?? it?.inputKeywords);
+    const keywords = toKeywords(
+      it?.keywords ?? it?.keyword ?? it?.tags ?? it?.inputs ?? it?.inputKeywords
+    );
 
     const title =
       (typeof it?.title === "string" && it.title.trim()) ||
@@ -102,13 +93,6 @@ export default function HistoryPage() {
   const isEmpty = items.length === 0;
 
   return (
-    /**
-     * ✅ 핵심 구조
-     * - 이 페이지는 layout.tsx의 <main class="flex-1 flex flex-col"> 안에 들어갑니다.
-     * - 따라서 page 최상단을 "flex-1 flex flex-col"로 만들어 main의 높이를 끝까지 먹습니다.
-     * - 제목은 위에 고정
-     * - Empty 상태일 때만 아래 영역을 flex-1로 만들어 완전 중앙정렬
-     */
     <div className="flex-1 flex flex-col">
       {/* 제목(위 고정) */}
       <div className="px-4 pt-10">
@@ -117,20 +101,22 @@ export default function HistoryPage() {
 
       {/* 내용 */}
       {isEmpty ? (
-        <div className="flex-1 flex items-center justify-center px-4 pb-12">
-          <div className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm">
+        // ✅ 중요: relative + z-index로 "위에 덮는 투명 레이어"를 이겨서 클릭 가능하게 함
+        <div className="flex-1 flex items-center justify-center px-4 pb-12 relative z-10">
+          <div className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm relative z-20">
             <p className="text-sm text-gray-600">아직 저장된 앱 설계안이 없습니다.</p>
             <p className="mt-2 text-sm text-gray-500">
               키워드 몇 개만 입력하면 바로 자동 생성할 수 있습니다.
             </p>
 
             <div className="mt-6">
-              <Link
+              {/* ✅ Next Link 대신 순수 a 태그로: "무조건 이동" */}
+              <a
                 href="/"
                 className="inline-flex items-center justify-center rounded-md bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800"
               >
                 설계안 만들기
-              </Link>
+              </a>
             </div>
           </div>
         </div>
