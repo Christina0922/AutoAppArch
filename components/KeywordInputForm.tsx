@@ -85,8 +85,8 @@ export default function KeywordInputForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      <div>
-        <label className="block text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+      <div className="w-full flex flex-col items-start gap-2">
+        <label className="w-full text-left text-sm font-semibold text-gray-400 uppercase tracking-wider">
           앱 유형 선택
         </label>
         <div className="flex gap-6">
