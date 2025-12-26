@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Node, ImplementationSpec } from "@/lib/types";
+import BadgeWithTooltip from "./BadgeWithTooltip";
 
 interface ArchitectureCardProps {
   node: Node;
@@ -66,6 +67,24 @@ export default function ArchitectureCard({
     }
   };
 
+  // 난이도 툴팁 텍스트 (개선된 설명)
+  const getDifficultyTooltip = (difficulty?: string) => {
+    switch (difficulty) {
+      case "초급":
+        return "단일 구성 중심(기본 인증/기본 로그), 운영 자동화/분산 제외";
+      case "중급":
+        return "캐시/권한/비동기 중 일부 포함, 설정/운영 포인트 증가";
+      case "상급":
+        return "고가용성/보안/관측성/운영 포함, 구성요소 증가로 운영 난이도 높음";
+      default:
+        return "";
+    }
+  };
+
+  // 기간 툴팁 텍스트 (개선된 설명)
+  const getDurationTooltip = (duration?: string) => {
+    return `1인 기준 기본 구현+기본 테스트 추정치이며, 외부연동/운영요소 포함 시 증가 가능`;
+  };
 
   if (!hasSpec) {
     // 스펙이 없으면 기존 방식으로 표시
@@ -208,12 +227,20 @@ export default function ArchitectureCard({
 
         {/* 3. 난이도/기간 배지 */}
         <div className="flex gap-2 flex-wrap">
-          <span className={`text-xs px-2 py-1 rounded font-medium ${getDifficultyColor(spec.difficulty)}`}>
+          <BadgeWithTooltip
+            tooltipText={getDifficultyTooltip(spec.difficulty)}
+            className={`text-xs px-2 py-1 rounded font-medium cursor-help ${getDifficultyColor(spec.difficulty)}`}
+            ariaLabel={`난이도: ${spec.difficulty}. 자세한 기준을 보려면 클릭하세요.`}
+          >
             {spec.difficulty}
-          </span>
-          <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800 font-medium">
+          </BadgeWithTooltip>
+          <BadgeWithTooltip
+            tooltipText={getDurationTooltip(spec.estimatedDuration)}
+            className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800 font-medium cursor-help"
+            ariaLabel={`예상 기간: ${spec.estimatedDuration}. 자세한 기준을 보려면 클릭하세요.`}
+          >
             {spec.estimatedDuration}
-          </span>
+          </BadgeWithTooltip>
         </div>
 
         {/* 4. 포함 기능 Top3 */}

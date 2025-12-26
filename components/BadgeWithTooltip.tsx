@@ -29,6 +29,36 @@ export default function BadgeWithTooltip({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // 모바일: 외부 클릭 및 ESC 키로 닫기
+  useEffect(() => {
+    if (!isMobile || !isTooltipVisible) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tooltipRef.current &&
+        badgeRef.current &&
+        !tooltipRef.current.contains(event.target as Node) &&
+        !badgeRef.current.contains(event.target as Node)
+      ) {
+        setIsTooltipVisible(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsTooltipVisible(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isMobile, isTooltipVisible]);
+
   useEffect(() => {
     if (isTooltipVisible && tooltipRef.current && badgeRef.current) {
       const tooltip = tooltipRef.current;
@@ -53,10 +83,17 @@ export default function BadgeWithTooltip({
     }
   }, [isTooltipVisible]);
 
-  // 모바일: 클릭 시 토글
+  // 모바일: 클릭 시 토글, PC: 키보드 접근성
   const handleClick = (e: React.MouseEvent) => {
     if (isMobile) {
       e.stopPropagation();
+      setIsTooltipVisible(!isTooltipVisible);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
       setIsTooltipVisible(!isTooltipVisible);
     }
   };
@@ -81,8 +118,15 @@ export default function BadgeWithTooltip({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
     >
-      <div className={className} aria-label={ariaLabel}>
+      <div 
+        className={className} 
+        aria-label={ariaLabel}
+        tabIndex={0}
+        role="button"
+        aria-expanded={isTooltipVisible}
+      >
         {children}
       </div>
       
@@ -92,7 +136,9 @@ export default function BadgeWithTooltip({
           ref={tooltipRef}
           className={`absolute z-50 ${
             isMobile ? "bottom-full mb-2" : "top-full mt-2"
-          } left-0 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg max-w-xs pointer-events-none`}
+          } left-0 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg ${
+            isMobile ? "max-w-[80vw]" : "max-w-xs"
+          } ${isMobile ? "" : "pointer-events-none"}`}
           role="tooltip"
           aria-live="polite"
         >

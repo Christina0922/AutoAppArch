@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { AppType } from "@/lib/types";
+import { useTranslations } from "next-intl";
+import type { AppType } from "@/lib/types"; // AppType은 "app"만 허용
 
 interface KeywordInputFormProps {
   onSubmit: (keywords: string[], selectedType: AppType) => void;
@@ -22,15 +23,13 @@ export default function KeywordInputForm({
   isLoading = false,
   loadingMessage = "",
 }: KeywordInputFormProps) {
+  const t = useTranslations("keywordInput");
+  const tCommon = useTranslations("common");
   const [keywordInput, setKeywordInput] = useState("");
-  const [selectedType, setSelectedType] = useState<AppType>("app");
   const [validationError, setValidationError] = useState("");
 
-  const exampleChips = [
-    { text: "영어, 공부", keywords: ["영어", "공부"] },
-    { text: "분실물, 지도", keywords: ["분실물", "지도"] },
-    { text: "다이어트, 기록", keywords: ["다이어트", "기록"] },
-  ];
+  // 번역 파일에서 예시 가져오기
+  const exampleChips = t.raw("examples") as Array<{ text: string; keywords: string[] }>;
 
   const handleExampleClick = (keywords: string[]) => {
     setKeywordInput(keywords.join(", "));
@@ -55,71 +54,46 @@ export default function KeywordInputForm({
     
     // 검증
     if (normalized.length === 0) {
-      setValidationError("최소 1개 이상의 키워드를 입력해주세요.");
+      setValidationError(t("errorMinKeywords"));
       return;
     }
     
     if (normalized.length === 1) {
-      setValidationError("2개 이상의 키워드를 권장합니다. (현재: 1개)");
       // 경고만 표시하고 계속 진행 가능
     }
     
     if (normalized.length > 6) {
-      setValidationError("키워드는 최대 6개까지 입력 가능합니다.");
+      setValidationError(t("errorMaxKeywords"));
       return;
     }
     
     // 각 키워드 길이 검증
     const tooLong = normalized.find((k) => k.length > 20);
     if (tooLong) {
-      setValidationError("키워드는 20자 이하로 입력해주세요.");
+      setValidationError(t("errorKeywordLength"));
       return;
     }
     
     setValidationError("");
-    onSubmit(normalized, selectedType);
+    onSubmit(normalized, "app"); // 모바일 앱만 지원
   };
 
   const isValid = normalizeKeywords(keywordInput).length > 0 && 
                   normalizeKeywords(keywordInput).length <= 6 &&
                   !normalizeKeywords(keywordInput).some((k) => k.length > 20);
 
+  const tMobile = useTranslations("common");
+  
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="w-full flex flex-col items-start gap-2">
-        <label className="w-full text-left text-sm font-semibold text-gray-400 uppercase tracking-wider">
-          앱 유형 선택
-        </label>
-        <div className="flex gap-6">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              value="app"
-              checked={selectedType === "app"}
-              onChange={(e) => setSelectedType(e.target.value as AppType)}
-              className="mr-3 w-4 h-4 text-gray-900 focus:ring-gray-900"
-              disabled={isLoading}
-            />
-            <span className="text-base text-gray-600">모바일 앱</span>
-          </label>
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              value="web"
-              checked={selectedType === "web"}
-              onChange={(e) => setSelectedType(e.target.value as AppType)}
-              className="mr-3 w-4 h-4 text-gray-900 focus:ring-gray-900"
-              disabled={isLoading}
-            />
-            <span className="text-base text-gray-600">웹 서비스</span>
-          </label>
-        </div>
+      <div>
+        <p className="text-xs text-gray-500 mb-4">{tMobile("mobileAppArchitecture")}</p>
       </div>
 
       <div>
         <div className="mb-4">
           <p className="text-lg font-semibold text-gray-900 mb-2">
-            단어(<span className="text-gray-600">키워드</span>) 몇 개만 입력하세요
+            {t("title")}
           </p>
           {/* 예시 칩 */}
           <div className="flex flex-wrap gap-2 mb-3">
@@ -130,7 +104,7 @@ export default function KeywordInputForm({
                 onClick={() => handleExampleClick(chip.keywords)}
                 disabled={isLoading}
                 className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={`예시 키워드 사용: ${chip.text}`}
+                aria-label={`${t("exampleAria")}: ${chip.text}`}
               >
                 {chip.text}
               </button>
@@ -139,17 +113,17 @@ export default function KeywordInputForm({
         </div>
         <div className="space-y-3">
           <label htmlFor="keyword-input" className="sr-only">
-            키워드 입력
+            {t("labelAria")}
           </label>
           <textarea
             id="keyword-input"
             value={keywordInput}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="예: 영어, 공부 / 분실물, 지도 / 다이어트, 기록"
+            placeholder={t("placeholder")}
             className="w-full px-4 py-3 text-base border border-gray-200 rounded-md focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors bg-white resize-none"
             rows={3}
             disabled={isLoading}
-            aria-label="키워드 입력"
+            aria-label={t("labelAria")}
             aria-describedby={validationError ? "keyword-error" : normalizeKeywords(keywordInput).length === 1 ? "keyword-warning" : undefined}
             aria-invalid={!!validationError}
           />
@@ -160,7 +134,7 @@ export default function KeywordInputForm({
           )}
           {normalizeKeywords(keywordInput).length === 1 && !validationError && (
             <p id="keyword-warning" className="text-sm text-amber-600">
-              💡 2개 이상의 키워드를 권장합니다. 더 정확한 설계안이 생성됩니다.
+              {t("warningSingleKeyword")}
             </p>
           )}
         </div>
@@ -170,9 +144,9 @@ export default function KeywordInputForm({
         type="submit"
         disabled={isLoading || !isValid}
         className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-        aria-label={isLoading ? "앱 설계안 생성 중" : "앱 설계안 자동 생성하기"}
+        aria-label={isLoading ? t("buttonAriaGenerating") : t("buttonAria")}
       >
-        {isLoading ? loadingMessage || "생성 중..." : "앱 설계안 자동 생성하기"}
+        {isLoading ? loadingMessage || t("generating") : t("submitButton")}
       </button>
     </form>
   );

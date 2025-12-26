@@ -1,0 +1,174 @@
+{
+  "common": {
+    "appName": "AutoAppArch",
+    "mobileApp": "Mobile App",
+    "mobileAppArchitecture": "Mobile app architecture",
+    "loading": "Loading...",
+    "error": "Error",
+    "close": "Close",
+    "copy": "Copy",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View"
+  },
+  "nav": {
+    "createApp": "Create App",
+    "history": "History",
+    "pricing": "Pricing",
+    "about": "About"
+  },
+  "keywordInput": {
+    "title": "Enter Keywords",
+    "description": "Enter keywords you want to include in your app",
+    "placeholder": "e.g., English, Study / Lost Items, Map / Diet, Record",
+    "submitButton": "Generate App Architecture",
+    "generating": "Generating...",
+    "errorMinKeywords": "Please enter at least 1 keyword.",
+    "warningSingleKeyword": "💡 We recommend 2 or more keywords for more accurate architecture.",
+    "errorMaxKeywords": "You can enter up to 6 keywords.",
+    "errorKeywordLength": "Keywords must be 20 characters or less.",
+    "labelAria": "Keyword input",
+    "buttonAriaGenerating": "Generating app architecture",
+    "buttonAria": "Generate app architecture automatically",
+    "exampleAria": "Use example keywords",
+    "examples": [
+      { "text": "English, Study", "keywords": ["English", "Study"] },
+      { "text": "Lost Items, Map", "keywords": ["Lost Items", "Map"] },
+      { "text": "Diet, Record", "keywords": ["Diet", "Record"] }
+    ]
+  },
+  "ideaTree": {
+    "currentSelection": "Current Selection",
+    "level1": "1st",
+    "level2": "2nd",
+    "levelN": "{level}th",
+    "selected": "Selected",
+    "level1Ideas": "1st Level Ideas",
+    "levelNIdeas": "{level}th Level Branch Ideas",
+    "level1Description": "Initial ideas generated based on keywords",
+    "levelNDescription": "Branch ideas generated based on selected parent options",
+    "childrenCount": "{count} sub-options generated",
+    "regenerate": "Regenerate",
+    "finalizeButton": "Decide with this design",
+    "regenerateFirstLevel": "Need different 1st level ideas?",
+    "regenerateFirstLevelDescription": "Regenerating will create 7 different options",
+    "regenerateFirstLevelButton": "Generate Other Ideas",
+    "noIdeasSelected": "No ideas selected",
+    "selectToGenerate": "Select a 1st level idea to generate 2nd level branch ideas",
+    "selectToFinalize": "Select a 2nd level idea to generate the final architecture",
+    "comparing": "Comparing",
+    "comparisonTitle": "Comparing Selected Options",
+    "generatingPlan": "Generating plan...",
+    "generatingNaming": "Generating app name recommendations...",
+    "planGenerationFailed": "Failed to generate plan.",
+    "totalCount": "Total {count}",
+    "finalSelectionCount": "Final selection: {count}",
+    "finalSelectionCountWithStage": "Final selection: {count} (based on last stage)",
+    "canContinueNext": "You can proceed to the next step.",
+    "continueNext": "Continue (Generate Next Branch)",
+    "moreItems": "+{count} more"
+  },
+  "comparisonTable": {
+    "item": "Item",
+    "option": "Option",
+    "difficulty": "Difficulty",
+    "estimatedDuration": "Estimated Duration"
+  },
+  "architectureCard": {
+    "viewDetails": "View Details",
+    "hideDetails": "Hide Details",
+    "valueProposition": "Value Proposition",
+    "contextTags": "Suitable Context",
+    "topFeatures": "Top 3 Features",
+    "warning": "Warning/Risk",
+    "coreScreens": "Core Screens",
+    "coreFeatures": "Core Features",
+    "dataEntities": "Data Entities",
+    "apiEndpoints": "API Endpoints",
+    "architectureComponents": "Architecture Components",
+    "difficulty": "Difficulty",
+    "duration": "Estimated Duration",
+    "targetUser": "Target User"
+  },
+  "difficulty": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "beginnerDesc": "Single component focus (basic auth/basic logs), excludes automation/distribution",
+    "intermediateDesc": "Includes some of cache/permissions/async, increased setup/operation points",
+    "advancedDesc": "Includes high availability/security/observability/operations, increased operational difficulty due to more components"
+  },
+  "duration": {
+    "desc": "Estimated for 1 developer full-time, includes 'basic implementation + basic testing'; may increase with external integrations/operational elements"
+  },
+  "planDetail": {
+    "description": "This page is the specification document for the app to be created.",
+    "title": "Auto-generated <span>App Architecture</span>",
+    "inputKeywords": "Input <span>Keywords</span>: {keywords}",
+    "userPerspective": "[User Perspective]",
+    "developerPerspective": "[Developer Perspective]",
+    "userPerspectiveDesc": "Content written from the end user's perspective.",
+    "developerPerspectiveDesc": "Content written from the app creator (developer) perspective.",
+    "progressCurrent": "This design is currently in the <strong>'Basic Structure Phase'</strong>.",
+    "progressTitle": "Design Progress Steps",
+    "progressStep1": "① Idea Structuring",
+    "progressStep2": "② Core Feature Organization",
+    "progressStep3": "③ Screen Flow Design",
+    "progressStep4": "④ Implementation Preparation"
+  },
+  "appNaming": {
+    "title": "App Name Recommendations (Premium)",
+    "previewTitle": "Recommended App Name",
+    "viewAllButton": "View All Name Candidates (Premium)",
+    "trademarkNotice": "Trademark/domain duplication needs separate verification.",
+    "types": {
+      "intuitive": "Intuitive (Immediately clear what the app does)",
+      "emotional": "Emotional (Motivation/Habit/Achievement)",
+      "professional": "Professional (Trust/System/Management)",
+      "casual": "Casual (Light and friendly)"
+    }
+  },
+  "loading": {
+    "analyzingKeywords": "Analyzing keywords…",
+    "generatingIdeas": "Generating 1st level ideas…",
+    "regeneratingIdeas": "Regenerating 1st level ideas…",
+    "generatingPlan": "Generating architecture…",
+    "finalizing": "Generating final architecture…"
+  },
+  "history": {
+    "title": "History",
+    "empty": "No saved architectures",
+    "noResults": "No results",
+    "createdAt": "Created at"
+  },
+  "footer": {
+    "description": "A tool that automatically generates app architectures from keywords",
+    "allRightsReserved": "© 2024 AutoAppArch. All rights reserved.",
+    "services": "Services",
+    "information": "Information",
+    "contact": "Contact"
+  },
+  "saveButton": {
+    "save": "Save Design Plan",
+    "saving": "Saving...",
+    "saveAria": "Save design plan",
+    "savingAria": "Saving design plan",
+    "savedMessage": "Design plan has been saved. (Check in History)",
+    "viewSaved": "View My Plan",
+    "viewSavedAria": "View saved plan",
+    "createNew": "Create Plan with Different Keywords",
+    "createNewAria": "Create new plan",
+    "savedNote": "You can view saved plans anytime in the 'History' menu at the top.",
+    "errorNoPlanOrSession": "plan or session is required.",
+    "errorSaveFailed": "Failed to save."
+  },
+  "errors": {
+    "generationFailed": "Failed to generate ideas. Please try again.",
+    "saveFailed": "Failed to save.",
+    "deleteFailed": "Failed to delete."
+  }
+}
+

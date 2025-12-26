@@ -15,10 +15,9 @@ export default function HomePage() {
   const router = useRouter();
 
   const handleSubmit = async (keywords: string[], selectedType: AppType) => {
-    // 키워드와 타입을 URL 파라미터로 전달하여 /app 페이지로 이동
+    // 키워드를 URL 파라미터로 전달하여 /app 페이지로 이동 (타입은 항상 "app")
     const params = new URLSearchParams({
       keywords: keywords.join(","),
-      type: selectedType,
     });
     router.push(`/app?${params.toString()}`);
   };

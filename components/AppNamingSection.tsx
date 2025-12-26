@@ -15,7 +15,7 @@ export default function AppNamingSection({
   onShowPaywall,
 }: AppNamingSectionProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(["literal", "brand", "short"])
+    new Set(["intuitive", "emotional", "professional", "casual"])
   );
 
   const toggleGroup = (groupName: string) => {
@@ -49,7 +49,19 @@ export default function AppNamingSection({
                 {appNaming.preview.name}
               </h3>
               <p className="text-base text-gray-600 mb-2">{appNaming.preview.tagline}</p>
-              <p className="text-sm text-gray-500">{appNaming.preview.reason}</p>
+              <p className="text-sm text-gray-500 mb-2">{appNaming.preview.reason}</p>
+              {appNaming.preview.tags && appNaming.preview.tags.length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {appNaming.preview.tags.map((tag, tagIdx) => (
+                    <span
+                      key={tagIdx}
+                      className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full border border-gray-200"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <button
               onClick={() => copyToClipboard(appNaming.preview.name)}
@@ -77,9 +89,10 @@ export default function AppNamingSection({
 
   // 프리미엄 사용자: 전체 후보 표시
   const groupLabels: Record<string, string> = {
-    literal: "직관형 (기능이 바로 보이는 이름)",
-    brand: "브랜딩형 (브랜드 느낌)",
-    short: "짧은형 (2~4글자 중심)",
+    intuitive: "직관형 (무엇 하는 앱인지 즉시 알 수 있는)",
+    emotional: "감성형 (동기/습관/성취)",
+    professional: "전문형 (신뢰/체계/관리)",
+    casual: "캐주얼형 (가볍고 친근)",
   };
 
   return (
@@ -130,7 +143,19 @@ export default function AppNamingSection({
                           {candidate.name}
                         </h4>
                         <p className="text-base text-gray-600 mb-2">{candidate.tagline}</p>
-                        <p className="text-sm text-gray-500">{candidate.reason}</p>
+                        <p className="text-sm text-gray-500 mb-2">{candidate.reason}</p>
+                        {candidate.tags && candidate.tags.length > 0 && (
+                          <div className="flex gap-2 flex-wrap">
+                            {candidate.tags.map((tag, tagIdx) => (
+                              <span
+                                key={tagIdx}
+                                className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full border border-gray-200"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => copyToClipboard(candidate.name)}

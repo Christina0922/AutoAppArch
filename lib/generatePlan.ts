@@ -6,7 +6,7 @@ export function generatePlan(
   audienceHint?: string
 ): PlanResult {
   const keywordStr = keywords.join(" + ");
-  const isApp = selectedType === "app";
+  // 모바일 앱만 지원
 
   // 생성될 앱의 최종 사용자 (키워드 기반)
   const appTargetUsers: string[] = [];
@@ -164,13 +164,11 @@ export function generatePlan(
   ];
 
   // 하위 호환성을 위한 기존 필드 (사용하지 않지만 타입 호환성 유지)
-  const coreAction = isApp
-    ? `${keywordStr} 관련 기능을 통해 사용자가 주요 목표를 달성하는 행동`
-    : `${keywordStr} 웹 서비스를 통해 사용자가 핵심 가치를 얻는 행동`;
+  const coreAction = `${keywordStr} 관련 기능을 통해 사용자가 주요 목표를 달성하는 행동`;
 
   return {
-    title: `${keywordStr} ${isApp ? "모바일 앱" : "웹 서비스"} 설계안`,
-    tagline: `${keywordStr}를 중심으로 한 ${isApp ? "모바일 앱" : "웹 서비스"} 기획서`,
+    title: `${keywordStr} 모바일 앱 설계안`,
+    tagline: `${keywordStr}를 중심으로 한 모바일 앱 기획서`,
     targetUsers,
     coreAction,
     monetization: {

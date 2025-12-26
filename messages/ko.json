@@ -1,0 +1,167 @@
+{
+  "common": {
+    "appName": "AutoAppArch",
+    "mobileApp": "모바일 앱",
+    "mobileAppArchitecture": "모바일 앱 설계안 생성",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "close": "닫기",
+    "copy": "복사",
+    "save": "저장",
+    "cancel": "취소",
+    "confirm": "확인",
+    "delete": "삭제",
+    "edit": "편집",
+    "view": "보기"
+  },
+  "nav": {
+    "createApp": "앱 만들기",
+    "history": "히스토리",
+    "pricing": "요금제",
+    "about": "소개"
+  },
+  "keywordInput": {
+    "title": "키워드 입력",
+    "description": "앱에 포함하고 싶은 키워드를 입력하세요",
+    "placeholder": "예: 영어, 공부 / 분실물, 지도 / 다이어트, 기록",
+    "submitButton": "앱 설계안 자동 생성하기",
+    "generating": "생성 중...",
+    "errorMinKeywords": "최소 1개 이상의 키워드를 입력해주세요.",
+    "warningSingleKeyword": "💡 2개 이상의 키워드를 권장합니다. 더 정확한 설계안이 생성됩니다.",
+    "errorMaxKeywords": "키워드는 최대 6개까지 입력 가능합니다.",
+    "errorKeywordLength": "키워드는 20자 이하로 입력해주세요.",
+    "labelAria": "키워드 입력",
+    "buttonAriaGenerating": "앱 설계안 생성 중",
+    "buttonAria": "앱 설계안 자동 생성하기",
+    "exampleAria": "예시 키워드 사용",
+    "examples": [
+      { "text": "영어, 공부", "keywords": ["영어", "공부"] },
+      { "text": "분실물, 지도", "keywords": ["분실물", "지도"] },
+      { "text": "다이어트, 기록", "keywords": ["다이어트", "기록"] }
+    ]
+  },
+  "ideaTree": {
+    "currentSelection": "현재 선택",
+    "level1": "1차",
+    "level2": "2차",
+    "levelN": "{level}차",
+    "selected": "선택됨",
+    "level1Ideas": "1차 아이디어",
+    "levelNIdeas": "{level}차 분기 아이디어",
+    "level1Description": "키워드를 기준으로 생성된 초기 아이디어입니다",
+    "childrenCount": "{count}개의 하위 안 생성됨",
+    "regenerate": "재생성",
+    "finalizeButton": "이 설계로 결정하기",
+    "regenerateFirstLevel": "다른 1차 아이디어가 필요하신가요?",
+    "regenerateFirstLevelDescription": "재생성하면 다른 7개의 안이 생성됩니다",
+    "regenerateFirstLevelButton": "다른 안 생성",
+    "noIdeasSelected": "선택된 아이디어가 없습니다",
+    "selectToGenerate": "1차 아이디어를 선택하면 2차 분기 아이디어가 생성됩니다",
+    "selectToFinalize": "2차 아이디어를 선택하면 최종 설계안을 생성할 수 있습니다",
+    "comparing": "비교 중",
+    "comparisonTitle": "선택된 안 비교",
+    "generatingPlan": "설계안 생성 중...",
+    "generatingNaming": "앱 이름 추천 생성 중...",
+    "planGenerationFailed": "플랜 생성에 실패했습니다.",
+    "totalCount": "총 {count}개",
+    "finalSelectionCount": "최종 선택 {count}개",
+    "finalSelectionCountWithStage": "최종 선택 {count}개 (마지막 단계 기준)",
+    "canContinueNext": "다음 단계로 계속 진행할 수 있습니다.",
+    "continueNext": "계속 진행하기 (다음 분기 생성)",
+    "moreItems": "+{count}개 더"
+  },
+  "comparisonTable": {
+    "item": "항목",
+    "option": "안",
+    "difficulty": "난이도",
+    "estimatedDuration": "예상 기간"
+  },
+  "architectureCard": {
+    "viewDetails": "상세 보기",
+    "hideDetails": "상세 숨기기",
+    "valueProposition": "가치 제안",
+    "contextTags": "적합한 상황",
+    "topFeatures": "포함 기능 Top 3",
+    "warning": "주의/리스크",
+    "coreScreens": "핵심 화면",
+    "coreFeatures": "핵심 기능",
+    "dataEntities": "데이터 엔티티",
+    "apiEndpoints": "API 엔드포인트",
+    "architectureComponents": "아키텍처 구성요소",
+    "difficulty": "난이도",
+    "duration": "예상 기간",
+    "targetUser": "핵심 사용자"
+  },
+  "difficulty": {
+    "beginner": "초급",
+    "intermediate": "중급",
+    "advanced": "상급",
+    "beginnerDesc": "단일 구성 중심(기본 인증/기본 로그), 운영 자동화/분산 제외",
+    "intermediateDesc": "캐시/권한/비동기 중 일부 포함, 설정/운영 포인트 증가",
+    "advancedDesc": "고가용성/보안/관측성/운영 포함, 구성요소 증가로 운영 난이도 높음"
+  },
+  "duration": {
+    "desc": "1인 기준 기본 구현+기본 테스트 추정치이며, 외부연동/운영요소 포함 시 증가 가능"
+  },
+  "planDetail": {
+    "description": "이 페이지는 생성될 앱의 기획서입니다.",
+    "title": "자동 생성된 <span>앱 설계안</span>",
+    "inputKeywords": "입력 <span>키워드</span>: {keywords}",
+    "userPerspective": "[사용자 관점]",
+    "developerPerspective": "[개발자 관점]",
+    "userPerspectiveDesc": "앱 최종 사용자의 관점에서 작성된 내용입니다.",
+    "developerPerspectiveDesc": "앱 제작자(개발자)의 관점에서 작성된 내용입니다."
+  },
+  "appNaming": {
+    "title": "앱 이름 추천(프리미엄)",
+    "previewTitle": "추천 앱 이름",
+    "viewAllButton": "전체 이름 후보 보기(프리미엄)",
+    "trademarkNotice": "상표/도메인 중복 여부는 별도 확인이 필요합니다.",
+    "types": {
+      "intuitive": "직관형 (무엇 하는 앱인지 즉시 알 수 있는)",
+      "emotional": "감성형 (동기/습관/성취)",
+      "professional": "전문형 (신뢰/체계/관리)",
+      "casual": "캐주얼형 (가볍고 친근)"
+    }
+  },
+  "loading": {
+    "analyzingKeywords": "키워드를 분석 중입니다…",
+    "generatingIdeas": "1차 아이디어를 생성하고 있습니다…",
+    "regeneratingIdeas": "1차 아이디어를 재생성하고 있습니다…",
+    "generatingPlan": "설계안을 생성하고 있습니다…",
+    "finalizing": "최종 설계안을 생성하고 있습니다…"
+  },
+  "history": {
+    "title": "히스토리",
+    "empty": "저장된 설계안이 없습니다",
+    "noResults": "결과 없음",
+    "createdAt": "생성일"
+  },
+  "footer": {
+    "description": "키워드로 앱 설계안을 자동 생성하는 도구",
+    "allRightsReserved": "© 2024 AutoAppArch. All rights reserved.",
+    "services": "서비스",
+    "information": "정보",
+    "contact": "문의"
+  },
+  "saveButton": {
+    "save": "설계안 저장하기",
+    "saving": "저장 중...",
+    "saveAria": "설계안 저장하기",
+    "savingAria": "설계안 저장 중",
+    "savedMessage": "설계안이 저장되었습니다. (히스토리에서 확인)",
+    "viewSaved": "내 설계안 바로 보기",
+    "viewSavedAria": "저장된 설계안 보기",
+    "createNew": "다른 키워드로 설계안 만들기",
+    "createNewAria": "새 설계안 만들기",
+    "savedNote": "저장한 설계안은 상단 메뉴 '히스토리'에서 언제든 확인할 수 있습니다.",
+    "errorNoPlanOrSession": "plan 또는 session이 필요합니다.",
+    "errorSaveFailed": "저장에 실패했습니다."
+  },
+  "errors": {
+    "generationFailed": "아이디어 생성에 실패했습니다. 다시 시도해주세요.",
+    "saveFailed": "저장에 실패했습니다.",
+    "deleteFailed": "삭제에 실패했습니다."
+  }
+}
+

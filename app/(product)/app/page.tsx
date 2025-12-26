@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Session, Node, PlanResult, AppType } from "@/lib/types";
 import { getSessionById, saveSession } from "@/lib/storage";
 import { generateFirstLevelIdeas } from "@/lib/generateIdeas";
@@ -19,6 +20,9 @@ import PlanDetail from "@/components/PlanDetail";
 export default function AppPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const tCommon = useTranslations("common");
+  const tLoading = useTranslations("loading");
+  const tIdeaTree = useTranslations("ideaTree");
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -52,11 +56,10 @@ export default function AppPage() {
     
     // URL 파라미터로 키워드가 전달된 경우 자동으로 처리
     const keywordsParam = searchParams.get("keywords");
-    const typeParam = searchParams.get("type") as AppType | null;
     
     if (keywordsParam && !session && !isLoading && processedKeywordsRef.current !== keywordsParam) {
       const keywords = keywordsParam.split(",").filter(k => k.trim().length > 0);
-      const selectedType = typeParam === "web" ? "web" : "app";
+      const selectedType: AppType = "app"; // 모바일 앱만 지원
       
       if (keywords.length > 0) {
         processedKeywordsRef.current = keywordsParam;
@@ -64,11 +67,11 @@ export default function AppPage() {
         // 직접 처리 로직 실행
         const processKeywords = async () => {
           setIsLoading(true);
-          setLoadingMessage("키워드를 분석 중입니다…");
+          setLoadingMessage(tLoading("analyzingKeywords"));
 
           try {
             await new Promise((resolve) => setTimeout(resolve, 600));
-            setLoadingMessage("1차 아이디어를 생성하고 있습니다…");
+            setLoadingMessage(tLoading("generatingIdeas"));
 
             // 최소 0.8초, 최대 1.2초 대기
             const minDelay = 800;
@@ -124,11 +127,11 @@ export default function AppPage() {
   // 키워드 입력 후 1차 아이디어 생성
   const handleSubmit = async (keywords: string[], selectedType: AppType) => {
     setIsLoading(true);
-    setLoadingMessage("키워드를 분석 중입니다…");
+    setLoadingMessage(tLoading("analyzingKeywords"));
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      setLoadingMessage("1차 아이디어를 생성하고 있습니다…");
+      setLoadingMessage(tLoading("generatingIdeas"));
 
       // 최소 0.8초, 최대 1.2초 대기
       const minDelay = 800;
@@ -176,16 +179,15 @@ export default function AppPage() {
     if (!session) return;
     
     setIsLoading(true);
-    setLoadingMessage("1차 아이디어를 재생성하고 있습니다…");
+    setLoadingMessage(tLoading("regeneratingIdeas"));
     
-    // 시드 증가하여 다른 안이 나오도록
-    const newSeed = regenerationSeed + 1;
+    // 시드를 시간 기반으로 생성하여 매번 다른 안이 나오도록
+    const newSeed = Date.now();
     setRegenerationSeed(newSeed);
     
     setTimeout(() => {
       // 모든 노드 제거하고 새로운 1차 아이디어만 생성 (하위 노드 모두 제거)
-      const selectedType: "app" | "web" =
-        session.selectedType === "web" ? "web" : "app";
+      const selectedType: AppType = "app"; // 모바일 앱만 지원
       
       const newNodes = generateFirstLevelIdeas(
         session.keywords ?? [],
@@ -493,18 +495,22 @@ export default function AppPage() {
           {/* 키워드 정보 표시 */}
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">
-                마인드맵 아이디어 생성
-              </h2>
-              <p className="text-sm text-gray-500 mb-4">
-                키워드: <span className="font-medium text-gray-700">{(session.keywords || []).join(", ")}</span>
-                {session.selectedType && (
-                  <span className="ml-3">
-                    유형: <span className="font-medium text-gray-700">
-                      {session.selectedType === "app" ? "모바일 앱" : "웹 서비스"}
-                    </span>
-                  </span>
-                )}
+              <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-4 mb-2">
+                <h2 className="text-xl font-semibold text-gray-900 tracking-tight flex-shrink-0">
+                  마인드맵 아이디어 생성
+                </h2>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-600 space-y-0.5 leading-tight">
+                    <div>초급: 핵심 기능 위주, 단일 흐름, 운영 요소 최소</div>
+                    <div>중급: 권한/데이터 확장/기본 자동화 일부 포함</div>
+                    <div>고급: 운영/보안/관측/자동화 포함, 구성요소 많아 복잡</div>
+                    <div>기간: 1인 개발 기준의 대략적 구현+기본 테스트 추정치(연동/운영 포함 시 증가)</div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mb-1">{tCommon("mobileAppArchitecture")}</p>
+              <p className="text-sm text-gray-700 mb-4">
+                키워드: <span className="font-medium text-gray-900">{(session.keywords || []).join(", ")}</span>
               </p>
               {!isFromHistory && (
                 <SaveButton
@@ -521,18 +527,17 @@ export default function AppPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-900 mb-1">
-                    다른 1차 아이디어가 필요하신가요?
+                    {tIdeaTree("regenerateFirstLevel")}
                   </p>
                   <p className="text-xs text-gray-500">
-                    재생성하면 다른 7개의 안이 생성됩니다
+                    {tIdeaTree("regenerateFirstLevelDescription")}
                   </p>
                 </div>
                 <button
                   onClick={handleRegenerateFirstLevel}
-                  disabled={isLoading}
-                  className="px-4 h-10 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 h-10 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
                 >
-                  {isLoading ? "생성 중..." : "1차 아이디어 재생성"}
+                  {tIdeaTree("regenerateFirstLevelButton")}
                 </button>
               </div>
             </div>
@@ -799,9 +804,10 @@ export default function AppPage() {
           {showFinalPlan && finalPlanResult && session && (
             <div className="space-y-6">
               <div className="bg-white rounded-lg border-2 border-gray-900 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 tracking-tight">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1 tracking-tight">
                   최종 설계안이 완성되었습니다!
                 </h3>
+                <p className="text-xs text-gray-500 mb-2">모바일 앱 설계안 생성</p>
                 <p className="text-sm text-gray-500">
                   아래 설계안을 확인하세요.
                 </p>

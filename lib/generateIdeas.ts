@@ -11,8 +11,7 @@ export function generateFirstLevelIdeas(
   seed?: number // 재생성 시 다른 결과를 위해 시드 사용
 ): Node[] {
   const keywordStr = keywords.join(" + ");
-  const isApp = selectedType === "app";
-  const typeStr = isApp ? "앱" : "웹 서비스";
+  const typeStr = "앱"; // 모바일 앱만 지원
 
   // 다양한 아이디어 방향성 풀 (재생성 시 다른 안이 나오도록)
   // 금지 단어 제거: '혁신적', '최적화된', '실용적', '효율적' 등 형용사 사용 금지
@@ -82,7 +81,7 @@ export function generateFirstLevelIdeas(
     {
       label: "6안",
       title: `자동화 ${keywordStr} ${typeStr}`,
-      summary: `스케줄 실행, 규칙 기반 처리, 웹훅 연동 기능 포함`,
+      summary: `스케줄 실행, 규칙 기반 처리, 푸시 알림 연동 기능 포함`,
     },
     {
       label: "7안",
@@ -128,12 +127,20 @@ export function generateFirstLevelIdeas(
   ];
 
   // 시드 기반으로 선택 (재생성 시 다른 안이 나오도록)
-  const useSeed = seed !== undefined ? seed : Math.floor(Date.now() / 1000) % allIdeaTemplates.length;
-  const shuffled = [...allIdeaTemplates];
+  // 시드를 사용하여 시작 오프셋을 결정하고, 그 위치부터 다른 순서로 선택
+  const useSeed = seed !== undefined ? seed : Math.floor(Date.now() / 1000);
   
-  // 간단한 셔플 (시드 기반)
+  // 시드 기반 간단한 PRNG (선형 합동 생성기)
+  let randomSeed = useSeed;
+  const nextRandom = () => {
+    randomSeed = (randomSeed * 1103515245 + 12345) & 0x7fffffff;
+    return randomSeed / 0x7fffffff;
+  };
+  
+  // Fisher-Yates 셔플 (시드 기반)
+  const shuffled = [...allIdeaTemplates];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = (useSeed + i) % (i + 1);
+    const j = Math.floor(nextRandom() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
@@ -165,8 +172,7 @@ export function generateNextLevelIdeas(
   count: number = 5
 ): Node[] {
   const keywordStr = keywords.join(" + ");
-  const isApp = selectedType === "app";
-  const typeStr = isApp ? "앱" : "웹 서비스";
+  const typeStr = "앱"; // 모바일 앱만 지원
   const level = (parentNode.level as number) + 1;
 
   // 레벨별 라벨 패턴
@@ -179,13 +185,11 @@ export function generateNextLevelIdeas(
   const labels = labelPatterns[level] || ["안 1", "안 2", "안 3", "안 4", "안 5"];
 
   // 키워드 기반으로 기본 화면/기능/엔티티 생성
-  const baseScreens = generateBaseScreens(keywords, isApp);
+  const baseScreens = generateBaseScreens(keywords, true); // 모바일 앱만
   const baseFeatures = generateBaseFeatures(keywords);
   const baseEntities = generateBaseEntities(keywords);
   const baseApis = generateBaseApis(keywords);
-  const baseArchitecture = isApp 
-    ? ["React Native", "Node.js", "PostgreSQL", "Firebase Auth", "Vercel"]
-    : ["Next.js", "Node.js", "PostgreSQL", "NextAuth", "Vercel"];
+  const baseArchitecture = ["React Native", "Node.js", "PostgreSQL", "Firebase Auth", "Vercel"];
 
   // A~E 안별 스펙 생성
   const specs: ImplementationSpec[] = [
@@ -402,12 +406,10 @@ export function generateNextLevelIdeas(
   });
 }
 
-// 키워드 기반 기본 화면 생성
+// 키워드 기반 기본 화면 생성 (모바일 앱만 지원)
 function generateBaseScreens(keywords: string[], isApp: boolean): string[] {
-  const base = isApp 
-    ? ["홈", `${keywords[0]} 목록`, `${keywords[0]} 추가`, "통계", "설정"]
-    : ["대시보드", `${keywords[0]} 목록`, `${keywords[0]} 추가`, "분석", "설정"];
-  return base;
+  // 모바일 앱 전용 화면
+  return ["홈", `${keywords[0]} 목록`, `${keywords[0]} 추가`, "통계", "설정"];
 }
 
 // 키워드 기반 기본 기능 생성

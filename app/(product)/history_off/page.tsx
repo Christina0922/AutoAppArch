@@ -230,15 +230,9 @@ export default function HistoryPage() {
                             <h3 className="text-lg font-semibold text-gray-900 mb-2 tracking-tight">
                               마인드맵 아이디어 트리
                             </h3>
-                            <p className="text-base text-gray-500 mb-3">
-                              <span className="font-medium text-gray-700">키워드</span>: {(session.keywords || []).join(", ")}
-                              {session.selectedType && (
-                                <span className="ml-3">
-                                  유형: <span className="font-medium text-gray-700">
-                                    {session.selectedType === "app" ? "모바일 앱" : "웹 서비스"}
-                                  </span>
-                                </span>
-                              )}
+                            <p className="text-xs text-gray-500 mb-1">모바일 앱 설계안 생성</p>
+                            <p className="text-base text-gray-700 mb-3">
+                              <span className="font-medium text-gray-900">키워드</span>: {(session.keywords || []).join(", ")}
                             </p>
                             <p className="text-sm text-gray-400 mb-2">
                               노드 {(session.nodes || []).length}개, 선택 {(session.selectedNodeIds || []).length}개

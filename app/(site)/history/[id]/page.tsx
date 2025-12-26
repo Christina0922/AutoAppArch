@@ -179,15 +179,9 @@ export default function HistoryDetailPage() {
             <p className="text-sm text-gray-400 mb-1">
               생성일: {new Date(session.createdAt).toLocaleString("ko-KR")}
             </p>
-            <p className="text-sm text-gray-400">
-              키워드: <span className="font-medium text-gray-700">{(session.keywords || []).join(", ")}</span>
-              {session.selectedType && (
-                <span className="ml-3">
-                  유형: <span className="font-medium text-gray-700">
-                    {session.selectedType === "app" ? "모바일 앱" : "웹 서비스"}
-                  </span>
-                </span>
-              )}
+            <p className="text-xs text-gray-500 mb-1">모바일 앱 설계안 생성</p>
+            <p className="text-sm text-gray-700">
+              키워드: <span className="font-medium text-gray-900">{(session.keywords || []).join(", ")}</span>
             </p>
           </div>
         </div>

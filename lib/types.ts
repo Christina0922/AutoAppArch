@@ -1,6 +1,6 @@
 // W:\AutoAppArch\lib\types.ts
 
-export type AppType = "app" | "web";
+export type AppType = "app"; // 모바일 앱만 지원
 
 // 구현 스펙 타입
 export type ImplementationSpec = {
@@ -96,19 +96,22 @@ export type AppNamingCandidate = {
   name: string;
   reason: string;
   tagline: string;
+  tags?: string[]; // 태그 2개 (선택적, 하위 호환성)
 };
 
 export type AppNamingPreview = {
   name: string;
   tagline: string;
   reason: string;
+  tags?: string[]; // 태그 2개 (선택적, 하위 호환성)
 };
 
 export type AppNaming = {
   preview: AppNamingPreview;
   premium: {
-    literal: AppNamingCandidate[];
-    brand: AppNamingCandidate[];
-    short: AppNamingCandidate[];
+    intuitive: AppNamingCandidate[]; // 직관형
+    emotional: AppNamingCandidate[]; // 감성형
+    professional: AppNamingCandidate[]; // 전문형
+    casual: AppNamingCandidate[]; // 캐주얼형
   };
 };

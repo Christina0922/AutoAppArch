@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { PlanResult } from "@/lib/types";
 import AppNamingSection from "./AppNamingSection";
 
@@ -48,6 +49,7 @@ function ProgressSection(): React.ReactElement {
 
 export default function PlanDetail(props: PlanDetailProps): JSX.Element {
   const { result, keywords = [], showProgress = false, isPremium = false, onShowPaywall = () => {}, finalSelected = false } = props;
+  const t = useTranslations("planDetail");
   const shouldShowProgress: boolean = Boolean(showProgress as boolean);
   
   return (
@@ -55,18 +57,18 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
       {/* 상단 안내 */}
       <div className="bg-white rounded-lg border border-gray-100 p-4">
         <p className="text-sm text-gray-600 text-center">
-          이 페이지는 생성될 앱의 기획서입니다.
+          {t("description")}
         </p>
       </div>
 
       {/* 자동 생성된 앱 설계안 헤더 - 고정 요소 */}
       <div className="bg-white rounded-lg border border-gray-100 p-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">
-          자동 생성된 <span className="text-gray-600">앱 설계안</span>
+          <span dangerouslySetInnerHTML={{ __html: t("title") }} />
         </h1>
         {keywords.length > 0 && (
           <p className="text-sm text-gray-500 mt-2">
-            입력 <span className="font-medium text-gray-700">키워드</span>: {keywords.join(", ")}
+            <span dangerouslySetInnerHTML={{ __html: t("inputKeywords").replace("{keywords}", keywords.join(", ")) }} />
           </p>
         )}
       </div>
@@ -82,11 +84,13 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
       {/* [사용자 관점]과 [개발자 관점] 섹션 분리 */}
       {(() => {
         const sectionsForRendering = (result.sectionsForRendering as Array<{ heading: string; bullets: string[] }>) || [];
+        const userPerspectiveLabel = t("userPerspective");
+        const developerPerspectiveLabel = t("developerPerspective");
         const userSections = sectionsForRendering.filter((s) =>
-          s.heading.startsWith("[사용자 관점]")
+          s.heading.startsWith(userPerspectiveLabel)
         );
         const developerSections = sectionsForRendering.filter((s) =>
-          s.heading.startsWith("[개발자 관점]")
+          s.heading.startsWith(developerPerspectiveLabel)
         );
 
         return (
@@ -95,15 +99,15 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
             <div className="space-y-6">
               <div className="bg-gray-50 rounded-lg border-2 border-gray-200 p-4">
                 <h2 className="text-lg font-bold text-gray-900 tracking-tight">
-                  [사용자 관점]
+                  {userPerspectiveLabel}
                 </h2>
                 <p className="text-sm text-gray-700 mt-1">
-                  앱 최종 사용자의 관점에서 작성된 내용입니다.
+                  {t("userPerspectiveDesc")}
                 </p>
               </div>
 
               {userSections.map((section, idx) => {
-                const cleanHeading = section.heading.replace("[사용자 관점] ", "");
+                const cleanHeading = section.heading.replace(`${userPerspectiveLabel} `, "");
                 return (
                   <div
                     key={idx}
@@ -132,15 +136,15 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
             <div className="space-y-6">
               <div className="bg-gray-50 rounded-lg border-2 border-gray-300 p-4">
                 <h2 className="text-lg font-bold text-gray-900 tracking-tight">
-                  [개발자 관점]
+                  {developerPerspectiveLabel}
                 </h2>
                 <p className="text-sm text-gray-700 mt-1">
-                  앱 제작자(개발자)의 관점에서 작성된 내용입니다.
+                  {t("developerPerspectiveDesc")}
                 </p>
               </div>
 
               {developerSections.map((section, idx) => {
-                const cleanHeading = section.heading.replace("[개발자 관점] ", "");
+                const cleanHeading = section.heading.replace(`${developerPerspectiveLabel} `, "");
                 return (
                   <div
                     key={idx}
@@ -168,8 +172,8 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
         );
       })()}
 
-      {/* 앱 이름 추천 섹션 - 최종 확정 후에만 표시 */}
-      {finalSelected && result.appNaming && (
+      {/* 앱 이름 추천 섹션 - appNaming이 있으면 항상 표시 */}
+      {result.appNaming && (
         <AppNamingSection
           appNaming={result.appNaming as any}
           isPremium={isPremium}

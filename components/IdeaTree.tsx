@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Node, AppType, ImplementationSpec } from "@/lib/types";
 import { generateNextLevelIdeas } from "@/lib/generateIdeas";
 import ArchitectureCard from "./ArchitectureCard";
-import BadgeWithTooltip from "./BadgeWithTooltip";
-import DifficultyDurationInfo from "./DifficultyDurationInfo";
 
 interface IdeaTreeProps {
   sessionId: string;
@@ -273,34 +272,51 @@ export default function IdeaTree({
     return path;
   };
 
+  const t = useTranslations("ideaTree");
   const selectionPath = getSelectionPath();
   const finalSelectedTitle = finalSelectedNodes.length > 0 ? finalSelectedNodes[0].title : null;
 
   return (
     <div className="space-y-8">
-      {/* 상태 표시바 */}
+      {/* 상태 표시바 - 개선된 형식 */}
       {selectionPath.length > 0 && (
-        <div className="bg-white rounded-lg border-2 border-gray-200 p-4 sticky top-4 z-20 shadow-sm">
-          <div className="flex items-center gap-2 text-sm text-gray-700">
-            <span className="font-semibold">선택 경로:</span>
-            {selectionPath.map((title, idx) => (
-              <span key={idx} className="flex items-center gap-2">
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">{title}</span>
-                {idx < selectionPath.length - 1 && <span className="text-gray-400">→</span>}
+        <div className="bg-white rounded-lg border-2 border-gray-200 p-4 sticky top-20 z-20 shadow-sm mb-6">
+          <div className="flex items-center gap-2 text-sm text-gray-900">
+            <span className="font-semibold">{t("currentSelection")}:</span>
+            {selectionPath.length === 1 && (
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
+                {t("level1")} {selectionPath[0]}
               </span>
-            ))}
-            <div className="ml-auto flex items-center gap-2">
-              <DifficultyDurationInfo />
-              {finalCount > 0 && (
-                <span className="text-xs text-gray-500">
-                  {finalCount}개 선택됨
+            )}
+            {selectionPath.length === 2 && (
+              <>
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
+                  {t("level1")} {selectionPath[0]}
                 </span>
-              )}
-            </div>
+                <span className="text-gray-600">/</span>
+                <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
+                  {t("level2")} {selectionPath[1]}
+                </span>
+              </>
+            )}
+            {selectionPath.length > 2 && (
+              <>
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
+                  {t("level1")} {selectionPath[0]}
+                </span>
+                <span className="text-gray-600">/</span>
+                <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
+                  {t("level2")} {selectionPath[1]}
+                </span>
+                <span className="text-gray-600">/</span>
+                <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded font-medium">
+                  {t("levelN", { level: selectionPath.length - 1 })} {selectionPath[selectionPath.length - 1]}
+                </span>
+              </>
+            )}
           </div>
         </div>
       )}
-
 
       {/* 레벨별로 렌더링 */}
       {Object.keys(nodesByLevel)
@@ -336,23 +352,23 @@ export default function IdeaTree({
                       level === 6 ? "text-red-900" :
                       "text-gray-900"
                     }`}>
-                      {level === 2 ? "1차 아이디어" : `${level - 1}차 분기 아이디어`}
+                      {level === 2 ? t("level1Ideas") : t("levelNIdeas", { level: level - 1 })}
                     </h3>
                     {level === 2 && (
                       <p className="text-sm text-gray-500 mt-1">
-                        키워드를 기준으로 생성된 초기 아이디어입니다
+                        {t("level1Description")}
                       </p>
                     )}
                     {level > 2 && (
                       <p className="text-sm text-gray-500 mt-1">
-                        선택된 상위 안을 기준으로 생성된 분기 아이디어입니다
+                        {t("levelNDescription")}
                       </p>
                     )}
                   </div>
                 </div>
                 {level > 2 && (
                   <p className="text-sm text-gray-500">
-                    총 {levelNodes.length}개
+                    {t("totalCount", { count: levelNodes.length })}
                   </p>
                 )}
               </div>
@@ -401,13 +417,12 @@ export default function IdeaTree({
                           </div>
                           <span className="text-gray-400">→</span>
                           <span className="text-sm text-gray-500">
-                            {children.length}개의 하위 안 생성됨
+                            {t("childrenCount", { count: children.length })}
                           </span>
                           {isParentSelected && (
                             <div className="ml-auto flex items-center gap-2">
-                              <DifficultyDurationInfo />
                               <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded whitespace-nowrap">
-                                선택됨
+                                {t("selected")}
                               </span>
                             </div>
                           )}
@@ -430,7 +445,7 @@ export default function IdeaTree({
                                 hasChildren={nodes.some((n) => (n.parentId as string | null) === node.id)}
                                 onRegenerate={() => regenerateChildren(node.id)}
                                 isRecommended={node.id === recommendedId}
-                                isDeveloperMode={true}
+                                isDeveloperMode={false}
                               />
                             ));
                           })()}
@@ -448,65 +463,45 @@ export default function IdeaTree({
       {finalCount > 1 && finalSelectedNodes.every(n => n.spec) && (
         <div className="bg-white rounded-lg border-2 border-gray-200 pt-6 px-6 pb-4">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 tracking-tight">
-            선택된 안 비교
+            {t("comparisonTitle")}
           </h3>
           <ComparisonTable nodes={finalSelectedNodes} />
         </div>
       )}
 
-      {/* 선택 후 마무리/계속 진행 선택 */}
+      {/* 선택 후 계속 진행 버튼 */}
       {canGenerateNext && (
         <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
           <div className="mb-4">
             <p className="text-base font-medium text-gray-900 mb-1">
-              최종 선택 {finalCount}개{finalStage !== "stage1" && " (마지막 단계 기준)"}
+              {finalStage !== "stage1" 
+                ? t("finalSelectionCountWithStage", { count: finalCount })
+                : t("finalSelectionCount", { count: finalCount })}
             </p>
-            <p className="text-sm text-gray-500">
-              여기서 마무리할까요, 아니면 계속 진행할까요?
+            <p className="text-sm text-gray-700">
+              {t("canContinueNext")}
             </p>
           </div>
-          <div className="flex gap-3">
-            {onFinalize && (
-              <button
-                onClick={onFinalize}
-                className="flex-1 h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-              >
-                여기서 마무리하기
-              </button>
-            )}
-            <button
-              onClick={generateNextLevel}
-              className="flex-1 h-12 bg-white text-gray-900 text-base font-medium rounded-md border-2 border-gray-900 hover:bg-gray-50 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-            >
-              계속 진행하기 (다음 분기 생성)
-            </button>
-          </div>
+          <button
+            onClick={generateNextLevel}
+            className="w-full h-12 bg-white text-gray-900 text-base font-medium rounded-md border-2 border-gray-900 hover:bg-gray-50 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+          >
+            {t("continueNext")}
+          </button>
         </div>
       )}
 
-      {/* Floating CTA */}
+      {/* 최종 확정 CTA - 하단 고정 버튼 하나로 통일 */}
       {finalCount > 0 && finalSelectedTitle && onFinalize && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-30">
-          <button
-            onClick={onFinalize}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all text-base font-semibold flex items-center gap-2"
-          >
-            <span>{finalSelectedTitle}</span>
-            <span>으로 설계 시작하기</span>
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <div className="sticky bottom-6 z-30 mt-8">
+          <div className="bg-white rounded-lg border-2 border-gray-900 shadow-lg p-4">
+            <button
+              onClick={onFinalize}
+              className="w-full h-12 bg-gray-900 text-white text-base font-semibold rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
-          </button>
+              {t("finalizeButton")}
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -519,6 +514,8 @@ interface ComparisonTableProps {
 }
 
 function ComparisonTable({ nodes }: ComparisonTableProps) {
+  const t = useTranslations("comparisonTable");
+  const tArchitecture = useTranslations("architectureCard");
   const specs = nodes.map(n => n.spec as ImplementationSpec).filter(Boolean);
   if (specs.length === 0) return null;
 
@@ -546,35 +543,16 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
     return results.every(r => r === results[0]);
   };
 
-  // 난이도 툴팁 텍스트
-  const getDifficultyTooltip = (difficulty?: string) => {
-    switch (difficulty) {
-      case "초급":
-        return "기본 CRUD 기능, 단순 화면 구성, 기본 인증만 포함\n예: 로그 추가/조회, 기본 통계, 사용자 프로필";
-      case "중급":
-        return "검색/필터, 태그, 알림, 목표 설정 등 확장 기능 포함\n예: 검색 및 필터링, 태그 관리, 알림 설정, 목표 추적";
-      case "상급":
-        return "성능 최적화(캐싱/배치), ML/추천 알고리즘, 복잡한 권한 시스템 등 포함\n예: 성능 모니터링, 추천 알고리즘, 권한 관리, 감사 로그";
-      default:
-        return "";
-    }
-  };
-
-  // 기간 툴팁 텍스트
-  const getDurationTooltip = (duration?: string) => {
-    return `1명의 개발자가 풀타임으로 작업할 때의 예상 기간입니다.\n\n기간은 다음을 포함합니다:\n• 프론트엔드 개발\n• 백엔드 API 개발\n• 데이터베이스 설계\n• 기본 배포 및 테스트\n\n실제 기간은 팀 규모, 경험 수준, 요구사항 변경에 따라 달라질 수 있습니다.`;
-  };
-
   return (
     <div className="space-y-3">
       <div className="overflow-x-auto">
       <table className="w-full text-base border-collapse">
         <thead>
           <tr className="border-b-2 border-gray-300">
-            <th className="text-left py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">항목</th>
+            <th className="text-left py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">{t("item")}</th>
             {nodes.map((node, idx) => (
               <th key={node.id} className="text-center py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-50 min-w-[100px]">
-                {(node.label as string) ?? `${idx + 1}안`}
+                {(node.label as string) ?? `${idx + 1}${t("option")}`}
               </th>
             ))}
           </tr>
@@ -582,34 +560,26 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
         <tbody>
           {/* 난이도/기간 */}
           <tr className="border-b border-gray-200 bg-gray-50">
-            <td className="py-1.5 px-2.5 font-medium text-gray-700 sticky left-0 z-10 bg-gray-50">난이도</td>
+            <td className="py-1.5 px-2.5 font-medium text-gray-700 sticky left-0 z-10 bg-gray-50">{t("difficulty")}</td>
             {specs.map((spec, idx) => (
               <td key={idx} className="py-1.5 px-2.5 text-center">
-                <BadgeWithTooltip
-                  tooltipText={getDifficultyTooltip(spec.difficulty)}
-                  className={`inline-block text-sm px-2 py-0.5 rounded font-medium cursor-help ${
-                    spec.difficulty === "초급" ? "bg-green-100 text-green-800" :
-                    spec.difficulty === "중급" ? "bg-yellow-100 text-yellow-800" :
-                    "bg-red-100 text-red-800"
-                  }`}
-                  ariaLabel={`난이도: ${spec.difficulty}. 자세한 기준을 보려면 클릭하세요.`}
-                >
+                <span className={`inline-block text-sm px-2 py-0.5 rounded font-medium ${
+                  spec.difficulty === "초급" ? "bg-green-100 text-green-800" :
+                  spec.difficulty === "중급" ? "bg-yellow-100 text-yellow-800" :
+                  "bg-red-100 text-red-800"
+                }`}>
                   {spec.difficulty}
-                </BadgeWithTooltip>
+                </span>
               </td>
             ))}
           </tr>
           <tr className="border-b border-gray-200 bg-gray-50">
-            <td className="py-1.5 px-2.5 font-medium text-gray-700 sticky left-0 z-10 bg-gray-50">예상 기간</td>
+            <td className="py-1.5 px-2.5 font-medium text-gray-700 sticky left-0 z-10 bg-gray-50">{t("estimatedDuration")}</td>
             {specs.map((spec, idx) => (
               <td key={idx} className="py-1.5 px-2.5 text-center">
-                <BadgeWithTooltip
-                  tooltipText={getDurationTooltip(spec.estimatedDuration)}
-                  className="inline-block text-gray-700 font-medium cursor-help"
-                  ariaLabel={`예상 기간: ${spec.estimatedDuration}. 자세한 기준을 보려면 클릭하세요.`}
-                >
+                <span className="inline-block text-gray-700 font-medium">
                   {spec.estimatedDuration}
-                </BadgeWithTooltip>
+                </span>
               </td>
             ))}
           </tr>
@@ -617,7 +587,7 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
           {/* 핵심 화면 */}
           <tr className="border-b-2 border-gray-300">
             <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              핵심 화면
+              {tArchitecture("coreScreens")}
             </td>
           </tr>
           {allScreens.map((screen) => {
@@ -655,7 +625,7 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
           {/* 핵심 기능 */}
           <tr className="border-b-2 border-gray-300">
             <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              핵심 기능
+              {tArchitecture("coreFeatures")}
             </td>
           </tr>
           {allFeatures.map((feature) => {
@@ -693,7 +663,7 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
           {/* 데이터 엔티티 */}
           <tr className="border-b-2 border-gray-300">
             <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              데이터 엔티티
+              {tArchitecture("dataEntities")}
             </td>
           </tr>
           {allEntities.map((entity) => {
@@ -731,7 +701,7 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
           {/* API */}
           <tr className="border-b-2 border-gray-300">
             <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              API
+              {tArchitecture("apiEndpoints")}
             </td>
           </tr>
           {allApis.map((api) => {
@@ -769,7 +739,7 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
           {/* 아키텍처 */}
           <tr className="border-b-2 border-gray-300">
             <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              아키텍처 구성요소
+              {tArchitecture("architectureComponents")}
             </td>
           </tr>
           {allArchitecture.map((arch, archIdx) => {
@@ -843,6 +813,7 @@ function IdeaCard({
   hasChildren,
   onRegenerate,
 }: IdeaCardProps) {
+  const t = useTranslations("ideaTree");
   const spec = node.spec as ImplementationSpec | undefined;
   const hasSpec = !!spec;
   
@@ -880,25 +851,6 @@ function IdeaCard({
       case "상급": return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
-  };
-
-  // 난이도 툴팁 텍스트
-  const getDifficultyTooltip = (difficulty?: string) => {
-    switch (difficulty) {
-      case "초급":
-        return "기본 CRUD 기능, 단순 화면 구성, 기본 인증만 포함\n예: 로그 추가/조회, 기본 통계, 사용자 프로필";
-      case "중급":
-        return "검색/필터, 태그, 알림, 목표 설정 등 확장 기능 포함\n예: 검색 및 필터링, 태그 관리, 알림 설정, 목표 추적";
-      case "상급":
-        return "성능 최적화(캐싱/배치), ML/추천 알고리즘, 복잡한 권한 시스템 등 포함\n예: 성능 모니터링, 추천 알고리즘, 권한 관리, 감사 로그";
-      default:
-        return "";
-    }
-  };
-
-  // 기간 툴팁 텍스트
-  const getDurationTooltip = (duration?: string) => {
-    return `1명의 개발자가 풀타임으로 작업할 때의 예상 기간입니다.\n\n기간은 다음을 포함합니다:\n• 프론트엔드 개발\n• 백엔드 API 개발\n• 데이터베이스 설계\n• 기본 배포 및 테스트\n\n실제 기간은 팀 규모, 경험 수준, 요구사항 변경에 따라 달라질 수 있습니다.`;
   };
   
   return (
@@ -946,9 +898,9 @@ function IdeaCard({
               onRegenerate();
             }}
             className="text-xs text-gray-700 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-50 font-normal antialiased opacity-100"
-            aria-label="재생성"
+            aria-label={t("regenerate")}
           >
-            재생성
+            {t("regenerate")}
           </button>
         )}
       </div>
@@ -961,26 +913,18 @@ function IdeaCard({
         <div className="space-y-3">
           {/* 난이도/기간 배지 */}
           <div className="flex gap-2 flex-wrap">
-            <BadgeWithTooltip
-              tooltipText={getDifficultyTooltip(spec.difficulty)}
-              className={`text-xs px-2 py-1 rounded cursor-help ${getDifficultyColor(spec.difficulty)}`}
-              ariaLabel={`난이도: ${spec.difficulty}. 자세한 기준을 보려면 클릭하세요.`}
-            >
+            <span className={`text-xs px-2 py-1 rounded ${getDifficultyColor(spec.difficulty)}`}>
               {spec.difficulty}
-            </BadgeWithTooltip>
-            <BadgeWithTooltip
-              tooltipText={getDurationTooltip(spec.estimatedDuration)}
-              className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800 cursor-help"
-              ariaLabel={`예상 기간: ${spec.estimatedDuration}. 자세한 기준을 보려면 클릭하세요.`}
-            >
+            </span>
+            <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">
               {spec.estimatedDuration}
-            </BadgeWithTooltip>
+            </span>
           </div>
           
           {/* 핵심 사용자 */}
           <div>
             <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1 antialiased opacity-100">
-              핵심 사용자
+              {tArchitecture("targetUser")}
             </p>
             <p className="text-xs text-gray-700 font-normal antialiased opacity-100 leading-relaxed">{spec.targetUser}</p>
           </div>
@@ -998,7 +942,7 @@ function IdeaCard({
                 </li>
               ))}
               {spec.screens.length > 3 && (
-                <li className="text-gray-600">+{spec.screens.length - 3}개 더</li>
+                <li className="text-gray-600">{t("moreItems", { count: spec.screens.length - 3 })}</li>
               )}
             </ul>
           </div>
@@ -1006,7 +950,7 @@ function IdeaCard({
           {/* 핵심 기능 */}
           <div>
             <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1 antialiased opacity-100">
-              핵심 기능
+              {tArchitecture("coreFeatures")}
             </p>
             <ul className="text-xs text-gray-700 font-normal antialiased opacity-100 space-y-0.5">
               {spec.features.slice(0, 3).map((feature, idx) => (
@@ -1016,7 +960,7 @@ function IdeaCard({
                 </li>
               ))}
               {spec.features.length > 3 && (
-                <li className="text-gray-600">+{spec.features.length - 3}개 더</li>
+                <li className="text-gray-600">{t("moreItems", { count: spec.features.length - 3 })}</li>
               )}
             </ul>
           </div>
@@ -1024,7 +968,7 @@ function IdeaCard({
           {/* 데이터 엔티티 */}
           <div>
             <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1 antialiased opacity-100">
-              데이터 엔티티
+              {tArchitecture("dataEntities")}
             </p>
             <div className="flex flex-wrap gap-1">
               {spec.entities.slice(0, 3).map((entity, idx) => (
