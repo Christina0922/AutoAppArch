@@ -273,47 +273,45 @@ export default function IdeaTree({
   };
 
   const t = useTranslations("ideaTree");
+  const tDifficulty = useTranslations("difficulty");
+  const tDuration = useTranslations("duration");
   const selectionPath = getSelectionPath();
   const finalSelectedTitle = finalSelectedNodes.length > 0 ? finalSelectedNodes[0].title : null;
+
+  // 현재 선택된 레벨의 색상 클래스 결정
+  const getCurrentLevelColorClass = () => {
+    if (finalStage === "stage1") return "bg-blue-100 text-blue-800";
+    if (finalStage === "stage2") return "bg-green-100 text-green-800";
+    if (finalStage === "stage3") return "bg-purple-100 text-purple-800";
+    if (finalStage === "stage4") return "bg-orange-100 text-orange-800";
+    if (finalStage === "stage5") return "bg-red-100 text-red-800";
+    return "bg-blue-100 text-blue-800";
+  };
+
+  const getCurrentLevelLabel = () => {
+    if (finalStage === "stage1") return t("level1");
+    if (finalStage === "stage2") return t("level2");
+    if (finalStage === "stage3") return t("levelN", { level: 3 });
+    if (finalStage === "stage4") return t("levelN", { level: 4 });
+    if (finalStage === "stage5") return t("levelN", { level: 5 });
+    return t("level1");
+  };
 
   return (
     <div className="space-y-8">
       {/* 상태 표시바 - 개선된 형식 */}
-      {selectionPath.length > 0 && (
+      {finalSelectedNodes.length > 0 && (
         <div className="bg-white rounded-lg border-2 border-gray-200 p-4 sticky top-20 z-20 shadow-sm mb-6">
-          <div className="flex items-center gap-2 text-sm text-gray-900">
+          <div className="flex items-center gap-2 flex-wrap text-sm text-gray-900">
             <span className="font-semibold">{t("currentSelection")}:</span>
-            {selectionPath.length === 1 && (
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
-                {t("level1")} {selectionPath[0]}
+            {finalSelectedNodes.map((node, index) => (
+              <span
+                key={node.id}
+                className={`px-2 py-1 ${getCurrentLevelColorClass()} rounded font-medium`}
+              >
+                {getCurrentLevelLabel()} {node.title}
               </span>
-            )}
-            {selectionPath.length === 2 && (
-              <>
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
-                  {t("level1")} {selectionPath[0]}
-                </span>
-                <span className="text-gray-600">/</span>
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
-                  {t("level2")} {selectionPath[1]}
-                </span>
-              </>
-            )}
-            {selectionPath.length > 2 && (
-              <>
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
-                  {t("level1")} {selectionPath[0]}
-                </span>
-                <span className="text-gray-600">/</span>
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
-                  {t("level2")} {selectionPath[1]}
-                </span>
-                <span className="text-gray-600">/</span>
-                <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded font-medium">
-                  {t("levelN", { level: selectionPath.length - 1 })} {selectionPath[selectionPath.length - 1]}
-                </span>
-              </>
-            )}
+            ))}
           </div>
         </div>
       )}
@@ -343,26 +341,44 @@ export default function IdeaTree({
                   }`}>
                     {level === 2 ? "1" : level - 1}
                   </div>
-                  <div>
-                    <h3 className={`text-lg font-semibold tracking-tight ${
-                      level === 2 ? "text-blue-900" :
-                      level === 3 ? "text-green-900" :
-                      level === 4 ? "text-purple-900" :
-                      level === 5 ? "text-orange-900" :
-                      level === 6 ? "text-red-900" :
-                      "text-gray-900"
-                    }`}>
-                      {level === 2 ? t("level1Ideas") : t("levelNIdeas", { level: level - 1 })}
-                    </h3>
-                    {level === 2 && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        {t("level1Description")}
-                      </p>
-                    )}
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <h3 className={`text-lg font-semibold tracking-tight ${
+                        level === 2 ? "text-blue-900" :
+                        level === 3 ? "text-green-900" :
+                        level === 4 ? "text-purple-900" :
+                        level === 5 ? "text-orange-900" :
+                        level === 6 ? "text-red-900" :
+                        "text-gray-900"
+                      }`}>
+                        {level === 2 ? t("level1Ideas") : t("levelNIdeas", { level: level - 1 })}
+                      </h3>
+                      {level === 2 && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          {t("level1Description")}
+                        </p>
+                      )}
+                      {level > 2 && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          {t("levelNDescription")}
+                        </p>
+                      )}
+                    </div>
                     {level > 2 && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        {t("levelNDescription")}
-                      </p>
+                      <div className="text-xs text-gray-600 leading-relaxed border-l border-gray-200 pl-4">
+                        <div className="mb-1.5">
+                          <div className="font-medium mb-1">난이도:</div>
+                          <div className="space-y-0.5">
+                            <div><span className="text-green-700 font-medium">{tDifficulty("beginner")}:</span> {tDifficulty("beginnerDesc")}</div>
+                            <div><span className="text-yellow-700 font-medium">{tDifficulty("intermediate")}:</span> {tDifficulty("intermediateDesc")}</div>
+                            <div><span className="text-red-700 font-medium">{tDifficulty("advanced")}:</span> {tDifficulty("advancedDesc")}</div>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="font-medium">기간: </span>
+                          {tDuration("desc")}
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
