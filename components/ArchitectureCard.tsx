@@ -206,14 +206,6 @@ export default function ArchitectureCard({
 
       {/* 요약 모드 */}
       <div className="space-y-3">
-        {/* 난이도/기간 기준 안내 */}
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-2 text-xs">
-          <p className="text-gray-700 font-medium mb-1">📊 난이도/기간 기준</p>
-          <p className="text-gray-600 leading-relaxed">
-            난이도는 포함된 기능의 복잡도를, 기간은 1명 개발자 풀타임 기준 예상 기간을 나타냅니다. 배지에 마우스를 올리면 자세한 기준을 확인할 수 있습니다.
-          </p>
-        </div>
-
         {/* Status Badges */}
         <div className="flex gap-2 flex-wrap">
           <BadgeWithTooltip
@@ -355,57 +347,52 @@ export default function ArchitectureCard({
                 </ul>
               </div>
 
-              {/* 개발자 모드에서만 표시 */}
-              {isDeveloperMode && (
-                <>
-                  {/* 데이터 엔티티 */}
-                  <div>
-                    <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      데이터 엔티티
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {spec.entities.map((entity, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded font-mono"
-                        >
-                          {entity}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+              {/* 데이터 엔티티 */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  데이터 엔티티
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {spec.entities.map((entity, idx) => (
+                    <span
+                      key={idx}
+                      className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded font-mono"
+                    >
+                      {entity}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-                  {/* API */}
-                  <div>
-                    <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      API 엔드포인트
-                    </p>
-                    <ul className="text-xs text-gray-700 space-y-0.5 font-mono">
-                      {spec.apis.map((api, idx) => (
-                        <li key={idx} className="flex items-start">
-                          <span className="text-gray-400 mr-1">→</span>
-                          <span>{api}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              {/* API */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  API 엔드포인트
+                </p>
+                <ul className="text-xs text-gray-700 space-y-0.5 font-mono">
+                  {spec.apis.map((api, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-gray-400 mr-1">→</span>
+                      <span>{api}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-                  {/* 아키텍처 구성요소 */}
-                  <div>
-                    <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      아키텍처 구성요소
-                    </p>
-                    <ul className="text-xs text-gray-700 space-y-0.5">
-                      {spec.architecture.map((arch, idx) => (
-                        <li key={idx} className="flex items-start">
-                          <span className="text-gray-600 mr-1">•</span>
-                          <span>{arch}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </>
-              )}
+              {/* 아키텍처 구성요소 */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  아키텍처 구성요소
+                </p>
+                <ul className="text-xs text-gray-700 space-y-0.5">
+                  {spec.architecture.map((arch, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-gray-600 mr-1">•</span>
+                      <span>{arch}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </motion.div>
         )}

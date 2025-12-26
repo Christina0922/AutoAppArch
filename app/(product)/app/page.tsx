@@ -261,6 +261,81 @@ export default function AppPage() {
     setFinalizationStep("");
   };
 
+  // 설계 시작하기 - 바로 최종 설계안 생성
+  const handleStartDesign = async () => {
+    if (!session || !session.nodes || !session.selectedNodeIds) return;
+    
+    setIsFinalized(true);
+    setFinalizationProgress(0);
+    setFinalizationStep("최종 설계안 생성 중...");
+    
+    // 선택된 최말단 노드들 찾기
+    const selectedNodes = session.nodes.filter((n) => 
+      session.selectedNodeIds!.includes(n.id)
+    );
+    const maxLevel = selectedNodes.length > 0 
+      ? Math.max(...selectedNodes.map((n) => (n.level as number) ?? 0))
+      : 0;
+    const finalCandidates = selectedNodes.filter((n) => (n.level as number) === maxLevel);
+    
+    // 진행률 업데이트 (30%)
+    setFinalizationProgress(30);
+    setFinalizationStep("설계안 구조 생성 중...");
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    
+    // 최종 설계안 생성
+    setFinalizationProgress(50);
+    setFinalizationStep("타깃 사용자 및 핵심 기능 정리 중...");
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    
+    // 선택된 노드들의 정보를 종합하여 설계안 생성
+    const selectedTitles = finalCandidates.map((n) => n.title).join(", ");
+    const planResult: PlanResult = generatePlan(
+      session.keywords ?? [],
+      normalizeAppType(session.selectedType),
+      selectedTitles
+    );
+    
+    setFinalizationProgress(70);
+    setFinalizationStep("수익 모델 및 리스크 분석 중...");
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    
+    setFinalizationProgress(85);
+    setFinalizationStep("앱 이름 추천 생성 중...");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    
+    // 앱 이름 추천 생성
+    const appNaming = generateAppNaming(
+      session.keywords ?? [],
+      normalizeAppType(session.selectedType),
+      finalCandidates.map((n) => ({ title: n.title, summary: (n.summary as string) ?? "" }))
+    );
+    planResult.appNaming = appNaming;
+    
+    setFinalizationProgress(90);
+    setFinalizationStep("설계안 저장 중...");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    
+    // Session만 저장
+    try {
+      saveSession(session);
+    } catch (error) {
+      console.error("저장 실패:", error);
+    }
+    
+    setFinalizationProgress(100);
+    setFinalizationStep("완료!");
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    
+    // 최종 설계안 표시 및 최종 확정 상태 설정
+    setFinalPlanResult(planResult);
+    setFinalSelected(true);
+    setShowFinalPlan(true);
+    setIsFinalized(false);
+    setFinalizationProgress(0);
+    setFinalizationStep("");
+  };
+
   // 주제 확인 후 최종 설계안 생성 및 저장
   const handleConfirmTopic = async () => {
     if (!session || !generatedTopic || !session.nodes || !session.selectedNodeIds) return;
@@ -473,7 +548,7 @@ export default function AppPage() {
               selectedType={normalizeAppType(session.selectedType)}
               onNodesChange={handleNodesChange}
               onSelectionChange={handleSelectionChange}
-              onFinalize={handleGenerateTopic}
+              onFinalize={handleStartDesign}
             />
           )}
 

@@ -5,6 +5,7 @@ import { Node, AppType, ImplementationSpec } from "@/lib/types";
 import { generateNextLevelIdeas } from "@/lib/generateIdeas";
 import ArchitectureCard from "./ArchitectureCard";
 import BadgeWithTooltip from "./BadgeWithTooltip";
+import DifficultyDurationInfo from "./DifficultyDurationInfo";
 
 interface IdeaTreeProps {
   sessionId: string;
@@ -33,7 +34,6 @@ export default function IdeaTree({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(initialSelectedIds)
   );
-  const [isDeveloperMode, setIsDeveloperMode] = useState(false);
 
   // initialNodes나 initialSelectedIds가 변경될 때 내부 상태 동기화
   useEffect(() => {
@@ -289,40 +289,18 @@ export default function IdeaTree({
                 {idx < selectionPath.length - 1 && <span className="text-gray-400">→</span>}
               </span>
             ))}
-            {finalCount > 0 && (
-              <span className="ml-auto text-xs text-gray-500">
-                {finalCount}개 선택됨
-              </span>
-            )}
+            <div className="ml-auto flex items-center gap-2">
+              <DifficultyDurationInfo />
+              {finalCount > 0 && (
+                <span className="text-xs text-gray-500">
+                  {finalCount}개 선택됨
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* 개발자 모드 토글 */}
-      <div className="flex justify-end">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <span className="text-sm text-gray-700 font-medium">개발자 모드</span>
-          <div className="relative">
-            <input
-              type="checkbox"
-              checked={isDeveloperMode}
-              onChange={(e) => setIsDeveloperMode(e.target.checked)}
-              className="sr-only"
-            />
-            <div
-              className={`w-11 h-6 rounded-full transition-colors ${
-                isDeveloperMode ? "bg-blue-600" : "bg-gray-300"
-              }`}
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
-                  isDeveloperMode ? "translate-x-5" : "translate-x-0.5"
-                } mt-0.5`}
-              />
-            </div>
-          </div>
-        </label>
-      </div>
 
       {/* 레벨별로 렌더링 */}
       {Object.keys(nodesByLevel)
@@ -426,9 +404,12 @@ export default function IdeaTree({
                             {children.length}개의 하위 안 생성됨
                           </span>
                           {isParentSelected && (
-                            <span className="ml-auto px-2 py-1 text-xs bg-blue-600 text-white rounded">
-                              선택됨
-                            </span>
+                            <div className="ml-auto flex items-center gap-2">
+                              <DifficultyDurationInfo />
+                              <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded whitespace-nowrap">
+                                선택됨
+                              </span>
+                            </div>
                           )}
                         </div>
                         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 ml-8 border-l-2 pl-6 items-start ${
@@ -449,7 +430,7 @@ export default function IdeaTree({
                                 hasChildren={nodes.some((n) => (n.parentId as string | null) === node.id)}
                                 onRegenerate={() => regenerateChildren(node.id)}
                                 isRecommended={node.id === recommendedId}
-                                isDeveloperMode={isDeveloperMode}
+                                isDeveloperMode={true}
                               />
                             ));
                           })()}
@@ -586,14 +567,6 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
 
   return (
     <div className="space-y-3">
-      {/* 난이도/기간 기준 안내 */}
-      <div className="bg-gray-50 border border-gray-200 rounded-md p-2 text-xs">
-        <p className="text-gray-700 font-medium mb-1">📊 난이도/기간 기준</p>
-        <p className="text-gray-600 leading-relaxed">
-          난이도는 포함된 기능의 복잡도를, 기간은 1명 개발자 풀타임 기준 예상 기간을 나타냅니다. 배지에 마우스를 올리면 자세한 기준을 확인할 수 있습니다.
-        </p>
-      </div>
-
       <div className="overflow-x-auto">
       <table className="w-full text-base border-collapse">
         <thead>
