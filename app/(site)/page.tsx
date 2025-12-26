@@ -150,6 +150,9 @@ export default function HomePage() {
           <h2 className="text-2xl font-semibold text-gray-900 mb-8 tracking-tight text-center md:text-left">
             생성된 <span className="text-gray-600">설계안 예시</span>
           </h2>
+          <p className="text-sm text-gray-500 mb-6 text-center md:text-left">
+            아래는 실제 생성되는 설계안의 예시입니다. 키워드를 입력하면 여러분만의 설계안이 생성됩니다.
+          </p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
             {sampleResults.map((result, idx) => (
               <PlanPreviewCard

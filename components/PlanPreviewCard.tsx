@@ -20,7 +20,14 @@ export default function PlanPreviewCard({
   // 첫 생성 시에는 "계속 진행하기" 버튼을 숨김
   if (!showContinueButton) {
     return (
-      <div className="h-full flex flex-col bg-white rounded-lg border border-gray-100 p-8">
+      <div className="h-full flex flex-col bg-white rounded-lg border border-gray-100 p-8 relative">
+        {/* 예시 배지 */}
+        <div className="absolute top-4 right-4 z-10">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+            예시
+          </span>
+        </div>
+        
         {/* 자동 생성된 앱 설계안 헤더 */}
         <div className="mb-6 pb-6 border-b border-gray-100">
           <h2 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">

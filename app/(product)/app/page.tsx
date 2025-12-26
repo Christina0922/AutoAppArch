@@ -34,6 +34,7 @@ export default function AppPage() {
   const [showFinalPlan, setShowFinalPlan] = useState(false);
   const [finalSelected, setFinalSelected] = useState(false); // 최종 확정 여부
   const [regenerationSeed, setRegenerationSeed] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const processedKeywordsRef = useRef<string>("");
 
   // URL 파라미터로 저장된 세션을 열었는지 확인
@@ -92,9 +93,12 @@ export default function AppPage() {
             setIsFromHistory(false);
           } catch (error) {
             console.error("Failed to generate ideas:", error);
-            alert("아이디어 생성에 실패했습니다.");
+            setError(
+              error instanceof Error
+                ? error.message
+                : "아이디어 생성에 실패했습니다. 다시 시도해주세요."
+            );
             processedKeywordsRef.current = "";
-          } finally {
             setIsLoading(false);
             setLoadingMessage("");
           }
@@ -147,9 +151,14 @@ export default function AppPage() {
 
       setSession(newSession);
       setIsFromHistory(false);
+      setError(null);
     } catch (error) {
       console.error("Failed to generate ideas:", error);
-      alert("아이디어 생성에 실패했습니다.");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "아이디어 생성에 실패했습니다. 다시 시도해주세요."
+      );
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -356,8 +365,46 @@ export default function AppPage() {
   const finalCandidates = getFinalCandidates();
   const hasFinalCandidates = finalCandidates.length > 0;
 
+  const handleErrorRetry = () => {
+    setError(null);
+    if (!session) {
+      // 세션이 없으면 입력 폼으로 돌아감
+      return;
+    }
+    // 세션이 있으면 다시 시도할 수 있는 옵션 제공
+    router.push("/app");
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-red-900 mb-1">문제가 발생했습니다</h3>
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <div className="ml-4 flex gap-2">
+              <button
+                onClick={handleErrorRetry}
+                className="px-4 py-2 text-sm font-medium text-red-900 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+              >
+                다시 시도
+              </button>
+              <button
+                onClick={() => {
+                  setError(null);
+                  setSession(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              >
+                처음부터
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!session ? (
         <div className="bg-white rounded-lg border border-gray-100 p-8">
           <KeywordInputForm

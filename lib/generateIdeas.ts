@@ -1,4 +1,4 @@
-import { Node, AppType } from "./types";
+import { Node, AppType, ImplementationSpec } from "./types";
 
 /**
  * 1차 아이디어 여러 개 생성 (레벨 2)
@@ -15,113 +15,115 @@ export function generateFirstLevelIdeas(
   const typeStr = isApp ? "앱" : "웹 서비스";
 
   // 다양한 아이디어 방향성 풀 (재생성 시 다른 안이 나오도록)
+  // 금지 단어 제거: '혁신적', '최적화된', '실용적', '효율적' 등 형용사 사용 금지
+  // 대신 구체적인 기능과 구조를 명시
   const allIdeaTemplates = [
     {
       label: "1안",
-      title: `기초 ${keywordStr} ${typeStr}`,
-      summary: `${keywordStr}의 기본 기능에 집중한 ${typeStr}. 초보자 친화적이고 직관적인 인터페이스로 구성됩니다.`,
+      title: `기본 ${keywordStr} ${typeStr}`,
+      summary: `${keywordStr} 로그 추가, 목록 조회, 기본 통계 기능 포함`,
     },
     {
       label: "2안",
-      title: `소셜 기반 ${keywordStr} 플랫폼`,
-      summary: `사용자 간 연결과 공유 기능을 강화한 ${typeStr}. 커뮤니티 중심의 경험을 제공합니다.`,
+      title: `소셜 ${keywordStr} ${typeStr}`,
+      summary: `사용자 간 공유, 댓글, 좋아요 기능 포함`,
     },
     {
       label: "3안",
-      title: `프리미엄 ${keywordStr} 솔루션`,
-      summary: `고급 기능과 맞춤형 서비스를 제공하는 ${typeStr}. 유료 구독 모델 기반입니다.`,
+      title: `프리미엄 ${keywordStr} ${typeStr}`,
+      summary: `유료 구독, 고급 분석, 데이터 내보내기 기능 포함`,
     },
     {
       label: "4안",
-      title: `빠른 실행 ${keywordStr} 도구`,
-      summary: `간결하고 효율적인 ${typeStr}. 핵심 기능만 포함하여 빠른 결과를 제공합니다.`,
+      title: `빠른 실행 ${keywordStr} ${typeStr}`,
+      summary: `최소 화면 구성, 빠른 입력, 간단한 조회 기능 포함`,
     },
     {
       label: "5안",
-      title: `교육 중심 ${keywordStr} 앱`,
-      summary: `학습과 성장에 초점을 둔 ${typeStr}. 단계별 가이드와 피드백 시스템을 포함합니다.`,
+      title: `교육 ${keywordStr} ${typeStr}`,
+      summary: `단계별 가이드, 진행률 추적, 피드백 시스템 포함`,
     },
     {
       label: "6안",
-      title: `데이터 기반 ${keywordStr} 분석 ${typeStr}`,
-      summary: `인사이트와 분석을 제공하는 ${typeStr}. 데이터 시각화와 리포트 기능을 강조합니다.`,
+      title: `분석 ${keywordStr} ${typeStr}`,
+      summary: `차트 시각화, 리포트 생성, 데이터 비교 기능 포함`,
     },
     {
       label: "7안",
-      title: `모바일 최적화 ${keywordStr} ${typeStr}`,
-      summary: `모바일 경험에 특화된 ${typeStr}. 터치 인터페이스와 오프라인 기능을 제공합니다.`,
+      title: `모바일 ${keywordStr} ${typeStr}`,
+      summary: `오프라인 동기화, 푸시 알림, 위치 기반 기능 포함`,
     },
     // 추가 템플릿 (재생성 시 다른 안이 나오도록)
     {
       label: "1안",
-      title: `실용적 ${keywordStr} ${typeStr}`,
-      summary: `${keywordStr}의 실생활 활용에 중점을 둔 ${typeStr}. 일상적인 문제 해결에 최적화되어 있습니다.`,
+      title: `일상 ${keywordStr} ${typeStr}`,
+      summary: `일일 기록, 주간 요약, 알림 설정 기능 포함`,
     },
     {
       label: "2안",
-      title: `혁신적 ${keywordStr} 플랫폼`,
-      summary: `기존 방식을 혁신하는 ${typeStr}. 새로운 접근 방식과 기술을 활용합니다.`,
+      title: `커뮤니티 ${keywordStr} ${typeStr}`,
+      summary: `게시판, 그룹 관리, 실시간 채팅 기능 포함`,
     },
     {
       label: "3안",
-      title: `전문가용 ${keywordStr} 도구`,
-      summary: `전문가와 고급 사용자를 위한 ${typeStr}. 고급 기능과 세밀한 커스터마이징을 제공합니다.`,
+      title: `전문가 ${keywordStr} ${typeStr}`,
+      summary: `고급 필터, 커스텀 리포트, API 연동 기능 포함`,
     },
     {
       label: "4안",
-      title: `간편 ${keywordStr} 솔루션`,
-      summary: `복잡함 없이 바로 사용할 수 있는 ${typeStr}. 최소한의 설정으로 최대 효과를 제공합니다.`,
+      title: `간편 ${keywordStr} ${typeStr}`,
+      summary: `원클릭 입력, 자동 분류, 빠른 검색 기능 포함`,
     },
     {
       label: "5안",
-      title: `협업 중심 ${keywordStr} ${typeStr}`,
-      summary: `팀과 조직의 협업을 강화하는 ${typeStr}. 공유와 협업 기능이 핵심입니다.`,
+      title: `협업 ${keywordStr} ${typeStr}`,
+      summary: `팀 공유, 권한 관리, 작업 할당 기능 포함`,
     },
     {
       label: "6안",
-      title: `자동화 ${keywordStr} 시스템`,
-      summary: `반복 작업을 자동화하는 ${typeStr}. 효율성과 생산성 향상에 중점을 둡니다.`,
+      title: `자동화 ${keywordStr} ${typeStr}`,
+      summary: `스케줄 실행, 규칙 기반 처리, 웹훅 연동 기능 포함`,
     },
     {
       label: "7안",
-      title: `통합형 ${keywordStr} 플랫폼`,
-      summary: `여러 기능을 통합한 ${typeStr}. 올인원 솔루션으로 편의성을 제공합니다.`,
+      title: `통합 ${keywordStr} ${typeStr}`,
+      summary: `다중 데이터 소스, 통합 대시보드, 일괄 처리 기능 포함`,
     },
     // 더 많은 변형
     {
       label: "1안",
-      title: `개인 맞춤 ${keywordStr} ${typeStr}`,
-      summary: `개인의 선호와 패턴을 학습하여 맞춤형 경험을 제공하는 ${typeStr}.`,
+      title: `맞춤형 ${keywordStr} ${typeStr}`,
+      summary: `사용자 패턴 학습, 개인화 추천, 맞춤 알림 기능 포함`,
     },
     {
       label: "2안",
-      title: `게임화 ${keywordStr} 플랫폼`,
-      summary: `게임 요소를 활용하여 재미와 동기부여를 제공하는 ${typeStr}.`,
+      title: `게임화 ${keywordStr} ${typeStr}`,
+      summary: `포인트 시스템, 배지 수집, 리더보드 기능 포함`,
     },
     {
       label: "3안",
-      title: `AI 기반 ${keywordStr} ${typeStr}`,
-      summary: `인공지능 기술을 활용하여 스마트한 기능을 제공하는 ${typeStr}.`,
+      title: `AI ${keywordStr} ${typeStr}`,
+      summary: `자동 분류, 예측 분석, 스마트 추천 기능 포함`,
     },
     {
       label: "4안",
-      title: `오픈소스 ${keywordStr} 도구`,
-      summary: `커뮤니티 기반으로 발전하는 ${typeStr}. 확장성과 커스터마이징이 자유롭습니다.`,
+      title: `오픈소스 ${keywordStr} ${typeStr}`,
+      summary: `플러그인 시스템, API 확장, 커스텀 테마 기능 포함`,
     },
     {
       label: "5안",
-      title: `엔터프라이즈 ${keywordStr} 솔루션`,
-      summary: `기업과 조직을 위한 ${typeStr}. 보안과 확장성에 중점을 둡니다.`,
+      title: `엔터프라이즈 ${keywordStr} ${typeStr}`,
+      summary: `SSO 인증, 감사 로그, 백업 복원 기능 포함`,
     },
     {
       label: "6안",
-      title: `크리에이티브 ${keywordStr} 스튜디오`,
-      summary: `창의적 작업을 위한 ${typeStr}. 다양한 도구와 템플릿을 제공합니다.`,
+      title: `크리에이티브 ${keywordStr} ${typeStr}`,
+      summary: `템플릿 라이브러리, 미디어 편집, 공유 갤러리 기능 포함`,
     },
     {
       label: "7안",
       title: `미니멀 ${keywordStr} ${typeStr}`,
-      summary: `단순하고 깔끔한 인터페이스의 ${typeStr}. 핵심 기능에만 집중합니다.`,
+      summary: `3개 화면, 필수 기능만, 빠른 로딩 기능 포함`,
     },
   ];
 
@@ -154,6 +156,7 @@ export function generateFirstLevelIdeas(
 
 /**
  * 다음 레벨 아이디어 생성 (레벨 3, 4...)
+ * A~E 안이 각각 다른 구현 스펙을 가지도록 차별화
  */
 export function generateNextLevelIdeas(
   parentNode: Node,
@@ -175,46 +178,291 @@ export function generateNextLevelIdeas(
 
   const labels = labelPatterns[level] || ["안 1", "안 2", "안 3", "안 4", "안 5"];
 
-  // 부모 노드의 특성을 반영한 하위 아이디어 생성
-  const childIdeas = [
+  // 키워드 기반으로 기본 화면/기능/엔티티 생성
+  const baseScreens = generateBaseScreens(keywords, isApp);
+  const baseFeatures = generateBaseFeatures(keywords);
+  const baseEntities = generateBaseEntities(keywords);
+  const baseApis = generateBaseApis(keywords);
+  const baseArchitecture = isApp 
+    ? ["React Native", "Node.js", "PostgreSQL", "Firebase Auth", "Vercel"]
+    : ["Next.js", "Node.js", "PostgreSQL", "NextAuth", "Vercel"];
+
+  // A~E 안별 스펙 생성
+  const specs: ImplementationSpec[] = [
+    // A안: 최소 기능 MVP
     {
-      label: labels[0],
-      title: `${(parentNode.label as string) ?? ""}의 기본 구성`,
-      summary: `${parentNode.title}의 핵심 기능을 구현하는 기본적인 접근 방식입니다.`,
+      targetUser: `${keywordStr}를 처음 시작하는 초보 사용자`,
+      screens: baseScreens.slice(0, 5),
+      features: [
+        `${keywordStr} 로그 추가`,
+        `${keywordStr} 목록 조회`,
+        `${keywordStr} 기본 통계`,
+        `사용자 프로필`,
+        `기본 설정`
+      ],
+      entities: baseEntities.slice(0, 5),
+      apis: [
+        `POST /${keywords[0]}/logs`,
+        `GET /${keywords[0]}/logs`,
+        `GET /${keywords[0]}/stats/basic`,
+        `GET /users/me`,
+        `PUT /users/me`
+      ],
+      architecture: baseArchitecture,
+      difficulty: "초급",
+      estimatedDuration: "1~2주",
+      valueProposition: "빠른 시장 진입",
+      contextTags: ["1인 창업자용", "MVP 단계", "초기 프로토타입"],
+      topFeatures: [
+        `${keywordStr} 로그 추가`,
+        `${keywordStr} 목록 조회`,
+        `${keywordStr} 기본 통계`
+      ],
+      oneLineRisk: "초기 서버 비용 발생 가능"
     },
+    // B안: 성장 기능
     {
-      label: labels[1],
-      title: `${(parentNode.label as string) ?? ""}의 확장 버전`,
-      summary: `${parentNode.title}에 추가 기능과 고급 옵션을 포함한 확장 구성입니다.`,
+      targetUser: `${keywordStr}를 꾸준히 관리하려는 활성 사용자`,
+      screens: [
+        ...baseScreens.slice(0, 3),
+        `${keywordStr} 알림 설정`,
+        `${keywordStr} 목표 관리`
+      ],
+      features: [
+        `${keywordStr} 로그 추가`,
+        `${keywordStr} 목록 조회`,
+        `${keywordStr} 검색 및 필터`,
+        `${keywordStr} 태그 관리`,
+        `목표 설정 및 추적`
+      ],
+      entities: [
+        ...baseEntities.slice(0, 3),
+        `goal`,
+        `notification`
+      ],
+      apis: [
+        `POST /${keywords[0]}/logs`,
+        `GET /${keywords[0]}/logs?search=`,
+        `GET /${keywords[0]}/tags`,
+        `POST /goals`,
+        `GET /notifications`
+      ],
+      architecture: baseArchitecture,
+      difficulty: "중급",
+      estimatedDuration: "3~4주",
+      valueProposition: "확장 성장 버전",
+      contextTags: ["SaaS 초기모델", "사용자 유지율 중시", "기능 확장 준비"],
+      topFeatures: [
+        `${keywordStr} 검색 및 필터`,
+        `${keywordStr} 태그 관리`,
+        `목표 설정 및 추적`
+      ],
+      oneLineRisk: "데이터 증가 시 성능 최적화 필요"
     },
+    // C안: 성능/비용 최적화 (기술 항목)
     {
-      label: labels[2],
-      title: `${(parentNode.label as string) ?? ""}의 최적화 버전`,
-      summary: `${parentNode.title}을 성능과 효율성 측면에서 최적화한 구성입니다.`,
+      targetUser: `${keywordStr} 데이터가 많은 고급 사용자`,
+      screens: baseScreens.slice(0, 5),
+      features: [
+        `${keywordStr} 로그 추가`,
+        `${keywordStr} 목록 조회 (페이지네이션)`,
+        `${keywordStr} 통계 (캐싱)`,
+        `배치 데이터 처리`,
+        `성능 모니터링`
+      ],
+      entities: baseEntities.slice(0, 5),
+      apis: [
+        `POST /${keywords[0]}/logs`,
+        `GET /${keywords[0]}/logs?page=`,
+        `GET /${keywords[0]}/stats/cached`,
+        `POST /batch/process`,
+        `GET /metrics/performance`
+      ],
+      architecture: [
+        ...baseArchitecture.slice(0, 3),
+        "Redis (캐싱)",
+        "CloudWatch (모니터링)"
+      ],
+      difficulty: "상급",
+      estimatedDuration: "4~6주",
+      valueProposition: "운영 비용 절감",
+      contextTags: ["대용량 데이터", "성능 최적화", "비용 효율"],
+      topFeatures: [
+        `${keywordStr} 통계 (캐싱)`,
+        `배치 데이터 처리`,
+        `성능 모니터링`
+      ],
+      oneLineRisk: "인프라 구축 초기 비용 증가"
     },
+    // D안: 차별 기능 (구현 모듈)
     {
-      label: labels[3],
-      title: `${(parentNode.label as string) ?? ""}의 혁신적 접근`,
-      summary: `${parentNode.title}을 독창적이고 차별화된 방식으로 구현한 구성입니다.`,
+      targetUser: `${keywordStr}에 개인화된 경험을 원하는 사용자`,
+      screens: [
+        ...baseScreens.slice(0, 3),
+        `${keywordStr} 추천`,
+        `${keywordStr} 개인화 설정`
+      ],
+      features: [
+        `${keywordStr} 로그 추가`,
+        `${keywordStr} 목록 조회`,
+        `${keywordStr} 추천 알고리즘`,
+        `개인화 규칙 엔진`,
+        `맞춤형 대시보드`
+      ],
+      entities: [
+        ...baseEntities.slice(0, 3),
+        `recommendation`,
+        `user_preference`
+      ],
+      apis: [
+        `POST /${keywords[0]}/logs`,
+        `GET /${keywords[0]}/logs`,
+        `GET /${keywords[0]}/recommendations`,
+        `POST /rules/engine`,
+        `GET /dashboard/personalized`
+      ],
+      architecture: [
+        ...baseArchitecture.slice(0, 3),
+        "ML 모듈 (추천)",
+        "규칙 엔진 서버"
+      ],
+      difficulty: "상급",
+      estimatedDuration: "5~8주",
+      valueProposition: "개인화 경험 제공",
+      contextTags: ["전문가용", "AI/ML 활용", "고급 기능"],
+      topFeatures: [
+        `${keywordStr} 추천 알고리즘`,
+        `개인화 규칙 엔진`,
+        `맞춤형 대시보드`
+      ],
+      oneLineRisk: "ML 모델 학습 및 유지보수 비용 발생"
     },
+    // E안: 운영/확장 (운영 기능)
     {
-      label: labels[4],
-      title: `${(parentNode.label as string) ?? ""}의 실용적 구현`,
-      summary: `${parentNode.title}을 실제 사용 시나리오에 맞춰 실용적으로 구성한 버전입니다.`,
-    },
+      targetUser: `${keywordStr}를 팀/조직 단위로 관리하는 사용자`,
+      screens: [
+        ...baseScreens.slice(0, 3),
+        `관리자 대시보드`,
+        `권한 관리`
+      ],
+      features: [
+        `${keywordStr} 로그 추가`,
+        `${keywordStr} 목록 조회`,
+        `사용자 권한 관리`,
+        `데이터 백업 및 복원`,
+        `감사 로그`
+      ],
+      entities: [
+        ...baseEntities.slice(0, 3),
+        `role`,
+        `audit_log`
+      ],
+      apis: [
+        `POST /${keywords[0]}/logs`,
+        `GET /${keywords[0]}/logs`,
+        `POST /admin/users/roles`,
+        `POST /admin/backup`,
+        `GET /admin/audit-logs`
+      ],
+      architecture: [
+        ...baseArchitecture.slice(0, 3),
+        "관리자 패널",
+        "백업 스토리지 (S3)"
+      ],
+      difficulty: "상급",
+      estimatedDuration: "6~10주",
+      valueProposition: "엔터프라이즈 운영 준비",
+      contextTags: ["팀 협업", "조직 관리", "보안 강화"],
+      topFeatures: [
+        `사용자 권한 관리`,
+        `데이터 백업 및 복원`,
+        `감사 로그`
+      ],
+      oneLineRisk: "복잡한 권한 시스템 구현 및 관리 부담"
+    }
   ];
 
-  return childIdeas.slice(0, count).map((idea, index) => ({
-    id: `node-${Date.now()}-${parentNode.id}-${index}`,
-    parentId: parentNode.id,
-    level,
-    label: idea.label,
-    title: idea.title,
-    summary: idea.summary,
-    meta: {
-      prompt: `${parentNode.title}의 하위 아이디어: ${idea.label}`,
-      parentTitle: parentNode.title as string,
-    },
-  }));
+  return specs.slice(0, count).map((spec, index) => {
+    const label = labels[index];
+    const title = generateTitleFromSpec(label, spec, parentNode);
+    
+    return {
+      id: `node-${Date.now()}-${parentNode.id}-${index}`,
+      parentId: parentNode.id,
+      level,
+      label,
+      title,
+      summary: `${spec.difficulty} 난이도, 예상 기간: ${spec.estimatedDuration}`,
+      spec,
+      meta: {
+        prompt: `${parentNode.title}의 하위 아이디어: ${label}`,
+        parentTitle: parentNode.title as string,
+      },
+    };
+  });
+}
+
+// 키워드 기반 기본 화면 생성
+function generateBaseScreens(keywords: string[], isApp: boolean): string[] {
+  const base = isApp 
+    ? ["홈", `${keywords[0]} 목록`, `${keywords[0]} 추가`, "통계", "설정"]
+    : ["대시보드", `${keywords[0]} 목록`, `${keywords[0]} 추가`, "분석", "설정"];
+  return base;
+}
+
+// 키워드 기반 기본 기능 생성
+function generateBaseFeatures(keywords: string[]): string[] {
+  return [
+    `${keywords[0]} 추가`,
+    `${keywords[0]} 조회`,
+    `${keywords[0]} 수정`,
+    `${keywords[0]} 삭제`,
+    `${keywords[0]} 검색`
+  ];
+}
+
+// 키워드 기반 기본 엔티티 생성
+function generateBaseEntities(keywords: string[]): string[] {
+  const keyword = keywords[0].toLowerCase().replace(/\s+/g, "_");
+  return [
+    "user",
+    `${keyword}_log`,
+    `${keyword}_category`,
+    "session",
+    "preference"
+  ];
+}
+
+// 키워드 기반 기본 API 생성
+function generateBaseApis(keywords: string[]): string[] {
+  const keyword = keywords[0].toLowerCase().replace(/\s+/g, "");
+  return [
+    `POST /${keyword}/logs`,
+    `GET /${keyword}/logs`,
+    `PUT /${keyword}/logs/:id`,
+    `DELETE /${keyword}/logs/:id`,
+    `GET /${keyword}/stats`
+  ];
+}
+
+// 스펙 기반 제목 생성
+function generateTitleFromSpec(label: string, spec: ImplementationSpec, parentNode: Node): string {
+  const difficultyMap: Record<string, string> = {
+    "초급": "MVP",
+    "중급": "성장",
+    "상급": "고급"
+  };
+  
+  const typeMap: Record<string, string> = {
+    "초급": "기본",
+    "중급": "확장",
+    "상급": spec.features.some(f => f.includes("추천") || f.includes("개인화")) 
+      ? "차별화" 
+      : spec.features.some(f => f.includes("관리자") || f.includes("권한"))
+      ? "운영"
+      : "최적화"
+  };
+  
+  return `${(parentNode.label as string) ?? ""} ${typeMap[spec.difficulty]} ${difficultyMap[spec.difficulty]} 버전`;
 }
 

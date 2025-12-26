@@ -138,7 +138,11 @@ export default function KeywordInputForm({
           </div>
         </div>
         <div className="space-y-3">
+          <label htmlFor="keyword-input" className="sr-only">
+            키워드 입력
+          </label>
           <textarea
+            id="keyword-input"
             value={keywordInput}
             onChange={(e) => handleInputChange(e.target.value)}
             placeholder="예: 영어, 공부 / 분실물, 지도 / 다이어트, 기록"

@@ -1,99 +1,142 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import HistoryList from "@/components/HistoryList";
-import type { SavedPlan } from "@/lib/types";
+import type { SavedPlan, Session } from "@/lib/types";
+import { getAllPlans, getAllSessions, deletePlan, deleteSession } from "@/lib/storage";
 
-function safeJsonParse(raw: string | null) {
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
+type LoadingState = "loading" | "success" | "empty" | "error";
 
-const STORAGE_KEYS = [
-  "autoapparch_history",
-  "autoAppArch_history",
-  "savedDesigns",
-  "savedAppDesigns",
-  "history",
-];
-
-function normalizeToArray(parsed: any): any[] {
-  if (!parsed) return [];
-  if (Array.isArray(parsed)) return parsed;
-
-  const candidates = [
-    parsed.items,
-    parsed.data,
-    parsed.designs,
-    parsed.savedDesigns,
-    parsed.history,
-  ];
-  for (const c of candidates) {
-    if (Array.isArray(c)) return c;
-  }
-  return [];
-}
-
-function toKeywords(value: any): string[] {
-  if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
-  if (typeof value === "string") return value.split(",").map((s) => s.trim()).filter(Boolean);
-  return [];
-}
-
-function toDisplayDate(value: any): string {
-  if (typeof value === "string") {
-    const d = new Date(value);
-    if (!Number.isNaN(d.getTime())) return d.toLocaleString();
-    return value;
-  }
-  return "";
-}
-
-function normalizeSavedDesigns(items: any[]): SavedPlan[] {
-  return items.map((it, idx) => {
-    const id =
-      (typeof it?.id === "string" && it.id) ||
-      (typeof it?._id === "string" && it._id) ||
-      `local-${idx}`;
-
-    const keywords = toKeywords(
-      it?.keywords ?? it?.keyword ?? it?.tags ?? it?.inputs ?? it?.inputKeywords
-    );
-
-    const title =
-      (typeof it?.title === "string" && it.title.trim()) ||
-      (keywords.length ? `${keywords.join(" + ")} 모바일 앱 설계안` : "자동 생성된 앱 설계안");
-
-    const createdAt =
-      toDisplayDate(it?.createdAt ?? it?.created_at ?? it?.date ?? it?.created) || "방금 전";
-
-    return { id, title, keywords, createdAt };
-  });
+function convertSessionToSavedPlan(session: Session): SavedPlan {
+  return {
+    id: session.id,
+    title: session.keywords && session.keywords.length > 0
+      ? `${session.keywords.join(" + ")} 모바일 앱 설계안`
+      : "자동 생성된 앱 설계안",
+    keywords: session.keywords || [],
+    createdAt: session.createdAt ? new Date(session.createdAt).toLocaleString() : "방금 전",
+  };
 }
 
 export default function HistoryPage() {
+  const router = useRouter();
   const [items, setItems] = useState<SavedPlan[]>([]);
+  const [loadingState, setLoadingState] = useState<LoadingState>("loading");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
-    let found: any[] = [];
-    for (const key of STORAGE_KEYS) {
-      const parsed = safeJsonParse(localStorage.getItem(key));
-      const arr = normalizeToArray(parsed);
-      if (arr.length > 0) {
-        found = arr;
-        break;
+    const loadHistory = async () => {
+      try {
+        setLoadingState("loading");
+        setErrorMessage("");
+
+        // SSR 환경에서 window가 없으면 대기
+        if (typeof window === "undefined") {
+          // 클라이언트에서만 실행되므로 이 경우는 거의 없지만 안전장치
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        // storage.ts의 함수 사용
+        const loadedPlans = getAllPlans();
+        const loadedSessions = getAllSessions();
+
+        // Session을 SavedPlan 형식으로 변환
+        const convertedSessions = loadedSessions.map(convertSessionToSavedPlan);
+
+        // Plan과 Session을 합치고 중복 제거 (id 기준)
+        const allItems = [...loadedPlans, ...convertedSessions];
+        const uniqueItems = allItems.filter(
+          (item, index, self) => index === self.findIndex((t) => t.id === item.id)
+        );
+
+        // 생성일 기준으로 최신순 정렬
+        uniqueItems.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        setItems(uniqueItems);
+
+        if (uniqueItems.length === 0) {
+          setLoadingState("empty");
+        } else {
+          setLoadingState("success");
+        }
+      } catch (error) {
+        console.error("히스토리 로딩 실패:", error);
+        setLoadingState("error");
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "저장된 설계안을 불러오는 중 오류가 발생했습니다."
+        );
       }
-    }
-    setItems(normalizeSavedDesigns(found));
+    };
+
+    loadHistory();
   }, []);
 
+  const handleRetry = () => {
+    const loadHistory = async () => {
+      try {
+        setLoadingState("loading");
+        setErrorMessage("");
+
+        const loadedPlans = getAllPlans();
+        const loadedSessions = getAllSessions();
+        const convertedSessions = loadedSessions.map(convertSessionToSavedPlan);
+        const allItems = [...loadedPlans, ...convertedSessions];
+        const uniqueItems = allItems.filter(
+          (item, index, self) => index === self.findIndex((t) => t.id === item.id)
+        );
+
+        uniqueItems.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        setItems(uniqueItems);
+
+        if (uniqueItems.length === 0) {
+          setLoadingState("empty");
+        } else {
+          setLoadingState("success");
+        }
+      } catch (error) {
+        console.error("히스토리 재시도 실패:", error);
+        setLoadingState("error");
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "저장된 설계안을 불러오는 중 오류가 발생했습니다."
+        );
+      }
+    };
+
+    loadHistory();
+  };
+
   const handleDelete = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-    // localStorage에서도 제거 (선택사항)
+    try {
+      // Plan과 Session 모두에서 삭제 시도
+      deletePlan(id);
+      deleteSession(id);
+      
+      // 상태 업데이트
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      
+      // 삭제 후 빈 상태가 되면 상태 변경
+      const remaining = items.filter((item) => item.id !== id);
+      if (remaining.length === 0) {
+        setLoadingState("empty");
+      }
+    } catch (error) {
+      console.error("삭제 실패:", error);
+      setErrorMessage("삭제에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const isEmpty = items.length === 0;
@@ -109,8 +152,43 @@ export default function HistoryPage() {
       </div>
 
       {/* 내용 */}
-      {isEmpty ? (
-        // ✅ 중요: relative + z-index로 "위에 덮는 투명 레이어"를 이겨서 클릭 가능하게 함
+      {loadingState === "loading" && (
+        <div className="flex-1 flex items-center justify-center px-4 pb-12">
+          <div className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white p-10 text-center">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
+              <p className="text-sm text-gray-600">로딩 중...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loadingState === "error" && (
+        <div className="flex-1 flex items-center justify-center px-4 pb-12">
+          <div className="w-full max-w-2xl rounded-xl border border-red-200 bg-red-50 p-10 text-center">
+            <div className="space-y-4">
+              <p className="text-sm font-medium text-red-900">오류가 발생했습니다</p>
+              <p className="text-xs text-red-700">{errorMessage || "알 수 없는 오류가 발생했습니다."}</p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={handleRetry}
+                  className="inline-flex items-center justify-center rounded-md bg-red-600 px-6 py-3 text-sm font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                >
+                  다시 시도
+                </button>
+                <a
+                  href="/"
+                  className="inline-flex items-center justify-center rounded-md bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                >
+                  홈으로 이동
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loadingState === "empty" && (
         <div className="flex-1 flex items-center justify-center px-4 pb-12 relative z-10">
           <div className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm relative z-20">
             <p className="text-sm text-gray-600">아직 저장된 앱 설계안이 없습니다.</p>
@@ -119,17 +197,18 @@ export default function HistoryPage() {
             </p>
 
             <div className="mt-6">
-              {/* ✅ Next Link 대신 순수 a 태그로: "무조건 이동" */}
               <a
                 href="/"
-                className="inline-flex items-center justify-center rounded-md bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800"
+                className="inline-flex items-center justify-center rounded-md bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
               >
                 설계안 만들기
               </a>
             </div>
           </div>
         </div>
-      ) : (
+      )}
+
+      {loadingState === "success" && !isEmpty && (
         <div className="px-4 py-10">
           <div className="mx-auto w-full max-w-6xl">
             <HistoryList plans={plans} onDelete={handleDelete} />
