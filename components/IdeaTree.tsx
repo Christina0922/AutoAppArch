@@ -33,6 +33,7 @@ export default function IdeaTree({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(initialSelectedIds)
   );
+  const [showComparisonTable, setShowComparisonTable] = useState(false);
 
   // initialNodes나 initialSelectedIds가 변경될 때 내부 상태 동기화
   useEffect(() => {
@@ -327,6 +328,7 @@ export default function IdeaTree({
             return parent ? { node: n, parent } : null;
           }).filter((item): item is { node: Node; parent: Node } => item !== null);
 
+
           return (
             <div key={level} className="space-y-6">
               <div className="flex items-center justify-between mb-4">
@@ -353,16 +355,6 @@ export default function IdeaTree({
                       }`}>
                         {level === 2 ? t("level1Ideas") : t("levelNIdeas", { level: level - 1 })}
                       </h3>
-                      {level === 2 && (
-                        <p className="text-sm text-gray-500 mt-1">
-                          {t("level1Description")}
-                        </p>
-                      )}
-                      {level > 2 && (
-                        <p className="text-sm text-gray-500 mt-1">
-                          {t("levelNDescription")}
-                        </p>
-                      )}
                     </div>
                     {level > 2 && (
                       <div className="text-xs text-gray-600 leading-relaxed border-l border-gray-200 pl-4">
@@ -382,11 +374,6 @@ export default function IdeaTree({
                     )}
                   </div>
                 </div>
-                {level > 2 && (
-                  <p className="text-sm text-gray-500">
-                    {t("totalCount", { count: levelNodes.length })}
-                  </p>
-                )}
               </div>
 
               {level === 2 ? (
@@ -443,7 +430,7 @@ export default function IdeaTree({
                             </div>
                           )}
                         </div>
-                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 ml-8 border-l-2 pl-6 items-start ${
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 ml-8 border-l-2 pl-6 items-stretch ${
                           level === 3 ? "border-l-green-500" :
                           level === 4 ? "border-l-purple-500" :
                           level === 5 ? "border-l-orange-500" :
@@ -453,16 +440,17 @@ export default function IdeaTree({
                           {(() => {
                             const recommendedId = getRecommendedNodeId(children);
                             return children.map((node) => (
-                              <ArchitectureCard
-                                key={node.id}
-                                node={node}
-                                isSelected={selectedIds.has(node.id)}
-                                onToggle={() => toggleNodeSelection(node.id)}
-                                hasChildren={nodes.some((n) => (n.parentId as string | null) === node.id)}
-                                onRegenerate={() => regenerateChildren(node.id)}
-                                isRecommended={node.id === recommendedId}
-                                isDeveloperMode={false}
-                              />
+                              <div key={node.id} className="flex flex-col">
+                                <ArchitectureCard
+                                  node={node}
+                                  isSelected={selectedIds.has(node.id)}
+                                  onToggle={() => toggleNodeSelection(node.id)}
+                                  hasChildren={nodes.some((n) => (n.parentId as string | null) === node.id)}
+                                  onRegenerate={() => regenerateChildren(node.id)}
+                                  isRecommended={node.id === recommendedId}
+                                  isDeveloperMode={false}
+                                />
+                              </div>
                             ));
                           })()}
                         </div>
@@ -478,10 +466,20 @@ export default function IdeaTree({
       {/* 선택된 안들 비교 테이블 */}
       {finalCount > 1 && finalSelectedNodes.every(n => n.spec) && (
         <div className="bg-white rounded-lg border-2 border-gray-200 pt-6 px-6 pb-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 tracking-tight">
-            {t("comparisonTitle")}
-          </h3>
-          <ComparisonTable nodes={finalSelectedNodes} />
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 tracking-tight">
+              {t("comparisonTitle")}
+            </h3>
+            <button
+              onClick={() => setShowComparisonTable(!showComparisonTable)}
+              className="text-sm text-gray-600 hover:text-gray-900 underline transition-colors"
+            >
+              {showComparisonTable ? t("hideDetails") : t("viewDetails")}
+            </button>
+          </div>
+          {showComparisonTable && (
+            <ComparisonTable nodes={finalSelectedNodes} />
+          )}
         </div>
       )}
 
@@ -560,239 +558,114 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="overflow-x-auto">
-      <table className="w-full text-base border-collapse">
-        <thead>
-          <tr className="border-b-2 border-gray-300">
-            <th className="text-left py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">{t("item")}</th>
-            {nodes.map((node, idx) => (
-              <th key={node.id} className="text-center py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-50 min-w-[100px]">
-                {(node.label as string) ?? `${idx + 1}${t("option")}`}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {/* 난이도/기간 */}
-          <tr className="border-b border-gray-200 bg-gray-50">
-            <td className="py-1.5 px-2.5 font-medium text-gray-700 sticky left-0 z-10 bg-gray-50">{t("difficulty")}</td>
-            {specs.map((spec, idx) => (
-              <td key={idx} className="py-1.5 px-2.5 text-center">
-                <span className={`inline-block text-sm px-2 py-0.5 rounded font-medium ${
+    <div className="grid grid-cols-1 gap-6">
+      {nodes.map((node, nodeIdx) => {
+        const spec = specs[nodeIdx];
+        if (!spec) return null;
+
+        return (
+          <div key={node.id} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+            <div className="mb-4">
+              <h4 className="text-base font-semibold text-gray-900">
+                {(node.label as string) ?? `${nodeIdx + 1}${t("option")}`}: {node.title}
+              </h4>
+            </div>
+            
+            <div className="space-y-4 min-h-[400px]">
+              {/* 난이도/기간 */}
+              <div className="flex gap-3 items-center">
+                <span className="text-sm font-medium text-gray-700">{t("difficulty")}:</span>
+                <span className={`inline-block text-sm px-2 py-1 rounded font-medium ${
                   spec.difficulty === "초급" ? "bg-green-100 text-green-800" :
                   spec.difficulty === "중급" ? "bg-yellow-100 text-yellow-800" :
                   "bg-red-100 text-red-800"
                 }`}>
                   {spec.difficulty}
                 </span>
-              </td>
-            ))}
-          </tr>
-          <tr className="border-b border-gray-200 bg-gray-50">
-            <td className="py-1.5 px-2.5 font-medium text-gray-700 sticky left-0 z-10 bg-gray-50">{t("estimatedDuration")}</td>
-            {specs.map((spec, idx) => (
-              <td key={idx} className="py-1.5 px-2.5 text-center">
-                <span className="inline-block text-gray-700 font-medium">
+                <span className="text-sm font-medium text-gray-700">{t("estimatedDuration")}:</span>
+                <span className="text-sm text-gray-700 font-medium">
                   {spec.estimatedDuration}
                 </span>
-              </td>
-            ))}
-          </tr>
-          
-          {/* 핵심 화면 */}
-          <tr className="border-b-2 border-gray-300">
-            <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              {tArchitecture("coreScreens")}
-            </td>
-          </tr>
-          {allScreens.map((screen) => {
-            const allSame = isAllSame("screens", screen);
-            return (
-              <tr 
-                key={screen} 
-                className={`border-b border-gray-100 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                } hover:bg-gray-50 transition-colors`}
-              >
-                <td className={`py-1.5 px-2.5 text-gray-700 font-medium sticky left-0 z-10 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                }`}>
-                  {screen}
-                </td>
-                {specs.map((spec, idx) => {
-                  const has = hasItem(spec, "screens", screen);
-                  return (
-                    <td key={idx} className="py-1.5 px-2.5 text-center align-middle">
-                      <div className="flex items-center justify-center">
-                        {has ? (
-                          <span className="text-green-600 font-bold text-xl">✓</span>
-                        ) : (
-                          <span className="text-gray-300 font-bold text-xl">-</span>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-          
-          {/* 핵심 기능 */}
-          <tr className="border-b-2 border-gray-300">
-            <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              {tArchitecture("coreFeatures")}
-            </td>
-          </tr>
-          {allFeatures.map((feature) => {
-            const allSame = isAllSame("features", feature);
-            return (
-              <tr 
-                key={feature} 
-                className={`border-b border-gray-100 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                } hover:bg-gray-50 transition-colors`}
-              >
-                <td className={`py-1.5 px-2.5 text-gray-700 font-medium sticky left-0 z-10 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                }`}>
-                  {feature}
-                </td>
-                {specs.map((spec, idx) => {
-                  const has = hasItem(spec, "features", feature);
-                  return (
-                    <td key={idx} className="py-1.5 px-2.5 text-center align-middle">
-                      <div className="flex items-center justify-center">
-                        {has ? (
-                          <span className="text-green-600 font-bold text-xl">✓</span>
-                        ) : (
-                          <span className="text-gray-300 font-bold text-xl">-</span>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-          
-          {/* 데이터 엔티티 */}
-          <tr className="border-b-2 border-gray-300">
-            <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              {tArchitecture("dataEntities")}
-            </td>
-          </tr>
-          {allEntities.map((entity) => {
-            const allSame = isAllSame("entities", entity);
-            return (
-              <tr 
-                key={entity} 
-                className={`border-b border-gray-100 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                } hover:bg-gray-50 transition-colors`}
-              >
-                <td className={`py-1.5 px-2.5 text-gray-700 font-mono text-sm font-medium sticky left-0 z-10 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                }`}>
-                  {entity}
-                </td>
-                {specs.map((spec, idx) => {
-                  const has = hasItem(spec, "entities", entity);
-                  return (
-                    <td key={idx} className="py-1.5 px-2.5 text-center align-middle">
-                      <div className="flex items-center justify-center">
-                        {has ? (
-                          <span className="text-green-600 font-bold text-xl">✓</span>
-                        ) : (
-                          <span className="text-gray-300 font-bold text-xl">-</span>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-          
-          {/* API */}
-          <tr className="border-b-2 border-gray-300">
-            <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              {tArchitecture("apiEndpoints")}
-            </td>
-          </tr>
-          {allApis.map((api) => {
-            const allSame = isAllSame("apis", api);
-            return (
-              <tr 
-                key={api} 
-                className={`border-b border-gray-100 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                } hover:bg-gray-50 transition-colors`}
-              >
-                <td className={`py-1.5 px-2.5 text-gray-700 font-mono text-sm font-medium sticky left-0 z-10 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                }`}>
-                  {api}
-                </td>
-                {specs.map((spec, idx) => {
-                  const has = hasItem(spec, "apis", api);
-                  return (
-                    <td key={idx} className="py-1.5 px-2.5 text-center align-middle">
-                      <div className="flex items-center justify-center">
-                        {has ? (
-                          <span className="text-green-600 font-bold text-xl">✓</span>
-                        ) : (
-                          <span className="text-gray-300 font-bold text-xl">-</span>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-          
-          {/* 아키텍처 */}
-          <tr className="border-b-2 border-gray-300">
-            <td colSpan={nodes.length + 1} className="py-1.5 px-2.5 font-semibold text-gray-900 bg-gray-200">
-              {tArchitecture("architectureComponents")}
-            </td>
-          </tr>
-          {allArchitecture.map((arch, archIdx) => {
-            const allSame = isAllSame("architecture", arch);
-            const isLast = archIdx === allArchitecture.length - 1;
-            return (
-              <tr 
-                key={arch} 
-                className={`${isLast ? "" : "border-b border-gray-100"} ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                } hover:bg-gray-50 transition-colors`}
-              >
-                <td className={`py-1.5 px-2.5 text-gray-700 font-medium sticky left-0 z-10 ${
-                  allSame ? "bg-green-50/30" : "bg-white"
-                }`}>
-                  {arch}
-                </td>
-                {specs.map((spec, idx) => {
-                  const has = hasItem(spec, "architecture", arch);
-                  return (
-                    <td key={idx} className="py-1.5 px-2.5 text-center align-middle">
-                      <div className="flex items-center justify-center">
-                        {has ? (
-                          <span className="text-green-600 font-bold text-xl">✓</span>
-                        ) : (
-                          <span className="text-gray-300 font-bold text-xl">-</span>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      </div>
+              </div>
+              
+              {/* 핵심 화면 */}
+              {spec.screens.length > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("coreScreens")}</h5>
+                  <ul className="space-y-1">
+                    {spec.screens.map((screen) => (
+                      <li key={screen} className="text-sm text-gray-700 flex items-start">
+                        <span className="text-gray-400 mr-2">•</span>
+                        <span>{screen}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* 핵심 기능 */}
+              {spec.features.length > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("coreFeatures")}</h5>
+                  <ul className="space-y-1">
+                    {spec.features.map((feature) => (
+                      <li key={feature} className="text-sm text-gray-700 flex items-start">
+                        <span className="text-gray-400 mr-2">•</span>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* 데이터 엔티티 */}
+              {spec.entities.length > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("dataEntities")}</h5>
+                  <ul className="space-y-1">
+                    {spec.entities.map((entity) => (
+                      <li key={entity} className="text-sm text-gray-700 flex items-start">
+                        <span className="text-gray-400 mr-2">•</span>
+                        <span className="font-mono">{entity}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* API */}
+              {spec.apis.length > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("apiEndpoints")}</h5>
+                  <ul className="space-y-1">
+                    {spec.apis.map((api) => (
+                      <li key={api} className="text-sm text-gray-700 flex items-start">
+                        <span className="text-gray-400 mr-2">•</span>
+                        <span className="font-mono">{api}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* 아키텍처 */}
+              {spec.architecture.length > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("architectureComponents")}</h5>
+                  <ul className="space-y-1">
+                    {spec.architecture.map((arch) => (
+                      <li key={arch} className="text-sm text-gray-700 flex items-start">
+                        <span className="text-gray-400 mr-2">•</span>
+                        <span>{arch}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

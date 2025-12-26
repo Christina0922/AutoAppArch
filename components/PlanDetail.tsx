@@ -97,7 +97,7 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
           <>
             {/* [사용자 관점] 영역 */}
             <div className="space-y-6">
-              <div className="bg-gray-50 rounded-lg border-2 border-gray-200 p-4">
+              <div className="bg-blue-50 rounded-lg border-4 border-blue-200 p-4">
                 <h2 className="text-lg font-bold text-gray-900 tracking-tight">
                   {userPerspectiveLabel}
                 </h2>
@@ -111,7 +111,7 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
                 return (
                   <div
                     key={idx}
-                    className="bg-gray-50 rounded-md p-8 border border-gray-200"
+                    className="bg-blue-50 rounded-md p-8 border-2 border-blue-200"
                   >
                     <h2 className="text-base font-bold text-gray-900 mb-6 tracking-tight">
                       {cleanHeading}
@@ -134,7 +134,7 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
 
             {/* [개발자 관점] 영역 */}
             <div className="space-y-6">
-              <div className="bg-gray-50 rounded-lg border-2 border-gray-300 p-4">
+              <div className="bg-purple-50 rounded-lg border-4 border-purple-200 p-4">
                 <h2 className="text-lg font-bold text-gray-900 tracking-tight">
                   {developerPerspectiveLabel}
                 </h2>
@@ -148,7 +148,7 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
                 return (
                   <div
                     key={idx}
-                    className="bg-gray-50 rounded-md p-8 border border-gray-200"
+                    className="bg-purple-50 rounded-md p-8 border-2 border-purple-200"
                   >
                     <h2 className="text-base font-bold text-gray-900 mb-6 tracking-tight">
                       {cleanHeading}

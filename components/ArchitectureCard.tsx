@@ -120,7 +120,7 @@ export default function ArchitectureCard({
 
   return (
     <div
-      className={`${getBgClass()} rounded-lg border-2 p-5 transition-all relative flex flex-col gap-3 ${
+      className={`${getBgClass()} rounded-lg border-2 p-5 transition-all relative flex flex-col gap-3 h-full ${
         isSelected
           ? `${getBorderClass()} shadow-md`
           : `${getBorderClass()} hover:bg-gray-50`
@@ -194,11 +194,11 @@ export default function ArchitectureCard({
 
         {/* 2. 적합한 상황 태그 2~3개 */}
         {spec.contextTags && spec.contextTags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-col gap-1.5">
             {spec.contextTags.slice(0, 3).map((tag, idx) => (
               <span
                 key={idx}
-                className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full border border-gray-200"
+                className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full border border-gray-200 w-fit"
               >
                 {tag}
               </span>
