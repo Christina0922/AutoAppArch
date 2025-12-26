@@ -183,8 +183,8 @@ export default function AppPage() {
       await new Promise((resolve) => setTimeout(resolve, 800));
       
       const newNodes = generateFirstLevelIdeas(
-        session.keywords,
-        session.selectedType,
+        session.keywords || [],
+        session.selectedType || "app",
         7,
         Date.now()
       );
@@ -210,7 +210,7 @@ export default function AppPage() {
   const handleFinalize = async () => {
     if (!session) return;
 
-    const selectedIds = session.selectedNodeIds;
+    const selectedIds = session.selectedNodeIds || [];
     if (selectedIds.length === 0) {
       setError(tIdeaTree("noIdeasSelected") || "최소 1개 이상의 아이디어를 선택해주세요.");
       return;
@@ -222,7 +222,7 @@ export default function AppPage() {
 
     try {
       // 선택된 최말단 노드들 찾기
-      const selectedNodes = session.nodes.filter((n) => 
+      const selectedNodes = (session.nodes || []).filter((n) => 
         selectedIds.includes(n.id)
       );
       const maxLevel = selectedNodes.length > 0 
@@ -243,8 +243,8 @@ export default function AppPage() {
       // 선택된 노드들의 정보를 종합하여 설계안 생성
       const selectedTitles = finalCandidates.map((n) => n.title).join(", ");
       const planResult = generatePlan(
-        session.keywords,
-        session.selectedType,
+        session.keywords || [],
+        session.selectedType || "app",
         selectedTitles
       );
 
@@ -258,8 +258,8 @@ export default function AppPage() {
 
       // 앱 이름 추천 생성
       const appNaming = generateAppNaming(
-        session.keywords,
-        session.selectedType,
+        session.keywords || [],
+        session.selectedType || "app",
         finalCandidates.map((n) => ({ title: n.title, summary: (n.summary as string) ?? "" }))
       );
       planResult.appNaming = appNaming;
@@ -297,7 +297,7 @@ export default function AppPage() {
     }
   };
 
-  // 토픽 확인 후 최종 플랜 생성
+  // 토픽 확인 후 최종 플랜 생성 (현재 사용되지 않음)
   const handleTopicConfirm = async () => {
     if (!session || !generatedTopic) return;
 
@@ -313,13 +313,13 @@ export default function AppPage() {
       setFinalizationStep(tIdeaTree("generatingNaming"));
       await new Promise((resolve) => setTimeout(resolve, 400));
 
-      const appNaming = generateAppNaming(session.keywords);
+      const appNaming = generateAppNaming(session.keywords || [], session.selectedType || "app", []);
 
       // 최종 플랜 생성
       const planResult = generatePlan(
-        session.keywords,
-        session.selectedType,
-        generatedTopic.audience
+        session.keywords || [],
+        session.selectedType || "app",
+        generatedTopic.title
       );
 
       const finalResult: PlanResult = {
@@ -464,10 +464,10 @@ export default function AppPage() {
 
           <IdeaTree
             sessionId={session.id}
-            initialNodes={session.nodes}
-            initialSelectedIds={session.selectedNodeIds}
-            keywords={session.keywords}
-            selectedType={session.selectedType}
+            initialNodes={session.nodes || []}
+            initialSelectedIds={session.selectedNodeIds || []}
+            keywords={session.keywords || []}
+            selectedType={session.selectedType || "app"}
             onNodesChange={handleNodesChange}
             onSelectionChange={handleSelectionChange}
             onRegenerate={handleRegenerateFirstLevel}

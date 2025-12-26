@@ -814,6 +814,7 @@ function IdeaCard({
   onRegenerate,
 }: IdeaCardProps) {
   const t = useTranslations("ideaTree");
+  const tArchitecture = useTranslations("architectureCard");
   const spec = node.spec as ImplementationSpec | undefined;
   const hasSpec = !!spec;
   
