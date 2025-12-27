@@ -472,16 +472,9 @@ export default function AppPage() {
             onSelectionChange={handleSelectionChange}
             onRegenerate={handleRegenerateFirstLevel}
             onFinalize={handleFinalize}
+            session={session}
+            showSaveButton={!isFinalized}
           />
-
-          {session && !isFinalized && (
-            <div className="mt-8 flex justify-center">
-              <SaveButton
-                session={session}
-                onSaved={handleSaved}
-              />
-            </div>
-          )}
         </div>
       )}
 

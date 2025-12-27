@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Node, AppType, ImplementationSpec } from "@/lib/types";
+import { Node, AppType, ImplementationSpec, Session } from "@/lib/types";
 import { generateNextLevelIdeas } from "@/lib/generateIdeas";
 import ArchitectureCard from "./ArchitectureCard";
+import SaveButton from "./SaveButton";
 
 interface IdeaTreeProps {
   sessionId: string;
@@ -16,6 +17,8 @@ interface IdeaTreeProps {
   onSelectionChange: (selectedIds: string[]) => void;
   onRegenerate?: (parentId: string) => void;
   onFinalize?: () => void; // 최종 안으로 만들기 콜백
+  session?: any; // Session 타입 (임시 저장용)
+  showSaveButton?: boolean; // 저장 버튼 표시 여부
 }
 
 export default function IdeaTree({
@@ -28,6 +31,8 @@ export default function IdeaTree({
   onSelectionChange,
   onRegenerate,
   onFinalize,
+  session: externalSession,
+  showSaveButton = false,
 }: IdeaTreeProps) {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
@@ -56,7 +61,7 @@ export default function IdeaTree({
     onSelectionChange(Array.from(newSelectedIds));
   };
 
-  // 노드 토글 선택
+  // 노드 토글 선택 (복수 선택 가능)
   const toggleNodeSelection = (nodeId: string) => {
     const newSelected = new Set(selectedIds);
     if (newSelected.has(nodeId)) {
@@ -244,8 +249,11 @@ export default function IdeaTree({
       ? Math.max(...finalSelectedNodes.map((n) => (n.level as number) ?? 0))
       : 0;
 
-  // 다음 레벨 생성 가능 여부 (최종 선택된 노드들이 최대 레벨에 있을 때)
-  const canGenerateNext = finalCount > 0 && maxSelectedLevel === maxLevel;
+  // 다음 레벨 생성 가능 여부 (선택된 노드들이 있고, 그 노드들에 자식이 없을 때)
+  const canGenerateNext = finalCount > 0 && finalSelectedNodes.every((node) => {
+    // 이미 자식이 있는지 확인
+    return !nodes.some((n) => (n.parentId as string | null) === node.id);
+  });
 
   // 선택 경로 추적 (상태 표시바용)
   const getSelectionPath = (): string[] => {
@@ -357,18 +365,40 @@ export default function IdeaTree({
                       </h3>
                     </div>
                     {level > 2 && (
-                      <div className="text-xs text-gray-600 leading-relaxed border-l border-gray-200 pl-4">
-                        <div className="mb-1.5">
-                          <div className="font-medium mb-1">난이도:</div>
-                          <div className="space-y-0.5">
-                            <div><span className="text-green-700 font-medium">{tDifficulty("beginner")}:</span> {tDifficulty("beginnerDesc")}</div>
-                            <div><span className="text-yellow-700 font-medium">{tDifficulty("intermediate")}:</span> {tDifficulty("intermediateDesc")}</div>
-                            <div><span className="text-red-700 font-medium">{tDifficulty("advanced")}:</span> {tDifficulty("advancedDesc")}</div>
+                      <div className="relative group">
+                        <button
+                          type="button"
+                          className="text-xs text-gray-500 hover:text-gray-700 p-1 rounded transition-colors"
+                          aria-label={t("difficultyDurationInfo")}
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        </button>
+                        {/* 툴팁 */}
+                        <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
+                          <div className="mb-2">
+                            <div className="font-medium mb-1">난이도:</div>
+                            <div className="space-y-0.5 ml-2">
+                              <div><span className="text-green-400 font-medium">{tDifficulty("beginner")}:</span> {tDifficulty("beginnerDesc")}</div>
+                              <div><span className="text-yellow-400 font-medium">{tDifficulty("intermediate")}:</span> {tDifficulty("intermediateDesc")}</div>
+                              <div><span className="text-red-400 font-medium">{tDifficulty("advanced")}:</span> {tDifficulty("advancedDesc")}</div>
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <span className="font-medium">기간: </span>
-                          {tDuration("desc")}
+                          <div>
+                            <span className="font-medium">기간: </span>
+                            {tDuration("desc")}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -430,13 +460,7 @@ export default function IdeaTree({
                             </div>
                           )}
                         </div>
-                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 ml-8 border-l-2 pl-6 items-stretch ${
-                          level === 3 ? "border-l-green-500" :
-                          level === 4 ? "border-l-purple-500" :
-                          level === 5 ? "border-l-orange-500" :
-                          level === 6 ? "border-l-red-500" :
-                          "border-l-gray-200"
-                        }`}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
                           {(() => {
                             const recommendedId = getRecommendedNodeId(children);
                             return children.map((node) => (
@@ -483,6 +507,7 @@ export default function IdeaTree({
         </div>
       )}
 
+
       {/* 선택 후 계속 진행 버튼 */}
       {canGenerateNext && (
         <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
@@ -504,6 +529,22 @@ export default function IdeaTree({
           </button>
         </div>
       )}
+
+      {/* 임시 저장 버튼 */}
+      {showSaveButton && externalSession && (() => {
+        // 최신 노드와 선택 상태를 반영한 세션 생성
+        const currentSession: Session = {
+          ...externalSession,
+          nodes,
+          selectedNodeIds: Array.from(selectedIds),
+          updatedAt: new Date().toISOString(),
+        };
+        return (
+          <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
+            <SaveButton session={currentSession} />
+          </div>
+        );
+      })()}
 
       {/* 최종 확정 CTA - 하단 고정 버튼 하나로 통일 */}
       {finalCount > 0 && finalSelectedTitle && onFinalize && (

@@ -72,6 +72,10 @@
     "finalSelectionCountWithStage": "Final selection: {count} (based on last stage)",
     "canContinueNext": "You can proceed to the next step.",
     "continueNext": "Continue (Generate Next Branch)",
+    "proceedWithSelection": "Proceed with this option",
+    "selectToProceed": "Select to proceed",
+    "selectOneToProceed": "Please select one option",
+    "difficultyDurationInfo": "Difficulty and duration criteria",
     "moreItems": "+{count} more"
   },
   "comparisonTable": {

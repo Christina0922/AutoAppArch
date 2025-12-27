@@ -123,28 +123,38 @@ export default function ArchitectureCard({
       className={`${getBgClass()} rounded-lg border-2 p-5 transition-all relative flex flex-col gap-3 h-full ${
         isSelected
           ? `${getBorderClass()} shadow-md`
-          : `${getBorderClass()} hover:bg-gray-50`
+          : `${getBorderClass()} hover:border-gray-300`
       }`}
       onClick={onToggle}
+      role="radio"
+      aria-checked={isSelected}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
     >
-      {/* 추천 뱃지 */}
-      {isRecommended && (
-        <div className="absolute -top-2 -right-2 z-10">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
-            ⭐ 추천
-          </span>
-        </div>
-      )}
-
       {/* 헤더 */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
+          {/* 체크박스 */}
           <div
             className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
               isSelected
-                ? "bg-blue-600 border-blue-600"
+                ? "bg-green-600 border-green-600"
                 : "border-gray-300 bg-white"
             }`}
+            role="checkbox"
+            aria-checked={isSelected}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onToggle();
+              }
+            }}
           >
             {isSelected && (
               <svg
@@ -165,6 +175,12 @@ export default function ArchitectureCard({
           <span className="text-sm font-semibold text-gray-900">
             {(node.label as string) ?? ""}
           </span>
+          {/* 추천 배지 - 제목 옆에 배치 */}
+          {isRecommended && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+              ⭐ 추천
+            </span>
+          )}
         </div>
         {hasChildren && onRegenerate && (
           <button
