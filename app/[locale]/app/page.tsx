@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { Session, Node, PlanResult, AppType } from "@/lib/types";
 import { getSessionById, saveSession } from "@/lib/storage";
 import { generateFirstLevelIdeas } from "@/lib/generateIdeas";
@@ -21,10 +21,22 @@ export default function AppPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  const locale = params?.locale as string | undefined;
+  const pathname = usePathname();
+  const localeParam = params?.locale as string | undefined;
+  const currentLocale = useLocale() as "ko" | "en";
+  
+  // locale 정규화 함수
+  const normalizeLocale = (input?: string): "en" | "ko" => {
+    return input === "en" ? "en" : "ko";
+  };
+  
+  // 정규화된 locale 변수
+  const locale = normalizeLocale(localeParam);
   const tCommon = useTranslations("common");
   const tLoading = useTranslations("loading");
   const tIdeaTree = useTranslations("ideaTree");
+  const tApp = useTranslations("app");
+  const tErrors = useTranslations("errors");
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -42,6 +54,59 @@ export default function AppPage() {
   const [regenerationSeed, setRegenerationSeed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const processedKeywordsRef = useRef<string>("");
+
+  // 개발 모드에서 /en 경로일 때 한글 감지 가드
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development" && currentLocale === "en" && pathname?.startsWith("/en")) {
+      const checkKorean = () => {
+        // body 전체에서 한글 검색
+        const bodyText = document.body.textContent || "";
+        const koreanRegex = /[가-힣]/;
+        if (koreanRegex.test(bodyText)) {
+          const koreanMatches = bodyText.match(/[가-힣]+/g);
+          const uniqueKorean = Array.from(new Set(koreanMatches || [])).slice(0, 10);
+          
+          // 한글이 포함된 요소 찾기
+          const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null
+          );
+          
+          const koreanElements: Array<{ text: string; element: Node }> = [];
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.textContent && /[가-힣]/.test(node.textContent)) {
+              koreanElements.push({
+                text: node.textContent.trim().substring(0, 50),
+                element: node
+              });
+              if (koreanElements.length >= 5) break;
+            }
+          }
+          
+          console.error(
+            `[한글 감지 가드] /en 경로에서 한글이 발견되었습니다!`,
+            `발견된 한글 (최대 10개):`,
+            uniqueKorean,
+            `한글이 포함된 요소들:`,
+            koreanElements.map(e => e.text)
+          );
+        }
+      };
+      
+      // 렌더링 후 체크 (여러 번 체크)
+      const timeoutId1 = setTimeout(checkKorean, 500);
+      const timeoutId2 = setTimeout(checkKorean, 1500);
+      const timeoutId3 = setTimeout(checkKorean, 3000);
+      
+      return () => {
+        clearTimeout(timeoutId1);
+        clearTimeout(timeoutId2);
+        clearTimeout(timeoutId3);
+      };
+    }
+  }, [currentLocale, pathname, session, isFinalized]);
 
   // URL 파라미터로 저장된 세션을 열었는지 확인
   useEffect(() => {
@@ -82,8 +147,7 @@ export default function AppPage() {
             await new Promise((resolve) => setTimeout(resolve, delay));
 
             // 1차 아이디어 생성
-            const currentLocale = (locale === "en" ? "en" : "ko") as "ko" | "en";
-            const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, undefined, currentLocale);
+            const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, undefined, locale);
 
             const newSession: Session = {
               id: Date.now().toString(),
@@ -102,7 +166,7 @@ export default function AppPage() {
             setError(
               error instanceof Error
                 ? error.message
-                : "아이디어 생성에 실패했습니다. 다시 시도해주세요."
+                : tApp("generationFailed")
             );
           } finally {
             setIsLoading(false);
@@ -138,8 +202,7 @@ export default function AppPage() {
       await new Promise((resolve) => setTimeout(resolve, delay));
 
       // 1차 아이디어 생성 (재생성 시 다른 안이 나오도록 시드 사용)
-      const currentLocale = (locale === "en" ? "en" : "ko") as "ko" | "en";
-      const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, regenerationSeed, currentLocale);
+      const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, regenerationSeed, locale);
 
       const newSession: Session = {
         id: Date.now().toString(),
@@ -184,20 +247,19 @@ export default function AppPage() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
       
-      const currentLocale = (locale === "en" ? "en" : "ko") as "ko" | "en";
       const newNodes = generateFirstLevelIdeas(
         session.keywords || [],
         session.selectedType || "app",
         7,
         Date.now(),
-        currentLocale
+        locale
       );
 
       updateSession({ ...session, nodes: newNodes, selectedNodeIds: [] }, true);
       setError(null);
     } catch (error) {
       console.error("Failed to regenerate ideas:", error);
-      setError("재생성에 실패했습니다. 다시 시도해주세요.");
+      setError(tErrors("regenerationFailed"));
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -269,14 +331,14 @@ export default function AppPage() {
       planResult.appNaming = appNaming;
 
       setFinalizationProgress(90);
-      setFinalizationStep("설계안 저장 중...");
+      setFinalizationStep(tApp("savingPlan"));
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Session 저장
       try {
         updateSession(session, true);
       } catch (error) {
-        console.error("저장 실패:", error);
+        console.error(tErrors("saveError") + ":", error);
       }
 
       setFinalizationProgress(100);
@@ -352,7 +414,7 @@ export default function AppPage() {
     // 저장 성공 시 필요한 처리
   };
 
-  const validLocale = locale === "en" ? "en" : "ko";
+  const validLocale = locale;
 
   // 세션이 있고 최종 플랜이 표시되는 경우
   if (showFinalPlan && finalPlanResult) {
@@ -377,7 +439,7 @@ export default function AppPage() {
             }}
             className="px-6 py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
           >
-            {validLocale === "en" ? "Create New" : "새로 만들기"}
+            {tApp("createNew")}
           </button>
         </div>
       </div>
@@ -461,7 +523,7 @@ export default function AppPage() {
                 onClick={() => setError(null)}
                 className="mt-2 text-sm text-red-600 hover:text-red-800"
               >
-                {validLocale === "en" ? "Dismiss" : "닫기"}
+                {tCommon("close")}
               </button>
             </div>
           )}
@@ -476,9 +538,9 @@ export default function AppPage() {
             onSelectionChange={handleSelectionChange}
             onRegenerate={handleRegenerateFirstLevel}
             onFinalize={handleFinalize}
-            session={session}
+                session={session}
             showSaveButton={!isFinalized}
-          />
+              />
         </div>
       )}
 

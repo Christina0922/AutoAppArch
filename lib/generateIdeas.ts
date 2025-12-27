@@ -581,8 +581,8 @@ export function generateNextLevelIdeas(
       ],
       architecture: [
         ...baseArchitecture.slice(0, 3),
-        "Redis (캐싱)",
-        "CloudWatch (모니터링)"
+        locale === "en" ? "Redis (caching)" : "Redis (캐싱)",
+        locale === "en" ? "CloudWatch (monitoring)" : "CloudWatch (모니터링)"
       ],
       difficulty: "상급",
       estimatedDuration: "4~6주",
@@ -624,8 +624,8 @@ export function generateNextLevelIdeas(
       ],
       architecture: [
         ...baseArchitecture.slice(0, 3),
-        "ML 모듈 (추천)",
-        "규칙 엔진 서버"
+        locale === "en" ? "ML module (recommendations)" : "ML 모듈 (추천)",
+        locale === "en" ? "Rule engine server" : "규칙 엔진 서버"
       ],
       difficulty: "상급",
       estimatedDuration: "5~8주",
@@ -667,8 +667,8 @@ export function generateNextLevelIdeas(
       ],
       architecture: [
         ...baseArchitecture.slice(0, 3),
-        "관리자 패널",
-        "백업 스토리지 (S3)"
+        locale === "en" ? "Admin panel" : "관리자 패널",
+        locale === "en" ? "Backup storage (S3)" : "백업 스토리지 (S3)"
       ],
       difficulty: "상급",
       estimatedDuration: "6~10주",
@@ -779,24 +779,67 @@ function generateTitleFromSpec(label: string, spec: ImplementationSpec, parentNo
         : "Optimized"
     };
     
-    return `${(parentNode.label as string) ?? ""} ${typeMap[spec.difficulty]} ${difficultyMap[spec.difficulty]} Version`;
+    // parentNode.label이 한글일 수 있으므로 영어로 변환
+    const parentLabel = (parentNode.label as string) ?? "";
+    const translatedParentLabel = parentLabel === "A안" ? "Option A" :
+                                   parentLabel === "B안" ? "Option B" :
+                                   parentLabel === "C안" ? "Option C" :
+                                   parentLabel === "D안" ? "Option D" :
+                                   parentLabel === "E안" ? "Option E" :
+                                   parentLabel.replace(/안$/, "").match(/^\d+/) 
+                                     ? `Option ${parentLabel.replace(/안$/, "")}` 
+                                     : parentLabel;
+    
+    return `${translatedParentLabel} ${typeMap[spec.difficulty]} ${difficultyMap[spec.difficulty]} Version`;
   }
 
+  // 한글 버전 (locale이 "ko"일 때만)
+  if (locale === "ko") {
+    const difficultyMap: Record<string, string> = {
+      "초급": "MVP",
+      "중급": "성장",
+      "상급": "고급"
+    };
+    
+    const typeMap: Record<string, string> = {
+      "초급": "기본",
+      "중급": "확장",
+      "상급": spec.features.some(f => f.includes("추천") || f.includes("개인화")) 
+        ? "차별화" 
+        : spec.features.some(f => f.includes("관리자") || f.includes("권한"))
+        ? "운영"
+        : "최적화"
+    };
+    
+    // spec.difficulty가 영어일 수도 있으므로 변환
+    const difficulty = spec.difficulty === "Beginner" ? "초급" :
+                       spec.difficulty === "Intermediate" ? "중급" :
+                       spec.difficulty === "Advanced" ? "상급" : spec.difficulty;
+    
+    return `${(parentNode.label as string) ?? ""} ${typeMap[difficulty]} ${difficultyMap[difficulty]} 버전`;
+  }
+  
+  // 영어 버전 (locale이 "en"일 때)
   const difficultyMap: Record<string, string> = {
-    "초급": "MVP",
-    "중급": "성장",
-    "상급": "고급"
+    "Beginner": "MVP",
+    "Intermediate": "Growth",
+    "Advanced": "Advanced"
   };
   
   const typeMap: Record<string, string> = {
-    "초급": "기본",
-    "중급": "확장",
-    "상급": spec.features.some(f => f.includes("추천") || f.includes("개인화")) 
-      ? "차별화" 
-      : spec.features.some(f => f.includes("관리자") || f.includes("권한"))
-      ? "운영"
-      : "최적화"
+    "Beginner": "Basic",
+    "Intermediate": "Extended",
+    "Advanced": spec.features.some(f => f.includes("recommendation") || f.includes("personalization")) 
+      ? "Differentiated" 
+      : spec.features.some(f => f.includes("admin") || f.includes("permission"))
+      ? "Operations"
+      : "Optimized"
   };
   
-  return `${(parentNode.label as string) ?? ""} ${typeMap[spec.difficulty]} ${difficultyMap[spec.difficulty]} 버전`;
+  // spec.difficulty가 한글일 수도 있으므로 변환
+  const difficulty = spec.difficulty === "초급" ? "Beginner" :
+                     spec.difficulty === "중급" ? "Intermediate" :
+                     spec.difficulty === "상급" ? "Advanced" : spec.difficulty;
+  
+  return `${(parentNode.label as string) ?? ""} ${typeMap[difficulty]} ${difficultyMap[difficulty]} Version`;
 }

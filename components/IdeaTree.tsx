@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import DifficultyDurationInfo from "./DifficultyDurationInfo";
 import { Node, AppType, ImplementationSpec, Session } from "@/lib/types";
 import { generateNextLevelIdeas } from "@/lib/generateIdeas";
 import ArchitectureCard from "./ArchitectureCard";
@@ -292,6 +293,225 @@ export default function IdeaTree({
   const selectionPath = getSelectionPath();
   const finalSelectedTitle = finalSelectedNodes.length > 0 ? finalSelectedNodes[0].title : null;
 
+  // 한글 텍스트를 영어로 변환하는 함수 (ArchitectureCard와 동일한 로직)
+  const translateText = (text: string): string => {
+    if (locale !== "en") return text;
+    
+    // valueProposition 변환
+    if (text === "빠른 시장 진입") return "Quick market entry";
+    if (text === "확장 성장 버전") return "Scalable growth version";
+    if (text === "운영 비용 절감") return "Operating cost reduction";
+    if (text === "개인화 경험 제공") return "Personalized experience";
+    if (text === "엔터프라이즈 운영 준비") return "Enterprise operations ready";
+    
+    // 제목 패턴 변환 (예: "Option 5 기본 MVP 버전" → "Option 5 Basic MVP Version")
+    if (text.includes(" 기본 MVP 버전")) return text.replace(" 기본 MVP 버전", " Basic MVP Version");
+    if (text.includes(" 확장 성장 버전")) return text.replace(" 확장 성장 버전", " Extended Growth Version");
+    if (text.includes(" 최적화 고급 버전")) return text.replace(" 최적화 고급 버전", " Optimized Advanced Version");
+    if (text.includes(" 차별화 고급 버전")) return text.replace(" 차별화 고급 버전", " Differentiated Advanced Version");
+    if (text.includes(" 운영 고급 버전")) return text.replace(" 운영 고급 버전", " Operations Advanced Version");
+    if (text.includes(" MVP 버전")) return text.replace(" MVP 버전", " MVP Version");
+    if (text.includes(" 성장 버전")) return text.replace(" 성장 버전", " Growth Version");
+    if (text.includes(" 고급 버전")) return text.replace(" 고급 버전", " Advanced Version");
+    if (text.includes(" 기본 ")) return text.replace(" 기본 ", " Basic ");
+    if (text.includes(" 확장 ")) return text.replace(" 확장 ", " Extended ");
+    if (text.includes(" 최적화 ")) return text.replace(" 최적화 ", " Optimized ");
+    if (text.includes(" 차별화 ")) return text.replace(" 차별화 ", " Differentiated ");
+    if (text.includes(" 운영 ")) return text.replace(" 운영 ", " Operations ");
+    if (text.endsWith(" 버전")) return text.replace(" 버전", " Version");
+    
+    // contextTags 변환
+    if (text === "1인 창업자용") return "For solo founders";
+    if (text === "MVP 단계") return "MVP stage";
+    if (text === "초기 프로토타입") return "Initial prototype";
+    if (text === "SaaS 초기모델") return "Early SaaS model";
+    if (text === "사용자 유지율 중시") return "User retention focus";
+    if (text === "기능 확장 준비") return "Feature expansion ready";
+    if (text === "대용량 데이터") return "Large data volume";
+    if (text === "성능 최적화") return "Performance optimization";
+    if (text === "비용 효율") return "Cost efficiency";
+    if (text === "전문가용") return "For experts";
+    if (text === "AI/ML 활용") return "AI/ML utilization";
+    if (text === "고급 기능") return "Advanced features";
+    if (text === "팀 협업") return "Team collaboration";
+    if (text === "조직 관리") return "Organization management";
+    if (text === "보안 강화") return "Security enhanced";
+    
+    // oneLineRisk 변환
+    if (text === "초기 서버 비용 발생 가능") return "Initial server costs may occur";
+    if (text === "데이터 증가 시 성능 최적화 필요") return "Performance optimization needed as data grows";
+    if (text === "인프라 구축 초기 비용 증가") return "Initial infrastructure setup cost increase";
+    if (text === "ML 모델 학습 및 유지보수 비용 발생") return "ML model training and maintenance costs";
+    if (text === "복잡한 권한 시스템 구현 및 관리 부담") return "Complex permission system implementation and management burden";
+    
+    // 기간 변환
+    if (text === "1~2주") return "1~2 weeks";
+    if (text === "3~4주") return "3~4 weeks";
+    if (text === "4~6주") return "4~6 weeks";
+    if (text === "5~8주") return "5~8 weeks";
+    if (text === "6~10주") return "6~10 weeks";
+    
+    // 키워드 기반 동적 텍스트 변환
+    if (text.includes("로그 추가")) {
+      const keyword = text.replace(" 로그 추가", "").replace("로그 추가", "");
+      return keyword ? `Add ${keyword} log` : "Add log";
+    }
+    if (text.includes("목록 조회")) {
+      const keyword = text.replace(" 목록 조회", "").replace("목록 조회", "");
+      return keyword ? `View ${keyword} list` : "View list";
+    }
+    if (text.includes("기본 통계")) {
+      const keyword = text.replace(" 기본 통계", "").replace("기본 통계", "");
+      return keyword ? `${keyword} basic statistics` : "Basic statistics";
+    }
+    if (text.includes("검색 및 필터")) {
+      const keyword = text.replace(" 검색 및 필터", "").replace("검색 및 필터", "");
+      return keyword ? `${keyword} search and filter` : "Search and filter";
+    }
+    if (text.includes("태그 관리")) {
+      const keyword = text.replace(" 태그 관리", "").replace("태그 관리", "");
+      return keyword ? `${keyword} tag management` : "Tag management";
+    }
+    if (text.includes("통계 (캐싱)")) {
+      const keyword = text.replace(" 통계 (캐싱)", "").replace("통계 (캐싱)", "");
+      return keyword ? `${keyword} statistics (cached)` : "Statistics (cached)";
+    }
+    if (text.includes("추천 알고리즘")) {
+      const keyword = text.replace(" 추천 알고리즘", "").replace("추천 알고리즘", "");
+      return keyword ? `${keyword} recommendation algorithm` : "Recommendation algorithm";
+    }
+    if (text.includes("알림 설정")) {
+      const keyword = text.replace(" 알림 설정", "").replace("알림 설정", "");
+      return keyword ? `${keyword} notification settings` : "Notification settings";
+    }
+    if (text.includes("목표 관리")) {
+      const keyword = text.replace(" 목표 관리", "").replace("목표 관리", "");
+      return keyword ? `${keyword} goal management` : "Goal management";
+    }
+    if (text.includes("개인화 설정")) {
+      const keyword = text.replace(" 개인화 설정", "").replace("개인화 설정", "");
+      return keyword ? `${keyword} personalization settings` : "Personalization settings";
+    }
+    if (text === "목표 설정 및 추적") return "Goal setting and tracking";
+    if (text === "배치 데이터 처리") return "Batch data processing";
+    if (text === "성능 모니터링") return "Performance monitoring";
+    if (text === "개인화 규칙 엔진") return "Personalization rule engine";
+    if (text === "맞춤형 대시보드") return "Customized dashboard";
+    if (text === "사용자 권한 관리") return "User permission management";
+    if (text === "데이터 백업 및 복원") return "Data backup and recovery";
+    if (text === "감사 로그") return "Audit logs";
+    if (text === "관리자 대시보드") return "Admin dashboard";
+    if (text === "권한 관리") return "Permission management";
+    if (text.includes("를 처음 시작하는 초보 사용자")) {
+      const keyword = text.replace("를 처음 시작하는 초보 사용자", "");
+      return `Beginner users starting with ${keyword}`;
+    }
+    if (text.includes("를 꾸준히 관리하려는 활성 사용자")) {
+      const keyword = text.replace("를 꾸준히 관리하려는 활성 사용자", "");
+      return `Active users who consistently manage ${keyword}`;
+    }
+    if (text.includes("데이터가 많은 고급 사용자")) {
+      const keyword = text.replace(" 데이터가 많은 고급 사용자", "").replace("데이터가 많은 고급 사용자", "");
+      return `Advanced users with large amounts of ${keyword} data`;
+    }
+    if (text.includes("에 개인화된 경험을 원하는 사용자")) {
+      const keyword = text.replace("에 개인화된 경험을 원하는 사용자", "");
+      return `Users seeking personalized experience with ${keyword}`;
+    }
+    if (text.includes("를 팀/조직 단위로 관리하는 사용자")) {
+      const keyword = text.replace("를 팀/조직 단위로 관리하는 사용자", "");
+      return `Users managing ${keyword} at team/organization level`;
+    }
+    
+    // 추가 패턴: "사용자 프로필", "기본 설정" 등
+    if (text === "사용자 프로필") return "User profile";
+    if (text === "기본 설정") return "Basic settings";
+    if (text === "페이지네이션") return "Pagination";
+    
+    // 한글이 여전히 남아있으면 일반적인 변환 시도
+    let translated = text;
+    
+    // 일반적인 한글 단어 변환
+    const wordMap: Record<string, string> = {
+      "사용자": "User",
+      "프로필": "Profile",
+      "기본": "Basic",
+      "설정": "Settings",
+      "관리": "Management",
+      "대시보드": "Dashboard",
+      "데이터": "Data",
+      "백업": "Backup",
+      "복원": "Recovery",
+      "로그": "Log",
+      "목록": "List",
+      "조회": "View",
+      "통계": "Statistics",
+      "검색": "Search",
+      "필터": "Filter",
+      "태그": "Tag",
+      "목표": "Goal",
+      "추적": "Tracking",
+      "알림": "Notification",
+      "추천": "Recommendation",
+      "알고리즘": "Algorithm",
+      "개인화": "Personalization",
+      "규칙": "Rule",
+      "엔진": "Engine",
+      "맞춤형": "Customized",
+      "권한": "Permission",
+      "감사": "Audit",
+      "성능": "Performance",
+      "모니터링": "Monitoring",
+      "배치": "Batch",
+      "처리": "Processing",
+      "캐싱": "Caching",
+      "캐시": "Cache",
+    };
+    
+    // 단어별로 변환 시도
+    for (const [ko, en] of Object.entries(wordMap)) {
+      translated = translated.replace(new RegExp(ko, "g"), en);
+    }
+    
+    // 여전히 한글이 남아있으면 경고 출력 (개발 모드)
+    if (/[가-힣]/.test(translated)) {
+      console.warn(`[translateText] 한글 텍스트가 남아있습니다: "${text}" → "${translated}"`);
+    }
+    
+    return translated;
+  };
+
+  // 라벨 번역 (한글 라벨을 영어로 변환)
+  const getTranslatedLabel = (label?: string): string => {
+    if (!label) return "";
+    if (locale === "en") {
+      // A안, B안 등을 Option A, Option B로 변환
+      if (label === "A안") return "Option A";
+      if (label === "B안") return "Option B";
+      if (label === "C안") return "Option C";
+      if (label === "D안") return "Option D";
+      if (label === "E안") return "Option E";
+      if (label === "1안") return "Option 1";
+      if (label === "2안") return "Option 2";
+      if (label === "3안") return "Option 3";
+      if (label === "4안") return "Option 4";
+      if (label === "5안") return "Option 5";
+      if (label === "6안") return "Option 6";
+      if (label === "7안") return "Option 7";
+      if (label.startsWith("첫번째 안")) return "1st Option";
+      if (label.startsWith("두번째 안")) return "2nd Option";
+      if (label.startsWith("세번째 안")) return "3rd Option";
+      if (label.startsWith("네번째 안")) return "4th Option";
+      if (label.startsWith("다섯번째 안")) return "5th Option";
+      if (label.startsWith("방안 1")) return "Approach 1";
+      if (label.startsWith("방안 2")) return "Approach 2";
+      if (label.startsWith("방안 3")) return "Approach 3";
+      if (label.startsWith("방안 4")) return "Approach 4";
+      if (label.startsWith("방안 5")) return "Approach 5";
+    }
+    return label;
+  };
+
   // 현재 선택된 레벨의 색상 클래스 결정
   const getCurrentLevelColorClass = () => {
     if (finalStage === "stage1") return "bg-blue-100 text-blue-800";
@@ -302,12 +522,37 @@ export default function IdeaTree({
     return "bg-blue-100 text-blue-800";
   };
 
+  // Ordinal 표기 변환 (2nd, 3rd, 4th 등)
+  const getOrdinalSuffix = (level: number): string => {
+    if (locale === "en") {
+      if (level === 1) return "st";
+      if (level === 2) return "nd";
+      if (level === 3) return "rd";
+      if (level >= 4 && level <= 20) return "th";
+      const lastDigit = level % 10;
+      if (lastDigit === 1) return "st";
+      if (lastDigit === 2) return "nd";
+      if (lastDigit === 3) return "rd";
+      return "th";
+    }
+    return "차";
+  };
+
   const getCurrentLevelLabel = () => {
     if (finalStage === "stage1") return t("level1");
     if (finalStage === "stage2") return t("level2");
-    if (finalStage === "stage3") return t("levelN", { level: 3 });
-    if (finalStage === "stage4") return t("levelN", { level: 4 });
-    if (finalStage === "stage5") return t("levelN", { level: 5 });
+    if (finalStage === "stage3") {
+      if (locale === "en") return `3${getOrdinalSuffix(3)}`;
+      return t("levelN", { level: 3 });
+    }
+    if (finalStage === "stage4") {
+      if (locale === "en") return `4${getOrdinalSuffix(4)}`;
+      return t("levelN", { level: 4 });
+    }
+    if (finalStage === "stage5") {
+      if (locale === "en") return `5${getOrdinalSuffix(5)}`;
+      return t("levelN", { level: 5 });
+    }
     return t("level1");
   };
 
@@ -316,16 +561,19 @@ export default function IdeaTree({
       {/* 상태 표시바 - 개선된 형식 */}
       {finalSelectedNodes.length > 0 && (
         <div className="bg-white rounded-lg border-2 border-gray-200 p-4 sticky top-20 z-20 shadow-sm mb-6">
-          <div className="flex items-center gap-2 flex-wrap text-sm text-gray-900">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap text-sm text-gray-900">
             <span className="font-semibold">{t("currentSelection")}:</span>
-            {finalSelectedNodes.map((node, index) => (
-              <span
-                key={node.id}
-                className={`px-2 py-1 ${getCurrentLevelColorClass()} rounded font-medium`}
-              >
-                {getCurrentLevelLabel()} {node.title}
+              {finalSelectedNodes.map((node, index) => (
+                <span
+                  key={node.id}
+                  className={`px-2 py-1 ${getCurrentLevelColorClass()} rounded font-medium`}
+                >
+                  {getCurrentLevelLabel()} {node.title}
               </span>
-            ))}
+              ))}
+            </div>
+            <DifficultyDurationInfo />
           </div>
         </div>
       )}
@@ -357,57 +605,25 @@ export default function IdeaTree({
                     {level === 2 ? "1" : level - 1}
                   </div>
                   <div className="flex items-center gap-4">
-                    <div>
-                      <h3 className={`text-lg font-semibold tracking-tight ${
-                        level === 2 ? "text-blue-900" :
-                        level === 3 ? "text-green-900" :
-                        level === 4 ? "text-purple-900" :
-                        level === 5 ? "text-orange-900" :
-                        level === 6 ? "text-red-900" :
-                        "text-gray-900"
-                      }`}>
-                        {level === 2 ? t("level1Ideas") : t("levelNIdeas", { level: level - 1 })}
-                      </h3>
-                    </div>
-                    {level > 2 && (
-                      <div className="relative group">
-                        <button
-                          type="button"
-                          className="text-xs text-gray-500 hover:text-gray-700 p-1 rounded transition-colors"
-                          aria-label={t("difficultyDurationInfo")}
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                        </button>
-                        {/* 툴팁 */}
-                        <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
-                          <div className="mb-2">
-                            <div className="font-medium mb-1">난이도:</div>
-                            <div className="space-y-0.5 ml-2">
-                              <div><span className="text-green-400 font-medium">{tDifficulty("beginner")}:</span> {tDifficulty("beginnerDesc")}</div>
-                              <div><span className="text-yellow-400 font-medium">{tDifficulty("intermediate")}:</span> {tDifficulty("intermediateDesc")}</div>
-                              <div><span className="text-red-400 font-medium">{tDifficulty("advanced")}:</span> {tDifficulty("advancedDesc")}</div>
-                            </div>
-                          </div>
-                          <div>
-                            <span className="font-medium">기간: </span>
-                            {tDuration("desc")}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-3">
+                    <h3 className={`text-lg font-semibold tracking-tight ${
+                      level === 2 ? "text-blue-900" :
+                      level === 3 ? "text-green-900" :
+                      level === 4 ? "text-purple-900" :
+                      level === 5 ? "text-orange-900" :
+                      level === 6 ? "text-red-900" :
+                      "text-gray-900"
+                    }`}>
+                        {level === 2 
+                          ? t("level1Ideas") 
+                          : locale === "en" 
+                            ? `${level - 1}${getOrdinalSuffix(level - 1)} Level Branch Ideas`
+                            : t("levelNIdeas", { level: level - 1 })
+                        }
+                    </h3>
+                      <DifficultyDurationInfo />
                   </div>
+                </div>
                 </div>
               </div>
 
@@ -470,15 +686,15 @@ export default function IdeaTree({
                             const recommendedId = getRecommendedNodeId(children);
                             return children.map((node) => (
                               <div key={node.id} className="flex flex-col">
-                                <ArchitectureCard
-                                  node={node}
-                                  isSelected={selectedIds.has(node.id)}
-                                  onToggle={() => toggleNodeSelection(node.id)}
-                                  hasChildren={nodes.some((n) => (n.parentId as string | null) === node.id)}
-                                  onRegenerate={() => regenerateChildren(node.id)}
-                                  isRecommended={node.id === recommendedId}
-                                  isDeveloperMode={false}
-                                />
+                              <ArchitectureCard
+                                node={node}
+                                isSelected={selectedIds.has(node.id)}
+                                onToggle={() => toggleNodeSelection(node.id)}
+                                hasChildren={nodes.some((n) => (n.parentId as string | null) === node.id)}
+                                onRegenerate={() => regenerateChildren(node.id)}
+                                isRecommended={node.id === recommendedId}
+                                isDeveloperMode={false}
+                              />
                               </div>
                             ));
                           })()}
@@ -497,8 +713,8 @@ export default function IdeaTree({
         <div className="bg-white rounded-lg border-2 border-gray-200 pt-6 px-6 pb-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 tracking-tight">
-              {t("comparisonTitle")}
-            </h3>
+            {t("comparisonTitle")}
+          </h3>
             <button
               onClick={() => setShowComparisonTable(!showComparisonTable)}
               className="text-sm text-gray-600 hover:text-gray-900 underline transition-colors"
@@ -507,7 +723,7 @@ export default function IdeaTree({
             </button>
           </div>
           {showComparisonTable && (
-            <ComparisonTable nodes={finalSelectedNodes} />
+          <ComparisonTable nodes={finalSelectedNodes} />
           )}
         </div>
       )}
@@ -613,12 +829,12 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
           <div key={node.id} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
             <div className="mb-4">
               <h4 className="text-base font-semibold text-gray-900">
-                {(node.label as string) ?? `${nodeIdx + 1}${t("option")}`}: {node.title}
+                {getTranslatedLabel((node.label as string) ?? `${nodeIdx + 1}${t("option")}`)}: {node.title}
               </h4>
             </div>
             
             <div className="space-y-4 min-h-[400px]">
-              {/* 난이도/기간 */}
+          {/* 난이도/기간 */}
               <div className="flex gap-3 items-center">
                 <span className="text-sm font-medium text-gray-700">{t("difficulty")}:</span>
                 <span className={`inline-block text-sm px-2 py-1 rounded font-medium ${
@@ -637,11 +853,13 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
                 </span>
                 <span className="text-sm font-medium text-gray-700">{t("estimatedDuration")}:</span>
                 <span className="text-sm text-gray-700 font-medium">
-                  {spec.estimatedDuration}
+                  {locale === "en" && spec.estimatedDuration.includes("주") 
+                    ? spec.estimatedDuration.replace("주", " weeks")
+                    : spec.estimatedDuration}
                 </span>
               </div>
-              
-              {/* 핵심 화면 */}
+          
+          {/* 핵심 화면 */}
               {spec.screens.length > 0 && (
                 <div>
                   <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("coreScreens")}</h5>
@@ -649,14 +867,14 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
                     {spec.screens.map((screen) => (
                       <li key={screen} className="text-sm text-gray-700 flex items-start">
                         <span className="text-gray-400 mr-2">•</span>
-                        <span>{screen}</span>
+                        <span>{translateText(screen)}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
+                      </div>
               )}
-              
-              {/* 핵심 기능 */}
+          
+          {/* 핵심 기능 */}
               {spec.features.length > 0 && (
                 <div>
                   <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("coreFeatures")}</h5>
@@ -664,14 +882,14 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
                     {spec.features.map((feature) => (
                       <li key={feature} className="text-sm text-gray-700 flex items-start">
                         <span className="text-gray-400 mr-2">•</span>
-                        <span>{feature}</span>
+                        <span>{translateText(feature)}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
+                      </div>
               )}
-              
-              {/* 데이터 엔티티 */}
+          
+          {/* 데이터 엔티티 */}
               {spec.entities.length > 0 && (
                 <div>
                   <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("dataEntities")}</h5>
@@ -683,10 +901,10 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
                       </li>
                     ))}
                   </ul>
-                </div>
+                      </div>
               )}
-              
-              {/* API */}
+          
+          {/* API */}
               {spec.apis.length > 0 && (
                 <div>
                   <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("apiEndpoints")}</h5>
@@ -698,10 +916,10 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
                       </li>
                     ))}
                   </ul>
-                </div>
+                      </div>
               )}
-              
-              {/* 아키텍처 */}
+          
+          {/* 아키텍처 */}
               {spec.architecture.length > 0 && (
                 <div>
                   <h5 className="text-sm font-semibold text-gray-900 mb-2">{tArchitecture("architectureComponents")}</h5>
@@ -714,11 +932,11 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
                     ))}
                   </ul>
                 </div>
-              )}
-            </div>
+                        )}
+                      </div>
           </div>
-        );
-      })}
+                  );
+                })}
     </div>
   );
 }
@@ -755,10 +973,42 @@ function IdeaCard({
   hasChildren,
   onRegenerate,
 }: IdeaCardProps) {
+  const locale = useLocale() as "ko" | "en";
   const t = useTranslations("ideaTree");
   const tArchitecture = useTranslations("architectureCard");
   const spec = node.spec as ImplementationSpec | undefined;
   const hasSpec = !!spec;
+  
+  // 라벨 번역 (한글 라벨을 영어로 변환)
+  const getTranslatedLabel = (label?: string): string => {
+    if (!label) return "";
+    if (locale === "en") {
+      // A안, B안 등을 Option A, Option B로 변환
+      if (label === "A안") return "Option A";
+      if (label === "B안") return "Option B";
+      if (label === "C안") return "Option C";
+      if (label === "D안") return "Option D";
+      if (label === "E안") return "Option E";
+      if (label === "1안") return "Option 1";
+      if (label === "2안") return "Option 2";
+      if (label === "3안") return "Option 3";
+      if (label === "4안") return "Option 4";
+      if (label === "5안") return "Option 5";
+      if (label === "6안") return "Option 6";
+      if (label === "7안") return "Option 7";
+      if (label.startsWith("첫번째 안")) return "1st Option";
+      if (label.startsWith("두번째 안")) return "2nd Option";
+      if (label.startsWith("세번째 안")) return "3rd Option";
+      if (label.startsWith("네번째 안")) return "4th Option";
+      if (label.startsWith("다섯번째 안")) return "5th Option";
+      if (label.startsWith("방안 1")) return "Approach 1";
+      if (label.startsWith("방안 2")) return "Approach 2";
+      if (label.startsWith("방안 3")) return "Approach 3";
+      if (label.startsWith("방안 4")) return "Approach 4";
+      if (label.startsWith("방안 5")) return "Approach 5";
+    }
+    return label;
+  };
   
   // 레벨별 색상 클래스
   const nodeLevel = (node.level as number) ?? 2;
@@ -831,7 +1081,7 @@ function IdeaCard({
             )}
           </div>
           <span className={`text-sm font-semibold ${getTextClass()}`}>
-            {(node.label as string) ?? ""}
+            {getTranslatedLabel((node.label as string) ?? "")}
           </span>
         </div>
         {hasChildren && onRegenerate && (
@@ -882,7 +1132,7 @@ function IdeaCard({
           {/* 핵심 화면 */}
           <div>
             <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1 antialiased opacity-100">
-              핵심 화면
+              {tArchitecture("coreScreens")}
             </p>
             <ul className="text-xs text-gray-700 font-normal antialiased opacity-100 space-y-0.5">
               {spec.screens.slice(0, 3).map((screen, idx) => (

@@ -25,7 +25,12 @@ export default async function LocaleLayout({
   children,
   params,
 }: Props) {
-  const { locale } = await params;
+  let { locale } = await params;
+  
+  // /en 경로에서 언어 강제 고정 (localStorage/cookie/navigator 감지 무시)
+  if (locale === "en") {
+    locale = "en";
+  }
   
   // Validate that the incoming `locale` parameter is valid
   if (!locales.includes(locale as any)) {

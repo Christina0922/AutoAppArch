@@ -26,8 +26,15 @@ export function normalizeLocale(input: unknown): Locale {
 }
 
 export default getRequestConfig(async ({ locale }) => {
-  // normalizeLocale을 사용하여 안전하게 locale 처리
-  const validLocale = normalizeLocale(locale);
+  // /en 경로에서 언어 강제 고정
+  // locale은 next-intl이 자동으로 pathname에서 추출한 locale
+  let validLocale: Locale = normalizeLocale(locale);
+  
+  // pathname이 /en으로 시작하면 무조건 en으로 강제
+  // (next-intl이 이미 pathname에서 locale을 추출하므로, 여기서는 추가 검증만 수행)
+  if (locale === "en") {
+    validLocale = "en";
+  }
 
   return {
     locale: validLocale,

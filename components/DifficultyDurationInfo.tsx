@@ -1,8 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 export default function DifficultyDurationInfo() {
+  const t = useTranslations("ideaTree");
+  const tDifficulty = useTranslations("difficulty");
+  const tDuration = useTranslations("duration");
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<"bottom" | "top">("bottom");
@@ -98,8 +102,6 @@ export default function DifficultyDurationInfo() {
     }
   };
 
-  const tooltipText = "난이도는 포함된 기능의 복잡도를, 기간은 1명 개발자 풀타임 기준 예상 기간을 나타냅니다. 배지에 마우스를 올리면 자세한 기준을 알 수 있습니다.";
-
   return (
     <div className="relative inline-block">
       <button
@@ -110,14 +112,13 @@ export default function DifficultyDurationInfo() {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onKeyDown={handleKeyDown}
-        aria-label="난이도/기간 기준 안내"
+        aria-label={t("difficultyDurationInfo")}
         aria-describedby={isTooltipVisible ? "difficulty-duration-tooltip" : undefined}
         aria-expanded={isTooltipVisible}
       >
         <span className="text-blue-600 flex-shrink-0">ℹ</span>
-        <span className="flex flex-col leading-tight text-left">
-          <span>난이도/기간</span>
-          <span>기준</span>
+        <span className="text-left">
+          {t("difficultyDurationGuide")}
         </span>
       </button>
       
@@ -129,12 +130,23 @@ export default function DifficultyDurationInfo() {
           className={`absolute z-50 left-0 ${
             tooltipPosition === "bottom" ? "top-full mt-2" : "bottom-full mb-2"
           } bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-xl pointer-events-none ${
-            isMobile ? "max-w-[80vw]" : "max-w-xs"
+            isMobile ? "max-w-[80vw]" : "w-64"
           }`}
           role="tooltip"
           aria-live="polite"
         >
-          <div className="whitespace-pre-line leading-relaxed">{tooltipText}</div>
+          <div className="mb-2">
+            <div className="font-medium mb-1">{t("difficultyLabel")}</div>
+            <div className="space-y-0.5 ml-2">
+              <div><span className="text-green-400 font-medium">{tDifficulty("beginner")}:</span> {tDifficulty("beginnerDesc")}</div>
+              <div><span className="text-yellow-400 font-medium">{tDifficulty("intermediate")}:</span> {tDifficulty("intermediateDesc")}</div>
+              <div><span className="text-red-400 font-medium">{tDifficulty("advanced")}:</span> {tDifficulty("advancedDesc")}</div>
+            </div>
+          </div>
+          <div>
+            <span className="font-medium">{t("durationLabel")}</span>
+            {tDuration("desc")}
+          </div>
           {/* 화살표 */}
           <div
             className={`absolute left-4 w-0 h-0 border-l-4 border-r-4 border-transparent ${

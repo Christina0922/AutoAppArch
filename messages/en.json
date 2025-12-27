@@ -76,7 +76,13 @@
     "selectToProceed": "Select to proceed",
     "selectOneToProceed": "Please select one option",
     "difficultyDurationInfo": "Difficulty and duration criteria",
-    "moreItems": "+{count} more"
+    "moreItems": "+{count} more",
+    "difficultyLabel": "Difficulty",
+    "durationLabel": "Duration",
+    "difficultyDurationGuide": "Difficulty / Duration",
+    "coreScreens": "Core Screens",
+    "recommended": "⭐ Recommended",
+    "regenerateAria": "Regenerate"
   },
   "comparisonTable": {
     "item": "Item",
@@ -176,7 +182,14 @@
   "errors": {
     "generationFailed": "Failed to generate ideas. Please try again.",
     "saveFailed": "Failed to save.",
-    "deleteFailed": "Failed to delete."
+    "deleteFailed": "Failed to delete.",
+    "regenerationFailed": "Failed to regenerate. Please try again.",
+    "saveError": "Save failed"
+  },
+  "app": {
+    "createNew": "Create New",
+    "savingPlan": "Saving plan...",
+    "generationFailed": "Failed to generate ideas. Please try again."
   }
 }
 

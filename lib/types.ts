@@ -17,7 +17,7 @@ export type ImplementationSpec = {
   // 아키텍처 구성요소 5개
   architecture: string[];
   // 난이도
-  difficulty: "초급" | "중급" | "상급";
+  difficulty: "초급" | "중급" | "상급" | "Beginner" | "Intermediate" | "Advanced";
   // 예상 기간
   estimatedDuration: string;
   // Value Proposition (사용자 중심 가치)
