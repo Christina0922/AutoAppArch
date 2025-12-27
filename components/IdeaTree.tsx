@@ -790,10 +790,93 @@ interface ComparisonTableProps {
 }
 
 function ComparisonTable({ nodes }: ComparisonTableProps) {
+  const locale = useLocale() as "ko" | "en";
   const t = useTranslations("comparisonTable");
   const tArchitecture = useTranslations("architectureCard");
   const specs = nodes.map(n => n.spec as ImplementationSpec).filter(Boolean);
   if (specs.length === 0) return null;
+
+  // translateText 함수
+  const translateText = (text: string): string => {
+    if (locale !== "en") return text;
+    if (!text || typeof text !== "string") return text;
+    if (!/[가-힣]/.test(text)) return text;
+    
+    // valueProposition 변환
+    if (text === "빠른 시장 진입") return "Quick market entry";
+    if (text === "확장 성장 버전") return "Scalable growth version";
+    if (text === "운영 비용 절감") return "Operating cost reduction";
+    if (text === "개인화 경험 제공") return "Personalized experience";
+    if (text === "엔터프라이즈 운영 준비") return "Enterprise operations ready";
+    
+    // 제목 패턴 변환
+    if (text.includes(" 기본 MVP 버전")) return text.replace(" 기본 MVP 버전", " Basic MVP Version");
+    if (text.includes(" 확장 성장 버전")) return text.replace(" 확장 성장 버전", " Extended Growth Version");
+    if (text.includes(" 최적화 고급 버전")) return text.replace(" 최적화 고급 버전", " Optimized Advanced Version");
+    if (text.includes(" 차별화 고급 버전")) return text.replace(" 차별화 고급 버전", " Differentiated Advanced Version");
+    if (text.includes(" 운영 고급 버전")) return text.replace(" 운영 고급 버전", " Operations Advanced Version");
+    if (text.includes(" MVP 버전")) return text.replace(" MVP 버전", " MVP Version");
+    if (text.includes(" 성장 버전")) return text.replace(" 성장 버전", " Growth Version");
+    if (text.includes(" 고급 버전")) return text.replace(" 고급 버전", " Advanced Version");
+    if (text.includes(" 기본 ")) return text.replace(" 기본 ", " Basic ");
+    if (text.includes(" 확장 ")) return text.replace(" 확장 ", " Extended ");
+    if (text.includes(" 최적화 ")) return text.replace(" 최적화 ", " Optimized ");
+    if (text.includes(" 차별화 ")) return text.replace(" 차별화 ", " Differentiated ");
+    if (text.includes(" 운영 ")) return text.replace(" 운영 ", " Operations ");
+    if (text.endsWith(" 버전")) return text.replace(" 버전", " Version");
+    
+    // 추가 패턴들
+    if (text === "사용자 프로필") return "User profile";
+    if (text === "기본 설정") return "Basic settings";
+    if (text === "페이지네이션") return "Pagination";
+    
+    // 일반적인 한글 단어 변환
+    const wordMap: Record<string, string> = {
+      "사용자": "User", "프로필": "Profile", "기본": "Basic", "설정": "Settings",
+      "관리": "Management", "대시보드": "Dashboard", "데이터": "Data", "백업": "Backup",
+      "복원": "Recovery", "로그": "Log", "목록": "List", "조회": "View",
+      "통계": "Statistics", "검색": "Search", "필터": "Filter", "태그": "Tag",
+      "목표": "Goal", "추적": "Tracking", "알림": "Notification", "추천": "Recommendation",
+      "알고리즘": "Algorithm", "개인화": "Personalization", "규칙": "Rule", "엔진": "Engine",
+      "맞춤형": "Customized", "권한": "Permission", "감사": "Audit", "성능": "Performance",
+      "모니터링": "Monitoring", "배치": "Batch", "처리": "Processing", "캐싱": "Caching", "캐시": "Cache",
+    };
+    
+    let translated = text;
+    for (const [ko, en] of Object.entries(wordMap)) {
+      translated = translated.replace(new RegExp(ko, "g"), en);
+    }
+    
+    return translated;
+  };
+
+  // getTranslatedLabel 함수
+  const getTranslatedLabel = (label?: string): string => {
+    if (!label) return "";
+    if (locale === "en") {
+      if (label === "A안") return "Option A";
+      if (label === "B안") return "Option B";
+      if (label === "C안") return "Option C";
+      if (label === "D안") return "Option D";
+      if (label === "E안") return "Option E";
+      if (label === "1안") return "Option 1";
+      if (label === "2안") return "Option 2";
+      if (label === "3안") return "Option 3";
+      if (label === "4안") return "Option 4";
+      if (label === "5안") return "Option 5";
+      if (label.startsWith("첫번째 안")) return "1st Option";
+      if (label.startsWith("두번째 안")) return "2nd Option";
+      if (label.startsWith("세번째 안")) return "3rd Option";
+      if (label.startsWith("네번째 안")) return "4th Option";
+      if (label.startsWith("다섯번째 안")) return "5th Option";
+      if (label.startsWith("방안 1")) return "Approach 1";
+      if (label.startsWith("방안 2")) return "Approach 2";
+      if (label.startsWith("방안 3")) return "Approach 3";
+      if (label.startsWith("방안 4")) return "Approach 4";
+      if (label.startsWith("방안 5")) return "Approach 5";
+    }
+    return label;
+  };
 
   // 모든 항목 수집 (합집합)
   const allScreens = Array.from(new Set(specs.flatMap(s => s.screens)));
@@ -829,7 +912,7 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
           <div key={node.id} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
             <div className="mb-4">
               <h4 className="text-base font-semibold text-gray-900">
-                {getTranslatedLabel((node.label as string) ?? `${nodeIdx + 1}${t("option")}`)}: {node.title}
+                {getTranslatedLabel((node.label as string) ?? `${nodeIdx + 1}${t("option")}`)}: {translateText(node.title)}
               </h4>
             </div>
             

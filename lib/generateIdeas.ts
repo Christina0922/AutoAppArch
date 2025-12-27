@@ -581,8 +581,8 @@ export function generateNextLevelIdeas(
       ],
       architecture: [
         ...baseArchitecture.slice(0, 3),
-        locale === "en" ? "Redis (caching)" : "Redis (캐싱)",
-        locale === "en" ? "CloudWatch (monitoring)" : "CloudWatch (모니터링)"
+        "Redis (캐싱)",
+        "CloudWatch (모니터링)"
       ],
       difficulty: "상급",
       estimatedDuration: "4~6주",
@@ -624,8 +624,8 @@ export function generateNextLevelIdeas(
       ],
       architecture: [
         ...baseArchitecture.slice(0, 3),
-        locale === "en" ? "ML module (recommendations)" : "ML 모듈 (추천)",
-        locale === "en" ? "Rule engine server" : "규칙 엔진 서버"
+        "ML 모듈 (추천)",
+        "규칙 엔진 서버"
       ],
       difficulty: "상급",
       estimatedDuration: "5~8주",
@@ -667,8 +667,8 @@ export function generateNextLevelIdeas(
       ],
       architecture: [
         ...baseArchitecture.slice(0, 3),
-        locale === "en" ? "Admin panel" : "관리자 패널",
-        locale === "en" ? "Backup storage (S3)" : "백업 스토리지 (S3)"
+        "관리자 패널",
+        "백업 스토리지 (S3)"
       ],
       difficulty: "상급",
       estimatedDuration: "6~10주",

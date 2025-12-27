@@ -73,13 +73,13 @@ export default function AppPage() {
             null
           );
           
-          const koreanElements: Array<{ text: string; element: Node }> = [];
-          let node;
-          while ((node = walker.nextNode())) {
-            if (node.textContent && /[가-힣]/.test(node.textContent)) {
+          const koreanElements: Array<{ text: string; element: globalThis.Node }> = [];
+          let textNode: globalThis.Node | null;
+          while ((textNode = walker.nextNode())) {
+            if (textNode.textContent && /[가-힣]/.test(textNode.textContent)) {
               koreanElements.push({
-                text: node.textContent.trim().substring(0, 50),
-                element: node
+                text: textNode.textContent.trim().substring(0, 50),
+                element: textNode
               });
               if (koreanElements.length >= 5) break;
             }
