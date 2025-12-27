@@ -82,7 +82,8 @@ export default function AppPage() {
             await new Promise((resolve) => setTimeout(resolve, delay));
 
             // 1차 아이디어 생성
-            const nodes = generateFirstLevelIdeas(keywords, selectedType, 7);
+            const currentLocale = (locale === "en" ? "en" : "ko") as "ko" | "en";
+            const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, undefined, currentLocale);
 
             const newSession: Session = {
               id: Date.now().toString(),
@@ -137,7 +138,8 @@ export default function AppPage() {
       await new Promise((resolve) => setTimeout(resolve, delay));
 
       // 1차 아이디어 생성 (재생성 시 다른 안이 나오도록 시드 사용)
-      const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, regenerationSeed);
+      const currentLocale = (locale === "en" ? "en" : "ko") as "ko" | "en";
+      const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, regenerationSeed, currentLocale);
 
       const newSession: Session = {
         id: Date.now().toString(),
@@ -182,11 +184,13 @@ export default function AppPage() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
       
+      const currentLocale = (locale === "en" ? "en" : "ko") as "ko" | "en";
       const newNodes = generateFirstLevelIdeas(
         session.keywords || [],
         session.selectedType || "app",
         7,
-        Date.now()
+        Date.now(),
+        currentLocale
       );
 
       updateSession({ ...session, nodes: newNodes, selectedNodeIds: [] }, true);

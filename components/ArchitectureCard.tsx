@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocale, useTranslations } from "next-intl";
 import { Node, ImplementationSpec } from "@/lib/types";
 
 interface ArchitectureCardProps {
@@ -23,9 +24,23 @@ export default function ArchitectureCard({
   isRecommended = false,
   isDeveloperMode = false,
 }: ArchitectureCardProps) {
+  const locale = useLocale() as "ko" | "en";
+  const t = useTranslations("architectureCard");
+  const tDifficulty = useTranslations("difficulty");
   const [isExpanded, setIsExpanded] = useState(false);
   const spec = node.spec as ImplementationSpec | undefined;
   const hasSpec = !!spec;
+
+  // 난이도 번역 (한글 difficulty를 영어로 변환)
+  const getTranslatedDifficulty = (difficulty?: string): string => {
+    if (!difficulty) return "";
+    if (locale === "en") {
+      if (difficulty === "초급") return "Beginner";
+      if (difficulty === "중급") return "Intermediate";
+      if (difficulty === "상급") return "Advanced";
+    }
+    return difficulty;
+  };
 
   // 레벨별 색상 클래스
   const nodeLevel = (node.level as number) ?? 2;
@@ -58,12 +73,12 @@ export default function ArchitectureCard({
   };
 
   const getDifficultyColor = (difficulty?: string) => {
-    switch (difficulty) {
-      case "초급": return "bg-green-100 text-green-800";
-      case "중급": return "bg-yellow-100 text-yellow-800";
-      case "상급": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
+    if (!difficulty) return "bg-gray-100 text-gray-800";
+    // 한국어와 영어 모두 지원
+    if (difficulty === "초급" || difficulty === "Beginner") return "bg-green-100 text-green-800";
+    if (difficulty === "중급" || difficulty === "Intermediate") return "bg-yellow-100 text-yellow-800";
+    if (difficulty === "상급" || difficulty === "Advanced") return "bg-red-100 text-red-800";
+    return "bg-gray-100 text-gray-800";
   };
 
 
@@ -225,7 +240,7 @@ export default function ArchitectureCard({
         {/* 3. 난이도/기간 배지 */}
         <div className="flex gap-2 flex-wrap">
           <span className={`text-xs px-2 py-1 rounded font-medium ${getDifficultyColor(spec.difficulty)}`}>
-            {spec.difficulty}
+            {getTranslatedDifficulty(spec.difficulty)}
           </span>
           <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800 font-medium">
             {spec.estimatedDuration}
@@ -248,8 +263,8 @@ export default function ArchitectureCard({
 
         {/* 5. 주의/리스크 1개 */}
         {spec.oneLineRisk && (
-          <div className="bg-amber-50 border border-amber-200 rounded-md p-2">
-            <p className="text-xs font-semibold text-amber-900 mb-0.5">⚠️ 제약 사항</p>
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-2 min-h-[60px]">
+            <p className="text-xs font-semibold text-amber-900 mb-0.5">⚠️ {t("warning")}</p>
             <p className="text-xs text-amber-800 leading-relaxed">{spec.oneLineRisk}</p>
           </div>
         )}
@@ -260,9 +275,9 @@ export default function ArchitectureCard({
             e.stopPropagation();
             setIsExpanded(!isExpanded);
           }}
-          className="w-full text-xs text-gray-700 hover:text-gray-900 py-2 flex items-center justify-center gap-1 transition-colors border-t border-gray-200 mt-1"
+          className="w-full text-xs text-gray-700 hover:text-gray-900 py-2 flex items-center justify-center gap-1 transition-colors border-t border-gray-200 mt-auto"
         >
-          <span>{isExpanded ? "간략히 보기" : "자세히 보기"}</span>
+          <span>{isExpanded ? t("hideDetails") : t("viewDetails")}</span>
           <svg
             className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
             fill="none"
@@ -318,7 +333,7 @@ export default function ArchitectureCard({
               {/* 핵심 기능 (전체) */}
               <div>
                 <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-1.5">
-                  전체 기능
+                  {t("allFeatures")}
                 </p>
                 <ul className="text-sm text-gray-700 space-y-1">
                   {spec.features.map((feature, idx) => (
@@ -336,7 +351,7 @@ export default function ArchitectureCard({
                   {/* 데이터 엔티티 */}
                   <div>
                     <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-1.5">
-                      데이터 엔티티
+                      {t("dataEntities")}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {spec.entities.map((entity, idx) => (
@@ -353,7 +368,7 @@ export default function ArchitectureCard({
                   {/* API */}
                   <div>
                     <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-1.5">
-                      API 엔드포인트
+                      {t("apiEndpoints")}
                     </p>
                     <ul className="text-sm text-gray-700 space-y-1 font-mono">
                       {spec.apis.map((api, idx) => (
@@ -368,7 +383,7 @@ export default function ArchitectureCard({
                   {/* 아키텍처 구성요소 */}
                   <div>
                     <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-1.5">
-                      아키텍처 구성요소
+                      {t("architectureComponents")}
                     </p>
                     <ul className="text-sm text-gray-700 space-y-1">
                       {spec.architecture.map((arch, idx) => (

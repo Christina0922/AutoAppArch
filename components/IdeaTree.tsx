@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Node, AppType, ImplementationSpec, Session } from "@/lib/types";
 import { generateNextLevelIdeas } from "@/lib/generateIdeas";
 import ArchitectureCard from "./ArchitectureCard";
@@ -34,6 +34,7 @@ export default function IdeaTree({
   session: externalSession,
   showSaveButton = false,
 }: IdeaTreeProps) {
+  const locale = useLocale() as "ko" | "en";
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(initialSelectedIds)
@@ -122,7 +123,8 @@ export default function IdeaTree({
         parent,
         keywords,
         selectedType,
-        5
+        5,
+        locale
       );
       newNodes.push(...children);
     });
@@ -156,7 +158,7 @@ export default function IdeaTree({
     );
 
     // 새 자식 생성
-    const newChildren = generateNextLevelIdeas(parent, keywords, selectedType, 5);
+    const newChildren = generateNextLevelIdeas(parent, keywords, selectedType, 5, locale);
     updateNodes([...filteredNodes, ...newChildren]);
     updateSelection(filteredSelected);
 
@@ -185,17 +187,20 @@ export default function IdeaTree({
     const keywordStr = keywords.join(" ").toLowerCase();
     
     // 기본값: B안 (확장 성장 버전)
-    let recommendedLabel = "B안";
+    let recommendedLabel = locale === "en" ? "Option B" : "B안";
     
     // 키워드 기반 추천 로직
-    if (keywordStr.includes("빠른") || keywordStr.includes("심플") || keywordStr.includes("간단")) {
-      recommendedLabel = "A안";
-    } else if (keywordStr.includes("전문가") || keywordStr.includes("대용량") || keywordStr.includes("고급")) {
+    if (keywordStr.includes("빠른") || keywordStr.includes("심플") || keywordStr.includes("간단") || 
+        keywordStr.includes("quick") || keywordStr.includes("simple")) {
+      recommendedLabel = locale === "en" ? "Option A" : "A안";
+    } else if (keywordStr.includes("전문가") || keywordStr.includes("대용량") || keywordStr.includes("고급") ||
+               keywordStr.includes("expert") || keywordStr.includes("advanced")) {
       // C 또는 D 중 선택 (랜덤하지 않고 일관성 있게)
-      if (keywordStr.includes("성능") || keywordStr.includes("비용") || keywordStr.includes("최적화")) {
-        recommendedLabel = "C안";
+      if (keywordStr.includes("성능") || keywordStr.includes("비용") || keywordStr.includes("최적화") ||
+          keywordStr.includes("performance") || keywordStr.includes("cost") || keywordStr.includes("optim")) {
+        recommendedLabel = locale === "en" ? "Option C" : "C안";
       } else {
-        recommendedLabel = "D안";
+        recommendedLabel = locale === "en" ? "Option D" : "D안";
       }
     }
     
@@ -617,11 +622,18 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
               <div className="flex gap-3 items-center">
                 <span className="text-sm font-medium text-gray-700">{t("difficulty")}:</span>
                 <span className={`inline-block text-sm px-2 py-1 rounded font-medium ${
-                  spec.difficulty === "초급" ? "bg-green-100 text-green-800" :
-                  spec.difficulty === "중급" ? "bg-yellow-100 text-yellow-800" :
+                  spec.difficulty === "초급" || spec.difficulty === "Beginner" ? "bg-green-100 text-green-800" :
+                  spec.difficulty === "중급" || spec.difficulty === "Intermediate" ? "bg-yellow-100 text-yellow-800" :
                   "bg-red-100 text-red-800"
                 }`}>
-                  {spec.difficulty}
+                  {(() => {
+                    if (locale === "en") {
+                      if (spec.difficulty === "초급") return "Beginner";
+                      if (spec.difficulty === "중급") return "Intermediate";
+                      if (spec.difficulty === "상급") return "Advanced";
+                    }
+                    return spec.difficulty;
+                  })()}
                 </span>
                 <span className="text-sm font-medium text-gray-700">{t("estimatedDuration")}:</span>
                 <span className="text-sm text-gray-700 font-medium">
@@ -776,12 +788,12 @@ function IdeaCard({
   
   // 난이도별 배지 색상
   const getDifficultyColor = (difficulty?: string) => {
-    switch (difficulty) {
-      case "초급": return "bg-green-100 text-green-800";
-      case "중급": return "bg-yellow-100 text-yellow-800";
-      case "상급": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
+    if (!difficulty) return "bg-gray-100 text-gray-800";
+    // 한국어와 영어 모두 지원
+    if (difficulty === "초급" || difficulty === "Beginner") return "bg-green-100 text-green-800";
+    if (difficulty === "중급" || difficulty === "Intermediate") return "bg-yellow-100 text-yellow-800";
+    if (difficulty === "상급" || difficulty === "Advanced") return "bg-red-100 text-red-800";
+    return "bg-gray-100 text-gray-800";
   };
   
   return (
@@ -845,7 +857,14 @@ function IdeaCard({
           {/* 난이도/기간 배지 */}
           <div className="flex gap-2 flex-wrap">
             <span className={`text-xs px-2 py-1 rounded ${getDifficultyColor(spec.difficulty)}`}>
-              {spec.difficulty}
+              {(() => {
+                if (locale === "en") {
+                  if (spec.difficulty === "초급") return "Beginner";
+                  if (spec.difficulty === "중급") return "Intermediate";
+                  if (spec.difficulty === "상급") return "Advanced";
+                }
+                return spec.difficulty;
+              })()}
             </span>
             <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">
               {spec.estimatedDuration}
