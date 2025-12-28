@@ -456,7 +456,7 @@ export default function AppPage() {
       return;
     }
     // 세션이 있으면 다시 시도할 수 있는 옵션 제공
-    router.push(withLocalePrefix("/app", routeLocale, pathname));
+    router.push(withLocalePrefix("/app", locale, pathname));
   };
 
   return (
