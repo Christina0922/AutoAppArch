@@ -15,31 +15,33 @@ interface PlanDetailProps {
 }
 
 function ProgressSection(): React.ReactElement {
+  const t = useTranslations("planDetail");
+  
   return (
     <div className="bg-white rounded-lg border border-gray-100 p-8">
       <p className="text-base text-gray-600 mb-6 leading-relaxed">
-        현재 이 설계안은 <strong className="text-gray-900 font-medium">'기본 구조 단계'</strong>에 있습니다.
+        <span dangerouslySetInnerHTML={{ __html: t("progressCurrent") }} />
       </p>
       <div>
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-          설계 진행 단계
+          {t("progressTitle")}
         </h3>
         <div className="space-y-4">
           <div className="flex items-center">
             <span className="text-gray-900 mr-4 text-base font-medium">✓</span>
-            <span className="text-base text-gray-600">① 아이디어 구조화</span>
+            <span className="text-base text-gray-600">{t("progressStep1")}</span>
           </div>
           <div className="flex items-center">
             <span className="text-gray-900 mr-4 text-base font-medium">✓</span>
-            <span className="text-base text-gray-600">② 핵심 기능 정리</span>
+            <span className="text-base text-gray-600">{t("progressStep2")}</span>
           </div>
           <div className="flex items-center">
             <span className="text-gray-300 mr-4 text-base">◻</span>
-            <span className="text-base text-gray-400">③ 화면 흐름 설계</span>
+            <span className="text-base text-gray-400">{t("progressStep3")}</span>
           </div>
           <div className="flex items-center">
             <span className="text-gray-300 mr-4 text-base">◻</span>
-            <span className="text-base text-gray-400">④ 구현 준비 단계</span>
+            <span className="text-base text-gray-400">{t("progressStep4")}</span>
           </div>
         </div>
       </div>
@@ -51,6 +53,17 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
   const { result, keywords = [], showProgress = false, isPremium = false, onShowPaywall = () => {}, finalSelected = false } = props;
   const t = useTranslations("planDetail");
   const shouldShowProgress: boolean = Boolean(showProgress as boolean);
+  
+  // result가 없거나 필수 필드가 없는 경우 에러 방지
+  if (!result) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+          <p className="text-red-800">No plan data available.</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -77,13 +90,13 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
       {shouldShowProgress ? <ProgressSection /> : (null as any)}
 
       <div className="bg-white rounded-lg border border-gray-100 p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-3 tracking-tight">{(result.title as string) ?? ""}</h2>
-        <p className="text-base text-gray-500 leading-relaxed">{(result.tagline as string) ?? ""}</p>
+        <h2 className="text-xl font-semibold text-gray-900 mb-3 tracking-tight">{(result?.title as string) ?? ""}</h2>
+        <p className="text-base text-gray-500 leading-relaxed">{(result?.tagline as string) ?? ""}</p>
       </div>
 
       {/* [사용자 관점]과 [개발자 관점] 섹션 분리 */}
       {(() => {
-        const sectionsForRendering = (result.sectionsForRendering as Array<{ heading: string; bullets: string[] }>) || [];
+        const sectionsForRendering = (result?.sectionsForRendering as Array<{ heading: string; bullets: string[] }>) || [];
         const userPerspectiveLabel = t("userPerspective");
         const developerPerspectiveLabel = t("developerPerspective");
         const userSections = sectionsForRendering.filter((s) =>
@@ -173,7 +186,7 @@ export default function PlanDetail(props: PlanDetailProps): JSX.Element {
       })()}
 
       {/* 앱 이름 추천 섹션 - appNaming이 있으면 항상 표시 */}
-      {result.appNaming && (
+      {result?.appNaming && (
         <AppNamingSection
           appNaming={result.appNaming as any}
           isPremium={isPremium}

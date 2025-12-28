@@ -5,6 +5,21 @@ type Locale = "ko" | "en";
 /**
  * 1차 아이디어 여러 개 생성 (레벨 2)
  * 재생성을 위해 다양한 템플릿 풀에서 랜덤하게 선택
+ * 
+ * **CRITICAL: Language Enforcement for ENGLISH locale**
+ * 
+ * SYSTEM PROMPT ENFORCEMENT:
+ * When locale === "en", the following strict rules MUST be followed:
+ * 
+ * 1. ALL output fields MUST be generated entirely in English:
+ *    - Labels: Use "Option 1", "Option 2", etc. (NOT "1안", "2안")
+ *    - Titles: Must be in English only
+ *    - Summaries: Must be in English only
+ *    - Descriptions: Must be in English only
+ * 
+ * 2. NO Korean characters ([가-힣]) are allowed in ANY field when locale === "en"
+ * 
+ * 3. If locale is "en", the function MUST return English-only content
  */
 export function generateFirstLevelIdeas(
   keywords: string[],
@@ -236,25 +251,69 @@ export function generateFirstLevelIdeas(
   // count만큼 선택하고 라벨 재할당
   const selected = shuffled.slice(0, count);
 
-  return selected.map((template, index) => ({
-    id: `node-${Date.now()}-${index}-${useSeed}`,
-    parentId: null,
-    level: 2,
-    label: locale === "en" ? `Option ${index + 1}` : `${index + 1}안`,
-    title: template.title,
-    summary: template.summary,
-    meta: {
-      prompt: locale === "en" 
-        ? `${keywordStr} based ${index + 1} option`
-        : `${keywordStr}를 기반으로 한 ${index + 1}안`,
-      seed: useSeed,
-    },
-  }));
+  // CRITICAL: Language enforcement validation for level 2
+  // When locale === "en", ensure ALL generated data is English-only (NO Korean characters)
+  const validateNoKorean = (text: string, fieldName: string): void => {
+    if (locale === "en" && /[가-힣]/.test(text)) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error(
+          `[Language Enforcement Error - Level 2] Korean characters detected in "${fieldName}" when locale is "en":`,
+          text
+        );
+      }
+    }
+  };
+
+  return selected.map((template, index) => {
+    const finalLabel = locale === "en" ? `Option ${index + 1}` : `${index + 1}안`;
+    
+    // Validate all fields for English locale
+    if (locale === "en") {
+      validateNoKorean(finalLabel, "label");
+      validateNoKorean(template.title, "title");
+      validateNoKorean(template.summary, "summary");
+    }
+    
+    return {
+      id: `node-${Date.now()}-${index}-${useSeed}`,
+      parentId: null,
+      level: 2,
+      label: finalLabel,
+      title: template.title,
+      summary: template.summary,
+      meta: {
+        prompt: locale === "en" 
+          ? `${keywordStr} based ${index + 1} option`
+          : `${keywordStr}를 기반으로 한 ${index + 1}안`,
+        seed: useSeed,
+      },
+    };
+  });
 }
 
 /**
  * 다음 레벨 아이디어 생성 (레벨 3, 4...)
  * A~E 안이 각각 다른 구현 스펙을 가지도록 차별화
+ * 
+ * **CRITICAL: Language Enforcement for ENGLISH locale**
+ * 
+ * SYSTEM PROMPT ENFORCEMENT:
+ * When locale === "en", the following strict rules MUST be followed:
+ * 
+ * 1. ALL output fields MUST be generated entirely in English:
+ *    - Labels: Use "Option A", "Option B", etc. (NOT "A안", "B안")
+ *    - Titles: Must be in English only (e.g., "Option A Basic MVP Version")
+ *    - Descriptions: Must be in English only
+ *    - Features: Must be in English only (e.g., "Add {keyword} log")
+ *    - Constraints/Risks: Must be in English only (e.g., "Initial server costs may occur")
+ *    - Context Tags: Must be in English only (e.g., "For solo founders", "MVP stage")
+ *    - Value Propositions: Must be in English only (e.g., "Quick market entry")
+ * 
+ * 2. NO Korean characters ([가-힣]) are allowed in ANY field when locale === "en"
+ * 
+ * 3. Difficulty levels: Use "Beginner", "Intermediate", "Advanced" (NOT "초급", "중급", "상급")
+ * 
+ * 4. Duration: Use "1~2 weeks", "3~4 weeks", etc. (NOT "1~2주", "3~4주")
  */
 export function generateNextLevelIdeas(
   parentNode: Node,
@@ -263,6 +322,16 @@ export function generateNextLevelIdeas(
   count: number = 5,
   locale: Locale = "ko"
 ): Node[] {
+  // CRITICAL: Validate locale parameter
+  if (process.env.NODE_ENV === "development") {
+    if (locale !== "en" && locale !== "ko") {
+      console.error(`[generateNextLevelIdeas] Invalid locale: ${locale}, defaulting to "ko"`);
+    }
+    if (locale === "en") {
+      console.log(`[generateNextLevelIdeas] Generating Stage 2 (Level ${(parentNode.level as number) + 1}) ideas in ENGLISH`);
+    }
+  }
+
   const keywordStr = keywords.join(" + ");
   const typeStr = locale === "en" ? "App" : "앱";
   const level = (parentNode.level as number) + 1;
@@ -297,6 +366,7 @@ export function generateNextLevelIdeas(
   const baseArchitecture = ["React Native", "Node.js", "PostgreSQL", "Firebase Auth", "Vercel"];
 
   // A~E 안별 스펙 생성 (로케일별로 다른 텍스트 사용)
+  // CRITICAL: When locale === "en", ALL fields MUST be in English (NO Korean characters)
   const specs: ImplementationSpec[] = locale === "en" ? [
     // Option A: Minimal Feature MVP
     {
@@ -683,9 +753,36 @@ export function generateNextLevelIdeas(
     }
   ];
 
+  // CRITICAL: Language enforcement validation
+  // When locale === "en", ensure ALL generated data is English-only (NO Korean characters)
+  const validateNoKorean = (text: string, fieldName: string): void => {
+    if (locale === "en" && /[가-힣]/.test(text)) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error(
+          `[Language Enforcement Error] Korean characters detected in "${fieldName}" when locale is "en":`,
+          text
+        );
+      }
+    }
+  };
+
   return specs.slice(0, count).map((spec, index) => {
     const label = labels[index];
     const title = generateTitleFromSpec(label, spec, parentNode, locale);
+    
+    // Validate all fields for English locale
+    if (locale === "en") {
+      validateNoKorean(label, "label");
+      validateNoKorean(title, "title");
+      validateNoKorean(spec.valueProposition || "", "valueProposition");
+      validateNoKorean(spec.oneLineRisk || "", "oneLineRisk");
+      spec.contextTags?.forEach((tag, i) => validateNoKorean(tag, `contextTags[${i}]`));
+      spec.features?.forEach((feature, i) => validateNoKorean(feature, `features[${i}]`));
+      spec.screens?.forEach((screen, i) => validateNoKorean(screen, `screens[${i}]`));
+      spec.topFeatures?.forEach((feature, i) => validateNoKorean(feature, `topFeatures[${i}]`));
+      validateNoKorean(spec.difficulty, "difficulty");
+      validateNoKorean(spec.estimatedDuration, "estimatedDuration");
+    }
     
     return {
       id: `node-${Date.now()}-${parentNode.id}-${index}`,
@@ -762,6 +859,79 @@ function generateBaseApis(keywords: string[]): string[] {
 
 // 스펙 기반 제목 생성
 function generateTitleFromSpec(label: string, spec: ImplementationSpec, parentNode: Node, locale: Locale = "ko"): string {
+  // 한글/영어 변환 헬퍼 함수 (더 강력한 패턴 매칭)
+  const translateLabel = (labelStr: string, targetLocale: Locale): string => {
+    if (targetLocale === "en") {
+      if (!labelStr) return "Option";
+      
+      // 이미 영어인 경우 (Option 1, Option A 등)
+      if (/^Option [A-Z0-9]+/i.test(labelStr)) {
+        const match = labelStr.match(/^Option ([A-Z0-9]+)/i);
+        return match ? `Option ${match[1]}` : labelStr;
+      }
+      
+      // A안, B안 등을 Option A, Option B로 변환
+      if (labelStr === "A안") return "Option A";
+      if (labelStr === "B안") return "Option B";
+      if (labelStr === "C안") return "Option C";
+      if (labelStr === "D안") return "Option D";
+      if (labelStr === "E안") return "Option E";
+      
+      // 숫자 + "안" 패턴 (예: "1안", "2안", "5안")
+      const numMatch = labelStr.match(/^(\d+)안$/);
+      if (numMatch) return `Option ${numMatch[1]}`;
+      
+      // "첫번째 안", "두번째 안" 패턴
+      const ordinalMatch = labelStr.match(/^(첫|두|세|네|다섯)번째 안$/);
+      if (ordinalMatch) {
+        const map: Record<string, string> = { "첫": "1", "두": "2", "세": "3", "네": "4", "다섯": "5" };
+        return `Option ${map[ordinalMatch[1]]}`;
+      }
+      
+      // "방안 1", "방안 2" 패턴
+      const approachMatch = labelStr.match(/^방안 (\d+)$/);
+      if (approachMatch) return `Option ${approachMatch[1]}`;
+      
+      // "안 1", "안 2" 패턴
+      const simpleMatch = labelStr.match(/^안 (\d+)$/);
+      if (simpleMatch) return `Option ${simpleMatch[1]}`;
+      
+      // 숫자만 추출 (fallback)
+      const fallbackNum = labelStr.match(/(\d+)/);
+      if (fallbackNum) return `Option ${fallbackNum[1]}`;
+      
+      // 문자만 추출 (A-E)
+      const fallbackLetter = labelStr.match(/([A-E])/);
+      if (fallbackLetter) return `Option ${fallbackLetter[1]}`;
+      
+      // 모두 실패하면 기본값
+      return "Option";
+    }
+    return labelStr;
+  };
+
+  // parentNode.title에서 레이블 추출 (더 강력한 패턴 매칭)
+  const extractLabelFromTitle = (title: string, targetLocale: Locale): string => {
+    if (targetLocale === "en" && title) {
+      // "Option 5" 패턴 추출
+      const optionMatch = title.match(/^(Option [A-Z0-9]+)/i);
+      if (optionMatch) return optionMatch[1];
+      
+      // "5안" 패턴 추출
+      const numMatch = title.match(/^(\d+)안/);
+      if (numMatch) return `Option ${numMatch[1]}`;
+      
+      // "A안", "B안" 패턴 추출
+      const letterMatch = title.match(/^([A-E])안/);
+      if (letterMatch) return `Option ${letterMatch[1]}`;
+      
+      // 숫자만 추출 (fallback)
+      const fallbackNum = title.match(/(\d+)/);
+      if (fallbackNum) return `Option ${fallbackNum[1]}`;
+    }
+    return "";
+  };
+
   if (locale === "en") {
     const difficultyMap: Record<string, string> = {
       "Beginner": "MVP",
@@ -779,67 +949,62 @@ function generateTitleFromSpec(label: string, spec: ImplementationSpec, parentNo
         : "Optimized"
     };
     
-    // parentNode.label이 한글일 수 있으므로 영어로 변환
-    const parentLabel = (parentNode.label as string) ?? "";
-    const translatedParentLabel = parentLabel === "A안" ? "Option A" :
-                                   parentLabel === "B안" ? "Option B" :
-                                   parentLabel === "C안" ? "Option C" :
-                                   parentLabel === "D안" ? "Option D" :
-                                   parentLabel === "E안" ? "Option E" :
-                                   parentLabel.replace(/안$/, "").match(/^\d+/) 
-                                     ? `Option ${parentLabel.replace(/안$/, "")}` 
-                                     : parentLabel;
+    // spec.difficulty가 한글일 수도 있으므로 영어로 변환
+    const difficulty = spec.difficulty === "초급" ? "Beginner" :
+                       spec.difficulty === "중급" ? "Intermediate" :
+                       spec.difficulty === "상급" ? "Advanced" : spec.difficulty;
     
-    return `${translatedParentLabel} ${typeMap[spec.difficulty]} ${difficultyMap[spec.difficulty]} Version`;
+    // parentNode.label을 우선 사용, 없으면 parentNode.title에서 추출
+    const parentLabel = (parentNode.label as string) ?? "";
+    let translatedParentLabel = "";
+    
+    // 1순위: parentNode.label 사용
+    if (parentLabel.length > 0) {
+      translatedParentLabel = translateLabel(parentLabel, "en");
+    }
+    
+    // label이 비어있거나 변환이 실패한 경우 title에서 추출
+    if (!translatedParentLabel || translatedParentLabel === "Option") {
+      const titleExtracted = extractLabelFromTitle((parentNode.title as string) ?? "", "en");
+      if (titleExtracted) {
+        translatedParentLabel = titleExtracted;
+      }
+    }
+    
+    // 여전히 없으면 현재 생성되는 label 사용 (이미 영어일 수 있음)
+    if (!translatedParentLabel || translatedParentLabel === "Option") {
+      translatedParentLabel = translateLabel(label, "en");
+    }
+    
+    // 최종 fallback
+    if (!translatedParentLabel || translatedParentLabel === "Option") {
+      translatedParentLabel = "Option";
+    }
+    
+    return `${translatedParentLabel} ${typeMap[difficulty]} ${difficultyMap[difficulty]} Version`;
   }
 
   // 한글 버전 (locale이 "ko"일 때만)
-  if (locale === "ko") {
-    const difficultyMap: Record<string, string> = {
-      "초급": "MVP",
-      "중급": "성장",
-      "상급": "고급"
-    };
-    
-    const typeMap: Record<string, string> = {
-      "초급": "기본",
-      "중급": "확장",
-      "상급": spec.features.some(f => f.includes("추천") || f.includes("개인화")) 
-        ? "차별화" 
-        : spec.features.some(f => f.includes("관리자") || f.includes("권한"))
-        ? "운영"
-        : "최적화"
-    };
-    
-    // spec.difficulty가 영어일 수도 있으므로 변환
-    const difficulty = spec.difficulty === "Beginner" ? "초급" :
-                       spec.difficulty === "Intermediate" ? "중급" :
-                       spec.difficulty === "Advanced" ? "상급" : spec.difficulty;
-    
-    return `${(parentNode.label as string) ?? ""} ${typeMap[difficulty]} ${difficultyMap[difficulty]} 버전`;
-  }
-  
-  // 영어 버전 (locale이 "en"일 때)
   const difficultyMap: Record<string, string> = {
-    "Beginner": "MVP",
-    "Intermediate": "Growth",
-    "Advanced": "Advanced"
+    "초급": "MVP",
+    "중급": "성장",
+    "상급": "고급"
   };
   
   const typeMap: Record<string, string> = {
-    "Beginner": "Basic",
-    "Intermediate": "Extended",
-    "Advanced": spec.features.some(f => f.includes("recommendation") || f.includes("personalization")) 
-      ? "Differentiated" 
-      : spec.features.some(f => f.includes("admin") || f.includes("permission"))
-      ? "Operations"
-      : "Optimized"
+    "초급": "기본",
+    "중급": "확장",
+    "상급": spec.features.some(f => f.includes("추천") || f.includes("개인화")) 
+      ? "차별화" 
+      : spec.features.some(f => f.includes("관리자") || f.includes("권한"))
+      ? "운영"
+      : "최적화"
   };
   
-  // spec.difficulty가 한글일 수도 있으므로 변환
-  const difficulty = spec.difficulty === "초급" ? "Beginner" :
-                     spec.difficulty === "중급" ? "Intermediate" :
-                     spec.difficulty === "상급" ? "Advanced" : spec.difficulty;
+  // spec.difficulty가 영어일 수도 있으므로 변환
+  const difficulty = spec.difficulty === "Beginner" ? "초급" :
+                     spec.difficulty === "Intermediate" ? "중급" :
+                     spec.difficulty === "Advanced" ? "상급" : spec.difficulty;
   
-  return `${(parentNode.label as string) ?? ""} ${typeMap[difficulty]} ${difficultyMap[difficulty]} Version`;
+  return `${(parentNode.label as string) ?? ""} ${typeMap[difficulty]} ${difficultyMap[difficulty]} 버전`;
 }

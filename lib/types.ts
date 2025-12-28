@@ -114,4 +114,5 @@ export type AppNaming = {
     professional: AppNamingCandidate[]; // 전문형
     casual: AppNamingCandidate[]; // 캐주얼형
   };
+  freePreview?: AppNamingCandidate[]; // 무료 사용자를 위한 추가 preview 후보
 };

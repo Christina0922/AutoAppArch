@@ -3,43 +3,22 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-function getLocaleFromPath(pathname: string) {
-  const first = pathname.split("/").filter(Boolean)[0];
-  return first === "en" ? "en" : "ko";
-}
-
-function replaceLocale(pathname: string, nextLocale: "ko" | "en") {
-  const parts = pathname.split("/").filter(Boolean);
-
-  if (parts.length === 0) {
-    return `/${nextLocale}`;
-  }
-
-  if (parts[0] === "ko" || parts[0] === "en") {
-    parts[0] = nextLocale;
-  } else {
-    parts.unshift(nextLocale);
-  }
-
-  return `/${parts.join("/")}`;
-}
+import { getLocaleFromPathname, withLocalePrefix, swapLocaleInPathname, type Locale } from "@/utils/localePath";
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname() || "/";
-  const locale = getLocaleFromPath(pathname);
+  const locale = getLocaleFromPathname(pathname) ?? "ko";
   const t = useTranslations("nav");
 
   const navLinks = [
-    { href: `/${locale}/app`, label: t("createApp") },
-    { href: `/${locale}/history`, label: t("history") },
-    { href: `/${locale}/about`, label: t("about") },
+    { href: withLocalePrefix("/app", locale as Locale, pathname), label: t("createApp") },
+    { href: withLocalePrefix("/history", locale as Locale, pathname), label: t("history") },
+    { href: withLocalePrefix("/about", locale as Locale, pathname), label: t("about") },
   ];
 
-  const onSwitch = (to: "ko" | "en") => {
-    const nextPath = replaceLocale(pathname, to);
-    router.push(nextPath);
+  const onSwitch = (to: Locale) => {
+    router.push(swapLocaleInPathname(pathname, to));
   };
 
   return (
@@ -47,7 +26,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link
-            href={`/${locale}/app`}
+            href={withLocalePrefix("/app", locale as Locale, pathname)}
             className="text-lg font-semibold text-gray-900 tracking-tight hover:text-gray-700 transition-colors relative z-10"
           >
             AutoAppArch

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import { SavedPlan, Session } from "@/lib/types";
 import { getPlanById, getSessionById } from "@/lib/storage";
 import { shouldBypassPaywall } from "@/lib/paywall";
@@ -9,10 +9,14 @@ import { normalizeAppType } from "@/lib/appType";
 import IdeaTree from "@/components/IdeaTree";
 import PaywallModal from "@/components/PaywallModal";
 import Link from "next/link";
+import { getLocaleFromPathname, withLocalePrefix } from "@/utils/localePath";
+import { getRouteLocale } from "@/utils/getRouteLocale";
 
 export default function HistoryDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname() || "/";
+  const locale = getRouteLocale(pathname);
   const [session, setSession] = useState<Session | null>(null);
   const [plan, setPlan] = useState<SavedPlan | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -22,8 +26,8 @@ export default function HistoryDetailPage() {
 
   useEffect(() => {
     if (params.id && typeof params.id === "string") {
-      // 먼저 Session으로 시도
-      const foundSession = getSessionById(params.id);
+      // 먼저 Session으로 시도 (로케일별로 분리된 키에서 로드)
+      const foundSession = getSessionById(params.id, locale);
       if (foundSession) {
         setSession(foundSession);
         setError(null);
@@ -31,8 +35,8 @@ export default function HistoryDetailPage() {
         return;
       }
 
-      // Session이 없으면 기존 Plan으로 시도 (하위 호환성)
-      const foundPlan = getPlanById(params.id);
+      // Session이 없으면 기존 Plan으로 시도 (하위 호환성, 로케일별로 분리된 키에서 로드)
+      const foundPlan = getPlanById(params.id, locale);
       if (foundPlan) {
         setPlan(foundPlan);
         setError(null);
@@ -40,7 +44,7 @@ export default function HistoryDetailPage() {
       } else {
         setError("설계안을 찾을 수 없습니다.");
         setTimeout(() => {
-          router.push("/history");
+          router.push(withLocalePrefix("/history", locale, pathname));
         }, 2000);
       }
     }
@@ -62,9 +66,9 @@ export default function HistoryDetailPage() {
     if (isPro) {
       // Pro 사용자는 세션 계속하기
       if (session) {
-        router.push(`/app?sessionId=${session.id}`);
+        router.push(withLocalePrefix(`/app?sessionId=${session.id}`, locale, pathname));
       } else if (plan) {
-        router.push(`/app?planId=${plan.id}`);
+        router.push(withLocalePrefix(`/app?planId=${plan.id}`, locale, pathname));
       }
       return;
     }
@@ -72,9 +76,9 @@ export default function HistoryDetailPage() {
     // 우회 모드가 활성화되어 있으면 바로 진행
     if (shouldBypassPaywall()) {
       if (session) {
-        router.push(`/app?sessionId=${session.id}`);
+        router.push(withLocalePrefix(`/app?sessionId=${session.id}`, locale, pathname));
       } else if (plan) {
-        router.push(`/app?planId=${plan.id}`);
+        router.push(withLocalePrefix(`/app?planId=${plan.id}`, locale, pathname));
       }
       return;
     }
@@ -121,7 +125,7 @@ export default function HistoryDetailPage() {
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
         <div className="mb-8">
           <Link
-            href="/history"
+            href={withLocalePrefix("/history", locale, pathname)}
             className="text-base text-gray-500 hover:text-gray-900 font-medium mb-6 inline-block transition-colors"
           >
             ← 목록으로 돌아가기
@@ -135,7 +139,7 @@ export default function HistoryDetailPage() {
             새로운 마인드맵 형식으로 다시 생성해주세요.
           </p>
           <Link
-            href="/app"
+            href={withLocalePrefix("/app", locale, pathname)}
             className="inline-block px-6 h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors"
           >
             새로 만들기
@@ -167,7 +171,7 @@ export default function HistoryDetailPage() {
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
         <div className="mb-8">
           <Link
-            href="/history"
+            href={withLocalePrefix("/history", locale, pathname)}
             className="text-base text-gray-500 hover:text-gray-900 font-medium mb-6 inline-block transition-colors"
           >
             ← 목록으로 돌아가기

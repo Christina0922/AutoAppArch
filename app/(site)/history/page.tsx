@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import HistoryList from "@/components/HistoryList";
 import type { SavedPlan, Session } from "@/lib/types";
 import { getAllPlans, getAllSessions, deletePlan, deleteSession } from "@/lib/storage";
+import { getLocaleFromPathname, withLocalePrefix } from "@/utils/localePath";
 
 type LoadingState = "loading" | "success" | "empty" | "error";
 
@@ -21,6 +22,8 @@ function convertSessionToSavedPlan(session: Session): SavedPlan {
 
 export default function HistoryPage() {
   const router = useRouter();
+  const pathname = usePathname() || "/";
+  const locale = getRouteLocale(pathname);
   const [items, setItems] = useState<SavedPlan[]>([]);
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -37,9 +40,9 @@ export default function HistoryPage() {
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
-        // storage.ts의 함수 사용
-        const loadedPlans = getAllPlans();
-        const loadedSessions = getAllSessions();
+        // storage.ts의 함수 사용 (로케일별로 분리된 키에서 로드)
+        const loadedPlans = getAllPlans(locale);
+        const loadedSessions = getAllSessions(locale);
 
         // Session을 SavedPlan 형식으로 변환
         const convertedSessions = loadedSessions.map(convertSessionToSavedPlan);
@@ -84,8 +87,8 @@ export default function HistoryPage() {
         setLoadingState("loading");
         setErrorMessage("");
 
-        const loadedPlans = getAllPlans();
-        const loadedSessions = getAllSessions();
+        const loadedPlans = getAllPlans(locale);
+        const loadedSessions = getAllSessions(locale);
         const convertedSessions = loadedSessions.map(convertSessionToSavedPlan);
         const allItems = [...loadedPlans, ...convertedSessions];
         const uniqueItems = allItems.filter(
@@ -121,9 +124,9 @@ export default function HistoryPage() {
 
   const handleDelete = (id: string) => {
     try {
-      // Plan과 Session 모두에서 삭제 시도
-      deletePlan(id);
-      deleteSession(id);
+      // Plan과 Session 모두에서 삭제 시도 (로케일별로 분리된 키에서 삭제)
+      deletePlan(id, locale);
+      deleteSession(id, locale);
       
       // 상태 업데이트
       setItems((prev) => prev.filter((item) => item.id !== id));
@@ -177,7 +180,7 @@ export default function HistoryPage() {
                   다시 시도
                 </button>
                 <a
-                  href="/"
+                  href={withLocalePrefix("/", locale, pathname)}
                   className="inline-flex items-center justify-center rounded-md bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                 >
                   홈으로 이동
@@ -198,7 +201,7 @@ export default function HistoryPage() {
 
             <div className="mt-6">
               <a
-                href="/"
+                href={withLocalePrefix("/app", locale, pathname)}
                 className="inline-flex items-center justify-center rounded-md bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
               >
                 설계안 만들기

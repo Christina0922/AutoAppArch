@@ -2,19 +2,23 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getAllPlans } from "@/lib/storage";
+import { getLocaleFromPathname, withLocalePrefix } from "@/utils/localePath";
+import { getRouteLocale } from "@/utils/getRouteLocale";
 
 export default function PricingPage() {
   const router = useRouter();
+  const pathname = usePathname() || "/";
+  const locale = getRouteLocale(pathname);
   const [highlightPremium, setHighlightPremium] = useState(false);
   const [hasPlan, setHasPlan] = useState(false);
 
   useEffect(() => {
-    // 설계안이 있는지 확인
-    const plans = getAllPlans();
+    // 설계안이 있는지 확인 (로케일별로 분리된 키에서 로드)
+    const plans = getAllPlans(locale);
     setHasPlan(plans.length > 0);
-  }, []);
+  }, [locale]);
 
   const handleContinueClick = () => {
     if (hasPlan) {
@@ -26,7 +30,7 @@ export default function PricingPage() {
         }
       }, 100);
     } else {
-      router.push("/app");
+      router.push(withLocalePrefix("/app", locale, pathname));
     }
   };
 
@@ -109,7 +113,7 @@ export default function PricingPage() {
               </p>
             </div>
             <Link
-              href="/app"
+              href={withLocalePrefix("/app", locale, pathname)}
               className="block w-full h-10 bg-gray-100 text-gray-900 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors tracking-tight text-center flex items-center justify-center"
             >
               무료로 시작하기

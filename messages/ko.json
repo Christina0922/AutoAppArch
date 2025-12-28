@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "title": "AutoAppArch - 키워드로 앱 설계안 자동 생성",
+    "description": "키워드만 입력하면 앱 설계안을 자동으로 생성해주는 도구"
+  },
   "common": {
     "appName": "AutoAppArch",
     "mobileApp": "모바일 앱",
@@ -49,6 +53,7 @@
     "level1Ideas": "1차 아이디어",
     "levelNIdeas": "{level}차 분기 아이디어",
     "level1Description": "키워드를 기준으로 생성된 초기 아이디어입니다",
+    "levelNDescription": "선택된 상위 안을 기준으로 생성된 분기 아이디어입니다",
     "childrenCount": "{count}개의 하위 안 생성됨",
     "regenerate": "재생성",
     "finalizeButton": "이 설계로 결정하기",
@@ -78,7 +83,13 @@
     "moreItems": "+{count}개 더",
     "difficultyLabel": "난이도",
     "durationLabel": "기간",
-    "difficultyDurationGuide": "난이도/기간"
+    "difficultyDurationGuide": "난이도/기간",
+    "coreScreens": "핵심 화면",
+    "recommended": "⭐ 추천",
+    "regenerateAria": "재생성",
+    "finalizing": "최종 설계안을 생성하고 있습니다…",
+    "confirm": "확인",
+    "cancel": "취소"
   },
   "comparisonTable": {
     "item": "항목",
@@ -121,7 +132,13 @@
     "userPerspective": "[사용자 관점]",
     "developerPerspective": "[개발자 관점]",
     "userPerspectiveDesc": "앱 최종 사용자의 관점에서 작성된 내용입니다.",
-    "developerPerspectiveDesc": "앱 제작자(개발자)의 관점에서 작성된 내용입니다."
+    "developerPerspectiveDesc": "앱 제작자(개발자)의 관점에서 작성된 내용입니다.",
+    "progressCurrent": "현재 이 설계안은 <strong>'기본 구조 단계'</strong>에 있습니다.",
+    "progressTitle": "설계 진행 단계",
+    "progressStep1": "① 아이디어 구조화",
+    "progressStep2": "② 핵심 기능 정리",
+    "progressStep3": "③ 화면 흐름 설계",
+    "progressStep4": "④ 구현 준비 단계"
   },
   "appNaming": {
     "title": "앱 이름 추천(프리미엄)",
@@ -139,8 +156,7 @@
     "analyzingKeywords": "키워드를 분석 중입니다…",
     "generatingIdeas": "1차 아이디어를 생성하고 있습니다…",
     "regeneratingIdeas": "1차 아이디어를 재생성하고 있습니다…",
-    "generatingPlan": "설계안을 생성하고 있습니다…",
-    "finalizing": "최종 설계안을 생성하고 있습니다…"
+    "generatingPlan": "설계안을 생성하고 있습니다…"
   },
   "history": {
     "title": "히스토리",
@@ -176,18 +192,16 @@
     "regenerationFailed": "재생성에 실패했습니다. 다시 시도해주세요.",
     "saveError": "저장 실패"
   },
-  "ideaTree": {
-    "difficultyLabel": "난이도:",
-    "durationLabel": "기간: ",
-    "coreScreens": "핵심 화면",
-    "recommended": "⭐ 추천",
-    "regenerate": "재생성",
-    "regenerateAria": "재생성"
-  },
   "app": {
     "createNew": "새로 만들기",
     "savingPlan": "설계안 저장 중...",
     "generationFailed": "아이디어 생성에 실패했습니다. 다시 시도해주세요."
+  },
+  "planPreview": {
+    "exampleBadge": "예시",
+    "moreItems": "외 {count}개...",
+    "continueButton": "이 설계안으로 계속 진행하기",
+    "continueButtonAria": "이 설계안으로 계속 진행하기"
   }
 }
 

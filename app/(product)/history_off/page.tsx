@@ -2,14 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { SavedPlan } from '@/lib/types';
 import type { Session } from "@/lib/types";
 import { getAllPlans, deletePlan, getAllSessions, deleteSession } from "@/lib/storage";
 import HistoryList from "@/components/HistoryList";
+import { getLocaleFromPathname, withLocalePrefix } from "@/utils/localePath";
+import { getRouteLocale } from "@/utils/getRouteLocale";
 
 type LoadingState = "loading" | "success" | "error" | "timeout";
 
 export default function HistoryPage() {
+  const pathname = usePathname() || "/";
+  const locale = getRouteLocale(pathname);
   const [plans, setPlans] = useState<SavedPlan[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
@@ -22,9 +27,9 @@ export default function HistoryPage() {
           setLoadingState("timeout");
         }, 6000);
 
-        // Session과 Plan 모두 로드
-        const loadedPlans = getAllPlans();
-        const loadedSessions = getAllSessions();
+        // Session과 Plan 모두 로드 (로케일별로 분리된 키에서 로드)
+        const loadedPlans = getAllPlans(locale);
+        const loadedSessions = getAllSessions(locale);
         
         clearTimeout(timeoutId);
         setPlans(loadedPlans);
@@ -42,8 +47,8 @@ export default function HistoryPage() {
   const handleRetry = () => {
     setLoadingState("loading");
     try {
-      const loadedPlans = getAllPlans();
-      const loadedSessions = getAllSessions();
+      const loadedPlans = getAllPlans(locale);
+      const loadedSessions = getAllSessions(locale);
       setPlans(loadedPlans);
       setSessions(loadedSessions);
       setLoadingState("success");
@@ -60,8 +65,8 @@ export default function HistoryPage() {
   const handleDeletePlan = (id: string) => {
     if (confirm("정말 삭제하시겠습니까?")) {
       try {
-        deletePlan(id);
-        setPlans(getAllPlans());
+        deletePlan(id, locale);
+        setPlans(getAllPlans(locale));
       } catch (error) {
         console.error("삭제 실패:", error);
         alert("삭제에 실패했습니다.");
@@ -72,8 +77,8 @@ export default function HistoryPage() {
   const handleDeleteSession = (id: string) => {
     if (confirm("정말 삭제하시겠습니까?")) {
       try {
-        deleteSession(id);
-        setSessions(getAllSessions());
+        deleteSession(id, locale);
+        setSessions(getAllSessions(locale));
       } catch (error) {
         console.error("삭제 실패:", error);
         alert("삭제에 실패했습니다.");
@@ -199,7 +204,7 @@ export default function HistoryPage() {
                 <span className="font-bold">키워드</span> 몇 개만 입력하면 바로 <span className="font-bold">자동</span> 생성할 수 있습니다.
               </p>
               <Link
-                href="/app"
+                href={withLocalePrefix("/app", locale, pathname)}
                 className="inline-block h-12 px-8 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight"
               >
                 <span className="font-bold">설계안 만들기</span>

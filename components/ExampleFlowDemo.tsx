@@ -450,7 +450,11 @@ export default function ExampleFlowDemo() {
                 // 선택된 최종 후보들을 키워드로 변환하여 실제 앱 페이지로 이동
                 const keywords = EXAMPLE_KEYWORDS.join(",");
                 const type = "app";
-                window.location.href = `/app?keywords=${encodeURIComponent(keywords)}&type=${type}`;
+                // locale-aware navigation을 위해 현재 locale 사용
+                const currentPathname = window.location.pathname || "/";
+                const currentLocale = currentPathname.startsWith("/en") ? "en" : "ko";
+                // router.push를 사용하되, window.location.href는 최후의 수단으로만 사용
+                window.location.href = `/${currentLocale}/app?keywords=${encodeURIComponent(keywords)}&type=${type}`;
               }}
             >
               이 안으로 만들기

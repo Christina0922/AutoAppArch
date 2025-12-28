@@ -26,18 +26,18 @@ export function normalizeLocale(input: unknown): Locale {
 }
 
 export default getRequestConfig(async ({ locale }) => {
-  // /en 경로에서 언어 강제 고정
-  // locale은 next-intl이 자동으로 pathname에서 추출한 locale
-  let validLocale: Locale = normalizeLocale(locale);
+  // ===== 단일 진실원: 라우트(pathname)가 언어를 결정 =====
+  // locale은 next-intl이 pathname에서 추출한 값만 사용
+  // 브라우저 언어/쿠키/localStorage는 절대 사용하지 않음
   
-  // pathname이 /en으로 시작하면 무조건 en으로 강제
-  // (next-intl이 이미 pathname에서 locale을 추출하므로, 여기서는 추가 검증만 수행)
-  if (locale === "en") {
-    validLocale = "en";
-  }
+  // pathname이 /en으로 시작하면 무조건 en, 그 외는 무조건 ko
+  const validLocale: Locale = normalizeLocale(locale);
+  
+  // 명확성: /en이면 en, 그 외는 ko (defaultLocale)
+  const finalLocale: Locale = validLocale === "en" ? "en" : defaultLocale;
 
   return {
-    locale: validLocale,
-    messages: (await import(`./messages/${validLocale}.json`)).default,
+    locale: finalLocale,
+    messages: (await import(`./messages/${finalLocale}.json`)).default,
   };
 });

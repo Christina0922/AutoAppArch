@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "title": "AutoAppArch - Automatically Generate App Architecture from Keywords",
+    "description": "A tool that automatically generates app architectures from keywords"
+  },
   "common": {
     "appName": "AutoAppArch",
     "mobileApp": "Mobile App",
@@ -82,7 +86,10 @@
     "difficultyDurationGuide": "Difficulty / Duration",
     "coreScreens": "Core Screens",
     "recommended": "⭐ Recommended",
-    "regenerateAria": "Regenerate"
+    "regenerateAria": "Regenerate",
+    "finalizing": "Generating final architecture…",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   },
   "comparisonTable": {
     "item": "Item",
@@ -149,8 +156,7 @@
     "analyzingKeywords": "Analyzing keywords…",
     "generatingIdeas": "Generating 1st level ideas…",
     "regeneratingIdeas": "Regenerating 1st level ideas…",
-    "generatingPlan": "Generating architecture…",
-    "finalizing": "Generating final architecture…"
+    "generatingPlan": "Generating architecture…"
   },
   "history": {
     "title": "History",
@@ -190,6 +196,12 @@
     "createNew": "Create New",
     "savingPlan": "Saving plan...",
     "generationFailed": "Failed to generate ideas. Please try again."
+  },
+  "planPreview": {
+    "exampleBadge": "Example",
+    "moreItems": "+{count} more",
+    "continueButton": "Continue with this design",
+    "continueButtonAria": "Continue with this design"
   }
 }
 

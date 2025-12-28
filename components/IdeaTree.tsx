@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { usePathname } from "next/navigation";
+import { getRouteLocale } from "@/utils/getRouteLocale";
 import DifficultyDurationInfo from "./DifficultyDurationInfo";
 import { Node, AppType, ImplementationSpec, Session } from "@/lib/types";
 import { generateNextLevelIdeas } from "@/lib/generateIdeas";
@@ -35,7 +37,14 @@ export default function IdeaTree({
   session: externalSession,
   showSaveButton = false,
 }: IdeaTreeProps) {
-  const locale = useLocale() as "ko" | "en";
+  // ===== Hooks must be at the top =====
+  const pathname = usePathname();
+  // CRITICAL: Use route-based locale determination to ensure consistency with /en route
+  const locale = getRouteLocale(pathname);
+  const t = useTranslations("ideaTree");
+  const tDifficulty = useTranslations("difficulty");
+  const tDuration = useTranslations("duration");
+  
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(initialSelectedIds)
@@ -113,6 +122,16 @@ export default function IdeaTree({
     const finalSelectedNodes = nodes.filter((n) => finalSelectedIds.includes(n.id));
     if (finalSelectedNodes.length === 0) return;
 
+    // 개발환경에서 디버깅 정보 출력
+    if (process.env.NODE_ENV !== "production") {
+      const currentStage = stage5SelectedIds.length > 0 ? "stage5" :
+                          stage4SelectedIds.length > 0 ? "stage4" :
+                          stage3SelectedIds.length > 0 ? "stage3" :
+                          stage2SelectedIds.length > 0 ? "stage2" :
+                          stage1SelectedIds.length > 0 ? "stage1" : "none";
+      console.log(`[generateNextLevel] stage: ${currentStage}, selectionCount: ${finalSelectedIds.length}, locale: ${locale}`);
+    }
+
     const newNodes: Node[] = [];
 
     finalSelectedNodes.forEach((parent) => {
@@ -120,6 +139,10 @@ export default function IdeaTree({
       const hasChildren = nodes.some((n) => (n.parentId as string | null) === parent.id);
       if (hasChildren) return;
 
+      // CRITICAL: Pass locale to ensure English generation for /en route
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[IdeaTree] Generating next level ideas with locale: ${locale} for parent: ${parent.id}`);
+      }
       const children = generateNextLevelIdeas(
         parent,
         keywords,
@@ -158,7 +181,10 @@ export default function IdeaTree({
       Array.from(selectedIds).filter((id) => !idsToRemove.includes(id))
     );
 
-    // 새 자식 생성
+    // 새 자식 생성 (CRITICAL: locale must be passed for correct language generation)
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[IdeaTree] Regenerating children with locale: ${locale} for parent: ${parent.id}`);
+    }
     const newChildren = generateNextLevelIdeas(parent, keywords, selectedType, 5, locale);
     updateNodes([...filteredNodes, ...newChildren]);
     updateSelection(filteredSelected);
@@ -255,11 +281,20 @@ export default function IdeaTree({
       ? Math.max(...finalSelectedNodes.map((n) => (n.level as number) ?? 0))
       : 0;
 
-  // 다음 레벨 생성 가능 여부 (선택된 노드들이 있고, 그 노드들에 자식이 없을 때)
-  const canGenerateNext = finalCount > 0 && finalSelectedNodes.every((node) => {
+  // 최대 레벨 찾기 (전체 노드 중)
+  const maxLevelInTree = Math.max(...nodes.map((n) => (n.level as number) ?? 0), 0);
+  
+  // 최대 레벨이 6이고 선택된 노드가 레벨 6이면 더 이상 진행 불가 (finalize만 가능)
+  const isMaxLevelReached = maxSelectedLevel >= 6;
+  
+  // 다음 레벨 생성 가능 여부 (선택된 노드들이 있고, 그 노드들에 자식이 없고, 최대 레벨에 도달하지 않았을 때)
+  const canGenerateNext = finalCount > 0 && !isMaxLevelReached && finalSelectedNodes.every((node) => {
     // 이미 자식이 있는지 확인
     return !nodes.some((n) => (n.parentId as string | null) === node.id);
   });
+
+  // 최종 결정 버튼을 표시할 수 있는지 (선택된 노드가 있으면 항상 표시 가능)
+  const canFinalize = finalCount > 0 && finalSelectedNodes.length > 0 && onFinalize;
 
   // 선택 경로 추적 (상태 표시바용)
   const getSelectionPath = (): string[] => {
@@ -287,9 +322,6 @@ export default function IdeaTree({
     return path;
   };
 
-  const t = useTranslations("ideaTree");
-  const tDifficulty = useTranslations("difficulty");
-  const tDuration = useTranslations("duration");
   const selectionPath = getSelectionPath();
   const finalSelectedTitle = finalSelectedNodes.length > 0 ? finalSelectedNodes[0].title : null;
 
@@ -343,6 +375,11 @@ export default function IdeaTree({
     if (text === "인프라 구축 초기 비용 증가") return "Initial infrastructure setup cost increase";
     if (text === "ML 모델 학습 및 유지보수 비용 발생") return "ML model training and maintenance costs";
     if (text === "복잡한 권한 시스템 구현 및 관리 부담") return "Complex permission system implementation and management burden";
+    
+    // 난이도 변환
+    if (text === "초급") return "Beginner";
+    if (text === "중급") return "Intermediate";
+    if (text === "상급") return "Advanced";
     
     // 기간 변환
     if (text === "1~2주") return "1~2 weeks";
@@ -423,10 +460,87 @@ export default function IdeaTree({
       return `Users managing ${keyword} at team/organization level`;
     }
     
+    // Level 2 summary 패턴 변환 (예: "키워드 로그 추가, 목록 조회, 기본 통계 기능 포함" → "Keyword log addition, list view, basic statistics included")
+    if (text.includes(" 로그 추가") && text.includes(" 목록 조회") && text.includes(" 기본 통계") && text.includes(" 기능 포함")) {
+      const keyword = text.replace(" 로그 추가, 목록 조회, 기본 통계 기능 포함", "").replace("로그 추가, 목록 조회, 기본 통계 기능 포함", "");
+      return keyword ? `${keyword} log addition, list view, basic statistics included` : "Log addition, list view, basic statistics included";
+    }
+    if (text.includes("사용자 간 공유") && text.includes("댓글") && text.includes("좋아요") && text.includes(" 기능 포함")) {
+      return "User sharing, comments, likes included";
+    }
+    if (text.includes("유료 구독") && text.includes("고급 분석") && text.includes("데이터 내보내기") && text.includes(" 기능 포함")) {
+      return "Paid subscription, advanced analytics, data export included";
+    }
+    if (text.includes("최소 화면 구성") && text.includes("빠른 입력") && text.includes(" 간단한 조회") && text.includes(" 기능 포함")) {
+      return "Minimal screens, fast input, simple view included";
+    }
+    if (text.includes("단계별 가이드") && text.includes("진행률 추적") && text.includes("피드백 시스템") && text.includes(" 기능 포함")) {
+      return "Step-by-step guides, progress tracking, feedback system included";
+    }
+    if (text.includes("차트 시각화") && text.includes("리포트 생성") && text.includes("데이터 비교") && text.includes(" 기능 포함")) {
+      return "Chart visualization, report generation, data comparison included";
+    }
+    if (text.includes("오프라인 동기화") && text.includes("푸시 알림") && text.includes("위치 기반") && text.includes(" 기능 포함")) {
+      return "Offline sync, push notifications, location-based features included";
+    }
+    if (text.includes("일일 기록") && text.includes("주간 요약") && text.includes("알림 설정") && text.includes(" 기능 포함")) {
+      return "Daily records, weekly summary, notification settings included";
+    }
+    if (text.includes("게시판") && text.includes("그룹 관리") && text.includes("실시간 채팅") && text.includes(" 기능 포함")) {
+      return "Bulletin board, group management, real-time chat included";
+    }
+    if (text.includes("고급 필터") && text.includes("커스텀 리포트") && text.includes("API 연동") && text.includes(" 기능 포함")) {
+      return "Advanced filters, custom reports, API integration included";
+    }
+    if (text.includes("원클릭 입력") && text.includes("자동 분류") && text.includes("빠른 검색") && text.includes(" 기능 포함")) {
+      return "One-click input, auto classification, quick search included";
+    }
+    if (text.includes("팀 공유") && text.includes("권한 관리") && text.includes("작업 할당") && text.includes(" 기능 포함")) {
+      return "Team sharing, permission management, task assignment included";
+    }
+    if (text.includes("스케줄 실행") && text.includes("규칙 기반 처리") && text.includes("푸시 알림 연동") && text.includes(" 기능 포함")) {
+      return "Schedule execution, rule-based processing, push notification integration included";
+    }
+    if (text.includes("다중 데이터 소스") && text.includes("통합 대시보드") && text.includes("일괄 처리") && text.includes(" 기능 포함")) {
+      return "Multiple data sources, integrated dashboard, batch processing included";
+    }
+    if (text.includes("사용자 패턴 학습") && text.includes("개인화 추천") && text.includes("맞춤 알림") && text.includes(" 기능 포함")) {
+      return "User pattern learning, personalized recommendations, custom notifications included";
+    }
+    if (text.includes("포인트 시스템") && text.includes("배지 수집") && text.includes("리더보드") && text.includes(" 기능 포함")) {
+      return "Point system, badge collection, leaderboard included";
+    }
+    if (text.includes("자동 분류") && text.includes("예측 분석") && text.includes("스마트 추천") && text.includes(" 기능 포함")) {
+      return "Auto classification, predictive analytics, smart recommendations included";
+    }
+    if (text.includes("플러그인 시스템") && text.includes("API 확장") && text.includes("커스텀 테마") && text.includes(" 기능 포함")) {
+      return "Plugin system, API extensions, custom themes included";
+    }
+    if (text.includes("SSO 인증") && text.includes("감사 로그") && text.includes("백업 복원") && text.includes(" 기능 포함")) {
+      return "SSO authentication, audit logs, backup and recovery included";
+    }
+    if (text.includes("템플릿 라이브러리") && text.includes("미디어 편집") && text.includes("공유 갤러리") && text.includes(" 기능 포함")) {
+      return "Template library, media editing, shared gallery included";
+    }
+    if (text.includes("3개 화면") && text.includes("필수 기능만") && text.includes("빠른 로딩") && text.includes(" 기능 포함")) {
+      return "3 screens, essential features only, fast loading included";
+    }
+    
     // 추가 패턴: "사용자 프로필", "기본 설정" 등
     if (text === "사용자 프로필") return "User profile";
     if (text === "기본 설정") return "Basic settings";
     if (text === "페이지네이션") return "Pagination";
+    
+    // architecture 변환
+    if (text === "Redis (캐싱)") return "Redis (caching)";
+    if (text === "CloudWatch (모니터링)") return "CloudWatch (monitoring)";
+    if (text === "ML 모듈 (추천)") return "ML module (recommendations)";
+    if (text === "규칙 엔진 서버") return "Rule engine server";
+    if (text === "관리자 패널") return "Admin panel";
+    if (text === "백업 스토리지 (S3)") return "Backup storage (S3)";
+    if (text.includes("(캐싱)")) return text.replace("(캐싱)", "(caching)");
+    if (text.includes("(모니터링)")) return text.replace("(모니터링)", "(monitoring)");
+    if (text.includes("(추천)")) return text.replace("(추천)", "(recommendations)");
     
     // 한글이 여전히 남아있으면 일반적인 변환 시도
     let translated = text;
@@ -569,7 +683,7 @@ export default function IdeaTree({
                   key={node.id}
                   className={`px-2 py-1 ${getCurrentLevelColorClass()} rounded font-medium`}
                 >
-                  {getCurrentLevelLabel()} {node.title}
+                  {getCurrentLevelLabel()} {translateText(node.title as string)}
               </span>
               ))}
             </div>
@@ -629,7 +743,7 @@ export default function IdeaTree({
 
               {level === 2 ? (
                 // 레벨 2: 그리드 레이아웃 (기존 IdeaCard 사용)
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start">
                   {levelNodes.map((node) => {
                     const levelColor = getLevelColor(node.level as number);
                     return (
@@ -681,7 +795,7 @@ export default function IdeaTree({
                             </div>
                           )}
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8 items-stretch">
                           {(() => {
                             const recommendedId = getRecommendedNodeId(children);
                             return children.map((node) => (
@@ -729,22 +843,22 @@ export default function IdeaTree({
       )}
 
 
-      {/* 선택 후 계속 진행 버튼 */}
+      {/* 선택 후 계속 진행 버튼 - 다음 레벨 생성이 가능할 때만 표시 */}
       {canGenerateNext && (
-        <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
+        <div className="bg-white rounded-lg border-2 border-blue-200 p-6 mb-6">
           <div className="mb-4">
             <p className="text-base font-medium text-gray-900 mb-1">
               {finalStage !== "stage1" 
                 ? t("finalSelectionCountWithStage", { count: finalCount })
                 : t("finalSelectionCount", { count: finalCount })}
             </p>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-600">
               {t("canContinueNext")}
             </p>
           </div>
           <button
             onClick={generateNextLevel}
-            className="w-full h-12 bg-white text-gray-900 text-base font-medium rounded-md border-2 border-gray-900 hover:bg-gray-50 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            className="w-full h-12 bg-blue-600 text-white text-base font-semibold rounded-md hover:bg-blue-700 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 shadow-sm"
           >
             {t("continueNext")}
           </button>
@@ -752,7 +866,7 @@ export default function IdeaTree({
       )}
 
       {/* 임시 저장 버튼 */}
-      {showSaveButton && externalSession && (() => {
+      {showSaveButton && externalSession && !canFinalize && (() => {
         // 최신 노드와 선택 상태를 반영한 세션 생성
         const currentSession: Session = {
           ...externalSession,
@@ -761,21 +875,49 @@ export default function IdeaTree({
           updatedAt: new Date().toISOString(),
         };
         return (
-          <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
+          <div className="bg-white rounded-lg border-2 border-gray-200 p-6 mb-6">
             <SaveButton session={currentSession} />
           </div>
         );
       })()}
 
-      {/* 최종 확정 CTA - 하단 고정 버튼 하나로 통일 */}
-      {finalCount > 0 && finalSelectedTitle && onFinalize && (
-        <div className="sticky bottom-6 z-30 mt-8">
-          <div className="bg-white rounded-lg border-2 border-gray-900 shadow-lg p-4">
+      {/* 최종 확정 CTA - 선택된 노드가 있으면 항상 표시 */}
+      {canFinalize && (
+        <div className="sticky bottom-6 z-30 mt-8 -mx-8 md:-mx-12 lg:-mx-16">
+          <div className="mx-8 md:mx-12 lg:mx-16 bg-white rounded-xl shadow-2xl border border-gray-200 p-6 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  {finalCount > 1 
+                    ? locale === "en" 
+                      ? `Selected ${finalCount} Options`
+                      : `${finalCount}개 옵션 선택됨`
+                    : locale === "en"
+                      ? "Ready to Finalize"
+                      : "최종 확정 준비 완료"}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {locale === "en"
+                    ? "Generate the final app architecture design with your selected options"
+                    : "선택한 옵션으로 최종 앱 설계안을 생성합니다"}
+                </p>
+              </div>
+              <div className="ml-4 flex items-center justify-center w-12 h-12 rounded-full bg-blue-100">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
             <button
               onClick={onFinalize}
-              className="w-full h-12 bg-gray-900 text-white text-base font-semibold rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+              className="w-full h-14 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-base font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2"
             >
-              {t("finalizeButton")}
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {t("finalizeButton")}
+              </span>
             </button>
           </div>
         </div>
@@ -790,7 +932,9 @@ interface ComparisonTableProps {
 }
 
 function ComparisonTable({ nodes }: ComparisonTableProps) {
-  const locale = useLocale() as "ko" | "en";
+  const pathname = usePathname();
+  // CRITICAL: Use route-based locale determination to ensure consistency with /en route
+  const locale = getRouteLocale(pathname);
   const t = useTranslations("comparisonTable");
   const tArchitecture = useTranslations("architectureCard");
   const specs = nodes.map(n => n.spec as ImplementationSpec).filter(Boolean);
@@ -829,6 +973,17 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
     if (text === "사용자 프로필") return "User profile";
     if (text === "기본 설정") return "Basic settings";
     if (text === "페이지네이션") return "Pagination";
+    
+    // architecture 변환
+    if (text === "Redis (캐싱)") return "Redis (caching)";
+    if (text === "CloudWatch (모니터링)") return "CloudWatch (monitoring)";
+    if (text === "ML 모듈 (추천)") return "ML module (recommendations)";
+    if (text === "규칙 엔진 서버") return "Rule engine server";
+    if (text === "관리자 패널") return "Admin panel";
+    if (text === "백업 스토리지 (S3)") return "Backup storage (S3)";
+    if (text.includes("(캐싱)")) return text.replace("(캐싱)", "(caching)");
+    if (text.includes("(모니터링)")) return text.replace("(모니터링)", "(monitoring)");
+    if (text.includes("(추천)")) return text.replace("(추천)", "(recommendations)");
     
     // 일반적인 한글 단어 변환
     const wordMap: Record<string, string> = {
@@ -903,7 +1058,7 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6">
+    <div className="grid grid-cols-1 gap-8">
       {nodes.map((node, nodeIdx) => {
         const spec = specs[nodeIdx];
         if (!spec) return null;
@@ -1010,7 +1165,7 @@ function ComparisonTable({ nodes }: ComparisonTableProps) {
                     {spec.architecture.map((arch) => (
                       <li key={arch} className="text-sm text-gray-700 flex items-start">
                         <span className="text-gray-400 mr-2">•</span>
-                        <span>{arch}</span>
+                        <span>{translateText(arch)}</span>
                       </li>
                     ))}
                   </ul>
@@ -1056,11 +1211,292 @@ function IdeaCard({
   hasChildren,
   onRegenerate,
 }: IdeaCardProps) {
-  const locale = useLocale() as "ko" | "en";
+  const pathname = usePathname();
+  // CRITICAL: Use route-based locale determination to ensure consistency with /en route
+  const locale = getRouteLocale(pathname);
   const t = useTranslations("ideaTree");
   const tArchitecture = useTranslations("architectureCard");
   const spec = node.spec as ImplementationSpec | undefined;
   const hasSpec = !!spec;
+  
+  // translateText 함수 (IdeaTree의 translateText와 동일한 로직)
+  const translateText = (text: string): string => {
+    if (locale !== "en") return text;
+    if (!text || typeof text !== "string") return text;
+    if (!/[가-힣]/.test(text)) return text;
+    
+    // Level 2 템플릿 제목 패턴 변환 (예: "기본 키워드 앱" → "Basic Keyword App")
+    if (text.includes(" 기본 ") && text.includes(" 앱")) {
+      return text.replace(" 기본 ", " Basic ").replace(" 앱", " App");
+    }
+    if (text.includes(" 소셜 ") && text.includes(" 앱")) {
+      return text.replace(" 소셜 ", " Social ").replace(" 앱", " App");
+    }
+    if (text.includes(" 프리미엄 ") && text.includes(" 앱")) {
+      return text.replace(" 프리미엄 ", " Premium ").replace(" 앱", " App");
+    }
+    if (text.includes(" 빠른 실행 ") && text.includes(" 앱")) {
+      return text.replace(" 빠른 실행 ", " Quick Launch ").replace(" 앱", " App");
+    }
+    if (text.includes(" 교육 ") && text.includes(" 앱")) {
+      return text.replace(" 교육 ", " Educational ").replace(" 앱", " App");
+    }
+    if (text.includes(" 분석 ") && text.includes(" 앱")) {
+      return text.replace(" 분석 ", " Analytics ").replace(" 앱", " App");
+    }
+    if (text.includes(" 모바일 ") && text.includes(" 앱")) {
+      return text.replace(" 모바일 ", " Mobile ").replace(" 앱", " App");
+    }
+    if (text.includes(" 일상 ") && text.includes(" 앱")) {
+      return text.replace(" 일상 ", " Daily ").replace(" 앱", " App");
+    }
+    if (text.includes(" 커뮤니티 ") && text.includes(" 앱")) {
+      return text.replace(" 커뮤니티 ", " Community ").replace(" 앱", " App");
+    }
+    if (text.includes(" 전문가 ") && text.includes(" 앱")) {
+      return text.replace(" 전문가 ", " Expert ").replace(" 앱", " App");
+    }
+    if (text.includes(" 간편 ") && text.includes(" 앱")) {
+      return text.replace(" 간편 ", " Simple ").replace(" 앱", " App");
+    }
+    if (text.includes(" 협업 ") && text.includes(" 앱")) {
+      return text.replace(" 협업 ", " Collaboration ").replace(" 앱", " App");
+    }
+    if (text.includes(" 자동화 ") && text.includes(" 앱")) {
+      return text.replace(" 자동화 ", " Automation ").replace(" 앱", " App");
+    }
+    if (text.includes(" 통합 ") && text.includes(" 앱")) {
+      return text.replace(" 통합 ", " Integrated ").replace(" 앱", " App");
+    }
+    if (text.includes(" 맞춤형 ") && text.includes(" 앱")) {
+      return text.replace(" 맞춤형 ", " Customized ").replace(" 앱", " App");
+    }
+    if (text.includes(" 게임화 ") && text.includes(" 앱")) {
+      return text.replace(" 게임화 ", " Gamified ").replace(" 앱", " App");
+    }
+    if (text.includes(" 오픈소스 ") && text.includes(" 앱")) {
+      return text.replace(" 오픈소스 ", " Open Source ").replace(" 앱", " App");
+    }
+    if (text.includes(" 엔터프라이즈 ") && text.includes(" 앱")) {
+      return text.replace(" 엔터프라이즈 ", " Enterprise ").replace(" 앱", " App");
+    }
+    if (text.includes(" 크리에이티브 ") && text.includes(" 앱")) {
+      return text.replace(" 크리에이티브 ", " Creative ").replace(" 앱", " App");
+    }
+    if (text.includes(" 미니멀 ") && text.includes(" 앱")) {
+      return text.replace(" 미니멀 ", " Minimal ").replace(" 앱", " App");
+    }
+    if (text.endsWith(" 앱")) {
+      return text.replace(" 앱", " App");
+    }
+    
+    // valueProposition 변환
+    if (text === "빠른 시장 진입") return "Quick market entry";
+    if (text === "확장 성장 버전") return "Scalable growth version";
+    if (text === "운영 비용 절감") return "Operating cost reduction";
+    if (text === "개인화 경험 제공") return "Personalized experience";
+    if (text === "엔터프라이즈 운영 준비") return "Enterprise operations ready";
+    
+    // 제목 패턴 변환
+    if (text.includes(" 기본 MVP 버전")) return text.replace(" 기본 MVP 버전", " Basic MVP Version");
+    if (text.includes(" 확장 성장 버전")) return text.replace(" 확장 성장 버전", " Extended Growth Version");
+    if (text.includes(" 최적화 고급 버전")) return text.replace(" 최적화 고급 버전", " Optimized Advanced Version");
+    if (text.includes(" 차별화 고급 버전")) return text.replace(" 차별화 고급 버전", " Differentiated Advanced Version");
+    if (text.includes(" 운영 고급 버전")) return text.replace(" 운영 고급 버전", " Operations Advanced Version");
+    if (text.includes(" MVP 버전")) return text.replace(" MVP 버전", " MVP Version");
+    if (text.includes(" 성장 버전")) return text.replace(" 성장 버전", " Growth Version");
+    if (text.includes(" 고급 버전")) return text.replace(" 고급 버전", " Advanced Version");
+    if (text.includes(" 기본 ")) return text.replace(" 기본 ", " Basic ");
+    if (text.includes(" 확장 ")) return text.replace(" 확장 ", " Extended ");
+    if (text.includes(" 최적화 ")) return text.replace(" 최적화 ", " Optimized ");
+    if (text.includes(" 차별화 ")) return text.replace(" 차별화 ", " Differentiated ");
+    if (text.includes(" 운영 ")) return text.replace(" 운영 ", " Operations ");
+    if (text.endsWith(" 버전")) return text.replace(" 버전", " Version");
+    
+    // contextTags 변환
+    if (text === "1인 창업자용") return "For solo founders";
+    if (text === "MVP 단계") return "MVP stage";
+    if (text === "초기 프로토타입") return "Initial prototype";
+    if (text === "SaaS 초기모델") return "Early SaaS model";
+    if (text === "사용자 유지율 중시") return "User retention focus";
+    if (text === "기능 확장 준비") return "Feature expansion ready";
+    if (text === "대용량 데이터") return "Large data volume";
+    if (text === "성능 최적화") return "Performance optimization";
+    if (text === "비용 효율") return "Cost efficiency";
+    if (text === "전문가용") return "For experts";
+    if (text === "AI/ML 활용") return "AI/ML utilization";
+    if (text === "고급 기능") return "Advanced features";
+    if (text === "팀 협업") return "Team collaboration";
+    if (text === "조직 관리") return "Organization management";
+    if (text === "보안 강화") return "Security enhanced";
+    
+    // oneLineRisk 변환
+    if (text === "초기 서버 비용 발생 가능") return "Initial server costs may occur";
+    if (text === "데이터 증가 시 성능 최적화 필요") return "Performance optimization needed as data grows";
+    if (text === "인프라 구축 초기 비용 증가") return "Initial infrastructure setup cost increase";
+    if (text === "ML 모델 학습 및 유지보수 비용 발생") return "ML model training and maintenance costs";
+    if (text === "복잡한 권한 시스템 구현 및 관리 부담") return "Complex permission system implementation and management burden";
+    
+    // 난이도 변환
+    if (text === "초급") return "Beginner";
+    if (text === "중급") return "Intermediate";
+    if (text === "상급") return "Advanced";
+    
+    // 기간 변환
+    if (text === "1~2주") return "1~2 weeks";
+    if (text === "3~4주") return "3~4 weeks";
+    if (text === "4~6주") return "4~6 weeks";
+    if (text === "5~8주") return "5~8 weeks";
+    if (text === "6~10주") return "6~10 weeks";
+    
+    // 키워드 기반 동적 텍스트 변환
+    if (text.includes("로그 추가")) {
+      const keyword = text.replace(" 로그 추가", "").replace("로그 추가", "");
+      return keyword ? `Add ${keyword} log` : "Add log";
+    }
+    if (text.includes("목록 조회")) {
+      const keyword = text.replace(" 목록 조회", "").replace("목록 조회", "");
+      return keyword ? `View ${keyword} list` : "View list";
+    }
+    if (text.includes("기본 통계")) {
+      const keyword = text.replace(" 기본 통계", "").replace("기본 통계", "");
+      return keyword ? `${keyword} basic statistics` : "Basic statistics";
+    }
+    if (text.includes("검색 및 필터")) {
+      const keyword = text.replace(" 검색 및 필터", "").replace("검색 및 필터", "");
+      return keyword ? `${keyword} search and filter` : "Search and filter";
+    }
+    if (text.includes("태그 관리")) {
+      const keyword = text.replace(" 태그 관리", "").replace("태그 관리", "");
+      return keyword ? `${keyword} tag management` : "Tag management";
+    }
+    if (text.includes("통계 (캐싱)")) {
+      const keyword = text.replace(" 통계 (캐싱)", "").replace("통계 (캐싱)", "");
+      return keyword ? `${keyword} statistics (cached)` : "Statistics (cached)";
+    }
+    if (text.includes("추천 알고리즘")) {
+      const keyword = text.replace(" 추천 알고리즘", "").replace("추천 알고리즘", "");
+      return keyword ? `${keyword} recommendation algorithm` : "Recommendation algorithm";
+    }
+    if (text.includes("알림 설정")) {
+      const keyword = text.replace(" 알림 설정", "").replace("알림 설정", "");
+      return keyword ? `${keyword} notification settings` : "Notification settings";
+    }
+    
+    // Level 2 summary 패턴 변환 (예: "키워드 로그 추가, 목록 조회, 기본 통계 기능 포함" → "Keyword log addition, list view, basic statistics included")
+    if (text.includes(" 로그 추가") && text.includes(" 목록 조회") && text.includes(" 기본 통계") && text.includes(" 기능 포함")) {
+      const keyword = text.replace(" 로그 추가, 목록 조회, 기본 통계 기능 포함", "").replace("로그 추가, 목록 조회, 기본 통계 기능 포함", "");
+      return keyword ? `${keyword} log addition, list view, basic statistics included` : "Log addition, list view, basic statistics included";
+    }
+    if (text.includes("사용자 간 공유") && text.includes("댓글") && text.includes("좋아요") && text.includes(" 기능 포함")) {
+      return "User sharing, comments, likes included";
+    }
+    if (text.includes("유료 구독") && text.includes("고급 분석") && text.includes("데이터 내보내기") && text.includes(" 기능 포함")) {
+      return "Paid subscription, advanced analytics, data export included";
+    }
+    if (text.includes("최소 화면 구성") && text.includes("빠른 입력") && text.includes(" 간단한 조회") && text.includes(" 기능 포함")) {
+      return "Minimal screens, fast input, simple view included";
+    }
+    if (text.includes("단계별 가이드") && text.includes("진행률 추적") && text.includes("피드백 시스템") && text.includes(" 기능 포함")) {
+      return "Step-by-step guides, progress tracking, feedback system included";
+    }
+    if (text.includes("차트 시각화") && text.includes("리포트 생성") && text.includes("데이터 비교") && text.includes(" 기능 포함")) {
+      return "Chart visualization, report generation, data comparison included";
+    }
+    if (text.includes("오프라인 동기화") && text.includes("푸시 알림") && text.includes("위치 기반") && text.includes(" 기능 포함")) {
+      return "Offline sync, push notifications, location-based features included";
+    }
+    if (text.includes("일일 기록") && text.includes("주간 요약") && text.includes("알림 설정") && text.includes(" 기능 포함")) {
+      return "Daily records, weekly summary, notification settings included";
+    }
+    if (text.includes("게시판") && text.includes("그룹 관리") && text.includes("실시간 채팅") && text.includes(" 기능 포함")) {
+      return "Bulletin board, group management, real-time chat included";
+    }
+    if (text.includes("고급 필터") && text.includes("커스텀 리포트") && text.includes("API 연동") && text.includes(" 기능 포함")) {
+      return "Advanced filters, custom reports, API integration included";
+    }
+    if (text.includes("원클릭 입력") && text.includes("자동 분류") && text.includes("빠른 검색") && text.includes(" 기능 포함")) {
+      return "One-click input, auto classification, quick search included";
+    }
+    if (text.includes("팀 공유") && text.includes("권한 관리") && text.includes("작업 할당") && text.includes(" 기능 포함")) {
+      return "Team sharing, permission management, task assignment included";
+    }
+    if (text.includes("스케줄 실행") && text.includes("규칙 기반 처리") && text.includes("푸시 알림 연동") && text.includes(" 기능 포함")) {
+      return "Schedule execution, rule-based processing, push notification integration included";
+    }
+    if (text.includes("다중 데이터 소스") && text.includes("통합 대시보드") && text.includes("일괄 처리") && text.includes(" 기능 포함")) {
+      return "Multiple data sources, integrated dashboard, batch processing included";
+    }
+    if (text.includes("사용자 패턴 학습") && text.includes("개인화 추천") && text.includes("맞춤 알림") && text.includes(" 기능 포함")) {
+      return "User pattern learning, personalized recommendations, custom notifications included";
+    }
+    if (text.includes("포인트 시스템") && text.includes("배지 수집") && text.includes("리더보드") && text.includes(" 기능 포함")) {
+      return "Point system, badge collection, leaderboard included";
+    }
+    if (text.includes("자동 분류") && text.includes("예측 분석") && text.includes("스마트 추천") && text.includes(" 기능 포함")) {
+      return "Auto classification, predictive analytics, smart recommendations included";
+    }
+    if (text.includes("플러그인 시스템") && text.includes("API 확장") && text.includes("커스텀 테마") && text.includes(" 기능 포함")) {
+      return "Plugin system, API extensions, custom themes included";
+    }
+    if (text.includes("SSO 인증") && text.includes("감사 로그") && text.includes("백업 복원") && text.includes(" 기능 포함")) {
+      return "SSO authentication, audit logs, backup and recovery included";
+    }
+    if (text.includes("템플릿 라이브러리") && text.includes("미디어 편집") && text.includes("공유 갤러리") && text.includes(" 기능 포함")) {
+      return "Template library, media editing, shared gallery included";
+    }
+    if (text.includes("3개 화면") && text.includes("필수 기능만") && text.includes("빠른 로딩") && text.includes(" 기능 포함")) {
+      return "3 screens, essential features only, fast loading included";
+    }
+    
+    // 일반적인 한글 단어 변환
+    const wordMap: Record<string, string> = {
+      "사용자": "User",
+      "프로필": "Profile",
+      "기본": "Basic",
+      "설정": "Settings",
+      "관리": "Management",
+      "대시보드": "Dashboard",
+      "데이터": "Data",
+      "백업": "Backup",
+      "복원": "Recovery",
+      "로그": "Log",
+      "목록": "List",
+      "조회": "View",
+      "통계": "Statistics",
+      "검색": "Search",
+      "필터": "Filter",
+      "태그": "Tag",
+      "목표": "Goal",
+      "추적": "Tracking",
+      "알림": "Notification",
+      "추천": "Recommendation",
+      "알고리즘": "Algorithm",
+      "개인화": "Personalization",
+      "규칙": "Rule",
+      "엔진": "Engine",
+      "맞춤형": "Customized",
+      "권한": "Permission",
+      "감사": "Audit",
+      "성능": "Performance",
+      "모니터링": "Monitoring",
+      "배치": "Batch",
+      "처리": "Processing",
+      "캐싱": "Caching",
+      "캐시": "Cache",
+    };
+    
+    let translated = text;
+    for (const [ko, en] of Object.entries(wordMap)) {
+      translated = translated.replace(new RegExp(ko, "g"), en);
+    }
+    
+    if (/[가-힣]/.test(translated)) {
+      console.warn(`[translateText] 한글 텍스트가 남아있습니다: "${text}" → "${translated}"`);
+    }
+    
+    return translated;
+  };
   
   // 라벨 번역 (한글 라벨을 영어로 변환)
   const getTranslatedLabel = (label?: string): string => {
@@ -1131,7 +1567,7 @@ function IdeaCard({
   
   return (
     <div
-      className={`${getBgClass()} rounded-lg border-2 p-5 cursor-pointer transition-all ${
+      className={`${getBgClass()} rounded-lg border-2 p-6 cursor-pointer transition-all ${
         isSelected
           ? `${getBorderClass()} shadow-md`
           : `${getBorderClass()} hover:bg-gray-50`
@@ -1182,7 +1618,7 @@ function IdeaCard({
       </div>
       
       <h4 className="text-base font-semibold text-gray-900 mb-2 tracking-tight">
-        {node.title}
+        {translateText(node.title as string)}
       </h4>
       
       {hasSpec ? (
@@ -1200,7 +1636,9 @@ function IdeaCard({
               })()}
             </span>
             <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">
-              {spec.estimatedDuration}
+              {locale === "en" && spec.estimatedDuration.includes("주") 
+                ? spec.estimatedDuration.replace("주", " weeks")
+                : spec.estimatedDuration}
             </span>
           </div>
           
@@ -1209,7 +1647,7 @@ function IdeaCard({
             <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1 antialiased opacity-100">
               {tArchitecture("targetUser")}
             </p>
-            <p className="text-xs text-gray-700 font-normal antialiased opacity-100 leading-relaxed">{spec.targetUser}</p>
+            <p className="text-xs text-gray-700 font-normal antialiased opacity-100 leading-relaxed">{translateText(spec.targetUser)}</p>
           </div>
           
           {/* 핵심 화면 */}
@@ -1221,7 +1659,7 @@ function IdeaCard({
               {spec.screens.slice(0, 3).map((screen, idx) => (
                 <li key={idx} className="flex items-start">
                   <span className="text-gray-600 mr-1">•</span>
-                  <span className="leading-relaxed">{screen}</span>
+                  <span className="leading-relaxed">{translateText(screen)}</span>
                 </li>
               ))}
               {spec.screens.length > 3 && (
@@ -1239,7 +1677,7 @@ function IdeaCard({
               {spec.features.slice(0, 3).map((feature, idx) => (
                 <li key={idx} className="flex items-start">
                   <span className="text-gray-600 mr-1">•</span>
-                  <span className="leading-relaxed">{feature}</span>
+                  <span className="leading-relaxed">{translateText(feature)}</span>
                 </li>
               ))}
               {spec.features.length > 3 && (
@@ -1256,7 +1694,7 @@ function IdeaCard({
             <div className="flex flex-wrap gap-1">
               {spec.entities.slice(0, 3).map((entity, idx) => (
                 <span key={idx} className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded font-normal antialiased opacity-100">
-                  {entity}
+                  {translateText(entity)}
                 </span>
               ))}
               {spec.entities.length > 3 && (
@@ -1266,7 +1704,7 @@ function IdeaCard({
           </div>
         </div>
       ) : (
-        <p className="text-sm text-gray-700 font-normal antialiased opacity-100 leading-relaxed">{(node.summary as string) ?? ""}</p>
+        <p className="text-sm text-gray-700 font-normal antialiased opacity-100 leading-relaxed">{translateText((node.summary as string) ?? "")}</p>
       )}
     </div>
   );

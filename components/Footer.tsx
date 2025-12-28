@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
+import { getLocaleFromPathname, withLocalePrefix, type Locale } from "@/utils/localePath";
 
 export default function Footer() {
-  const locale = useLocale();
+  const pathname = usePathname() || "/";
+  const locale = getLocaleFromPathname(pathname) ?? "ko";
   const t = useTranslations("footer");
   const tNav = useTranslations("nav");
   return (
@@ -26,7 +29,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href={`/${locale}/app`}
+                  href={withLocalePrefix("/app", locale as Locale, pathname)}
                   className="text-base text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   {tNav("createApp")}
@@ -34,7 +37,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/history`}
+                  href={withLocalePrefix("/history", locale as Locale, pathname)}
                   className="text-base text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   {tNav("history")}
@@ -49,7 +52,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href={`/${locale}/about`}
+                  href={withLocalePrefix("/about", locale as Locale, pathname)}
                   className="text-base text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   {tNav("about")}

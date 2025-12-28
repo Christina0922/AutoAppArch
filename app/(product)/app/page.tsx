@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { getLocaleFromPathname, withLocalePrefix } from "@/utils/localePath";
+import { getRouteLocale } from "@/utils/getRouteLocale";
 import { Session, Node, PlanResult, AppType } from "@/lib/types";
 import { getSessionById, saveSession } from "@/lib/storage";
 import { generateFirstLevelIdeas } from "@/lib/generateIdeas";
@@ -20,6 +22,8 @@ import PlanDetail from "@/components/PlanDetail";
 export default function AppPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname() || "/";
+  const locale = getRouteLocale(pathname);
   const tCommon = useTranslations("common");
   const tLoading = useTranslations("loading");
   const tIdeaTree = useTranslations("ideaTree");
@@ -41,11 +45,11 @@ export default function AppPage() {
   const [error, setError] = useState<string | null>(null);
   const processedKeywordsRef = useRef<string>("");
 
-  // URL 파라미터로 저장된 세션을 열었는지 확인
+  // URL 파라미터로 저장된 세션을 열었는지 확인 (로케일별로 분리된 키에서 로드)
   useEffect(() => {
     const sessionId = searchParams.get("sessionId");
     if (sessionId) {
-      const savedSession = getSessionById(sessionId);
+      const savedSession = getSessionById(sessionId, locale);
       if (savedSession) {
         setSession(savedSession);
         setIsFromHistory(true);
@@ -80,7 +84,7 @@ export default function AppPage() {
             await new Promise((resolve) => setTimeout(resolve, delay));
 
             // 1차 아이디어 생성
-            const nodes = generateFirstLevelIdeas(keywords, selectedType, 7);
+            const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, undefined, locale);
 
             const newSession: Session = {
               id: Date.now().toString(),
@@ -117,7 +121,7 @@ export default function AppPage() {
     setSession(updatedSession);
     if (autoSave) {
       try {
-        saveSession(updatedSession);
+        saveSession(updatedSession, locale);
       } catch (error) {
         console.error("Failed to auto-save session:", error);
       }
@@ -140,7 +144,7 @@ export default function AppPage() {
       await new Promise((resolve) => setTimeout(resolve, delay));
 
       // 1차 아이디어 생성 (재생성 시 다른 안이 나오도록 시드 사용)
-      const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, regenerationSeed);
+      const nodes = generateFirstLevelIdeas(keywords, selectedType, 7, regenerationSeed, locale);
 
       const newSession: Session = {
         id: Date.now().toString(),
@@ -193,7 +197,8 @@ export default function AppPage() {
         session.keywords ?? [],
         selectedType,
         7,
-        newSeed
+        newSeed,
+        locale
       );
       
       const updatedSession: Session = {
@@ -310,7 +315,8 @@ export default function AppPage() {
     const appNaming = generateAppNaming(
       session.keywords ?? [],
       normalizeAppType(session.selectedType),
-      finalCandidates.map((n) => ({ title: n.title, summary: (n.summary as string) ?? "" }))
+      finalCandidates.map((n) => ({ title: n.title, summary: (n.summary as string) ?? "" })),
+      locale
     );
     planResult.appNaming = appNaming;
     
@@ -318,9 +324,9 @@ export default function AppPage() {
     setFinalizationStep("설계안 저장 중...");
     await new Promise((resolve) => setTimeout(resolve, 300));
     
-    // Session만 저장
+    // Session만 저장 (로케일별로 분리된 키에 저장)
     try {
-      saveSession(session);
+      saveSession(session, locale);
     } catch (error) {
       console.error("저장 실패:", error);
     }
@@ -385,7 +391,8 @@ export default function AppPage() {
     const appNaming = generateAppNaming(
       session.keywords ?? [],
       normalizeAppType(session.selectedType),
-      finalCandidates.map((n) => ({ title: n.title, summary: (n.summary as string) ?? "" }))
+      finalCandidates.map((n) => ({ title: n.title, summary: (n.summary as string) ?? "" })),
+      locale
     );
     planResult.appNaming = appNaming;
     
@@ -393,9 +400,9 @@ export default function AppPage() {
     setFinalizationStep("설계안 저장 중...");
     await new Promise((resolve) => setTimeout(resolve, 300));
     
-    // Session만 저장 (Plan 형식은 사용하지 않음)
+    // Session만 저장 (Plan 형식은 사용하지 않음, 로케일별로 분리된 키에 저장)
     try {
-      saveSession(session);
+      saveSession(session, locale);
     } catch (error) {
       console.error("저장 실패:", error);
     }
@@ -449,7 +456,7 @@ export default function AppPage() {
       return;
     }
     // 세션이 있으면 다시 시도할 수 있는 옵션 제공
-    router.push("/app");
+    router.push(withLocalePrefix("/app", routeLocale, pathname));
   };
 
   return (

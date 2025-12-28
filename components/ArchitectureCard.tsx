@@ -62,18 +62,25 @@ export default function ArchitectureCard({
     }
   }, [locale, pathname, node.id, isExpanded]);
 
-  // 난이도 번역 (한글 difficulty를 영어로 변환)
+  // 난이도 번역 (번역 키 사용)
   const getTranslatedDifficulty = (difficulty?: string): string => {
     if (!difficulty) return "";
-    if (locale === "en") {
-      if (difficulty === "초급") return "Beginner";
-      if (difficulty === "중급") return "Intermediate";
-      if (difficulty === "상급") return "Advanced";
-      // 이미 영어인 경우 그대로 반환
-      if (difficulty === "Beginner" || difficulty === "Intermediate" || difficulty === "Advanced") {
-        return difficulty;
-      }
+    
+    // 한글 난이도를 영어로 변환 후 번역 키 사용
+    let difficultyKey: "beginner" | "intermediate" | "advanced" | null = null;
+    if (difficulty === "초급" || difficulty === "Beginner") {
+      difficultyKey = "beginner";
+    } else if (difficulty === "중급" || difficulty === "Intermediate") {
+      difficultyKey = "intermediate";
+    } else if (difficulty === "상급" || difficulty === "Advanced") {
+      difficultyKey = "advanced";
     }
+    
+    // 번역 키가 있으면 사용, 없으면 원본 반환
+    if (difficultyKey) {
+      return tDifficulty(difficultyKey);
+    }
+    
     return difficulty;
   };
 
@@ -155,12 +162,28 @@ export default function ArchitectureCard({
     if (text === "조직 관리") return "Organization management";
     if (text === "보안 강화") return "Security enhanced";
     
+    // architecture 변환
+    if (text === "Redis (캐싱)") return "Redis (caching)";
+    if (text === "CloudWatch (모니터링)") return "CloudWatch (monitoring)";
+    if (text === "ML 모듈 (추천)") return "ML module (recommendations)";
+    if (text === "규칙 엔진 서버") return "Rule engine server";
+    if (text === "관리자 패널") return "Admin panel";
+    if (text === "백업 스토리지 (S3)") return "Backup storage (S3)";
+    if (text.includes("(캐싱)")) return text.replace("(캐싱)", "(caching)");
+    if (text.includes("(모니터링)")) return text.replace("(모니터링)", "(monitoring)");
+    if (text.includes("(추천)")) return text.replace("(추천)", "(recommendations)");
+    
     // oneLineRisk 변환
     if (text === "초기 서버 비용 발생 가능") return "Initial server costs may occur";
     if (text === "데이터 증가 시 성능 최적화 필요") return "Performance optimization needed as data grows";
     if (text === "인프라 구축 초기 비용 증가") return "Initial infrastructure setup cost increase";
     if (text === "ML 모델 학습 및 유지보수 비용 발생") return "ML model training and maintenance costs";
     if (text === "복잡한 권한 시스템 구현 및 관리 부담") return "Complex permission system implementation and management burden";
+    
+    // 난이도 변환
+    if (text === "초급") return "Beginner";
+    if (text === "중급") return "Intermediate";
+    if (text === "상급") return "Advanced";
     
     // 기간 변환
     if (text === "1~2주") return "1~2 weeks";
@@ -245,7 +268,62 @@ export default function ArchitectureCard({
       return `Users managing ${keyword} at team/organization level`;
     }
     
-    return text;
+    // 추가 패턴: "사용자 프로필", "기본 설정" 등
+    if (text === "사용자 프로필") return "User profile";
+    if (text === "기본 설정") return "Basic settings";
+    if (text === "페이지네이션") return "Pagination";
+    
+    // 한글이 여전히 남아있으면 일반적인 변환 시도
+    let translated = text;
+    
+    // 일반적인 한글 단어 변환
+    const wordMap: Record<string, string> = {
+      "사용자": "User",
+      "프로필": "Profile",
+      "기본": "Basic",
+      "설정": "Settings",
+      "관리": "Management",
+      "대시보드": "Dashboard",
+      "데이터": "Data",
+      "백업": "Backup",
+      "복원": "Recovery",
+      "로그": "Log",
+      "목록": "List",
+      "조회": "View",
+      "통계": "Statistics",
+      "검색": "Search",
+      "필터": "Filter",
+      "태그": "Tag",
+      "목표": "Goal",
+      "추적": "Tracking",
+      "알림": "Notification",
+      "추천": "Recommendation",
+      "알고리즘": "Algorithm",
+      "개인화": "Personalization",
+      "규칙": "Rule",
+      "엔진": "Engine",
+      "맞춤형": "Customized",
+      "권한": "Permission",
+      "감사": "Audit",
+      "성능": "Performance",
+      "모니터링": "Monitoring",
+      "배치": "Batch",
+      "처리": "Processing",
+      "캐싱": "Caching",
+      "캐시": "Cache",
+    };
+    
+    // 단어별로 변환 시도
+    for (const [ko, en] of Object.entries(wordMap)) {
+      translated = translated.replace(new RegExp(ko, "g"), en);
+    }
+    
+    // 여전히 한글이 남아있으면 경고 출력 (개발 모드)
+    if (/[가-힣]/.test(translated)) {
+      console.warn(`[translateText] 한글 텍스트가 남아있습니다: "${text}" → "${translated}"`);
+    }
+    
+    return translated;
   };
 
   // 개발 모드에서 /en 경로일 때 한글 감지 가드
@@ -321,7 +399,7 @@ export default function ArchitectureCard({
   return (
     <div
       data-card-id={node.id}
-      className={`${getBgClass()} rounded-lg border-2 p-5 cursor-pointer transition-all ${
+      className={`${getBgClass()} rounded-lg border-2 p-6 cursor-pointer transition-all ${
         isSelected
           ? `${getBorderClass()} shadow-md`
           : `${getBorderClass()} hover:bg-gray-50`
@@ -370,7 +448,7 @@ export default function ArchitectureCard({
 
   return (
     <div
-      className={`${getBgClass()} rounded-lg border-2 p-5 transition-all relative flex flex-col gap-3 h-full ${
+      className={`${getBgClass()} rounded-lg border-2 p-6 transition-all relative flex flex-col gap-3 h-full ${
         isSelected
           ? `${getBorderClass()} shadow-md`
           : `${getBorderClass()} hover:border-gray-300`
@@ -427,7 +505,7 @@ export default function ArchitectureCard({
           </span>
           {/* 추천 배지 - 제목 옆에 배치 */}
           {isRecommended && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-white mr-2">
               {tIdeaTree("recommended")}
             </span>
           )}
@@ -448,7 +526,7 @@ export default function ArchitectureCard({
 
       {/* 제목 */}
       <h4 className="text-base font-semibold text-gray-900 tracking-tight">
-        {node.title}
+        {translateText(node.title)}
       </h4>
 
       {/* 요약 모드 (5줄 구조) */}
@@ -624,7 +702,7 @@ export default function ArchitectureCard({
                       {spec.architecture.map((arch, idx) => (
                         <li key={idx} className="flex items-start leading-relaxed">
                           <span className="text-gray-600 mr-2">•</span>
-                          <span>{arch}</span>
+                          <span>{translateText(arch)}</span>
                         </li>
                       ))}
                     </ul>

@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { getLocaleFromPathname, withLocalePrefix } from "@/utils/localePath";
 
 export default function AboutPage() {
+  const pathname = usePathname() || "/";
+  const locale = getLocaleFromPathname(pathname) ?? "ko";
   return (
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-6 lg:px-8">
       <section className="w-full max-w-3xl text-center">
@@ -72,7 +78,7 @@ export default function AboutPage() {
           <section className="bg-white rounded-lg border border-gray-100 p-10 flex flex-col items-center justify-center text-center">
             <div className="flex justify-center w-full">
               <Link
-                href="/app"
+                href={withLocalePrefix("/app", locale, pathname)}
                 className="inline-flex items-center justify-center h-12 px-8 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                 aria-label="앱 설계안 만들기 시작하기"
               >

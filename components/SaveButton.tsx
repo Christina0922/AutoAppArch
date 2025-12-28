@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
+import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { SavedPlan, Session } from "@/lib/types";
 import { savePlan, saveSession } from "@/lib/storage";
+import { getLocaleFromPathname, withLocalePrefix, type Locale } from "@/utils/localePath";
+import { getRouteLocale } from "@/utils/getRouteLocale";
 
 interface SaveButtonProps {
   plan?: SavedPlan;
@@ -14,7 +16,8 @@ interface SaveButtonProps {
 
 export default function SaveButton({ plan, session, onSaved }: SaveButtonProps) {
   const t = useTranslations("saveButton");
-  const locale = useLocale();
+  const pathname = usePathname() || "/";
+  const locale = getRouteLocale(pathname);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
@@ -23,9 +26,9 @@ export default function SaveButton({ plan, session, onSaved }: SaveButtonProps) 
     setIsSaving(true);
     try {
       if (session) {
-        saveSession(session);
+        saveSession(session, locale);
       } else if (plan) {
-        savePlan(plan);
+        savePlan(plan, locale);
       } else {
         throw new Error(t("errorNoPlanOrSession"));
       }
@@ -43,42 +46,43 @@ export default function SaveButton({ plan, session, onSaved }: SaveButtonProps) 
   const handleViewSaved = () => {
     const id = session?.id || plan?.id;
     if (id) {
-      router.push(`/${locale}/history/${id}`);
+      const historyPath = withLocalePrefix(`/history/${id}`, locale as Locale, pathname);
+      console.log("[SaveButton] Navigating to history:", historyPath, "id:", id);
+      router.push(historyPath);
+    } else {
+      console.error("[SaveButton] No id found for session or plan:", { session, plan });
     }
   };
 
   const handleCreateNew = () => {
-    router.push(`/${locale}/app`);
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    router.push(withLocalePrefix("/app", locale as Locale, pathname));
   };
 
   if (saved) {
     return (
       <div className="space-y-4">
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center">
-          <p className="text-base font-medium text-gray-900 mb-1">
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 text-center">
+          <p className="text-base font-medium text-blue-900 mb-1">
             {t("savedMessage")}
           </p>
         </div>
         <div className="space-y-3">
           <button
             onClick={handleViewSaved}
-            className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            className="w-full h-12 bg-blue-600 text-white text-base font-semibold rounded-md hover:bg-blue-700 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 shadow-sm"
             aria-label={t("viewSavedAria")}
           >
             {t("viewSaved")}
           </button>
           <button
             onClick={handleCreateNew}
-            className="w-full h-12 bg-white text-gray-900 text-base font-medium rounded-md border border-gray-200 hover:bg-gray-50 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            className="w-full h-12 bg-white text-gray-700 text-base font-medium rounded-md border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
             aria-label={t("createNewAria")}
           >
             {t("createNew")}
           </button>
         </div>
-        <p className="text-sm text-gray-400 text-center leading-relaxed">
+        <p className="text-sm text-gray-500 text-center leading-relaxed">
           {t("savedNote")}
         </p>
       </div>

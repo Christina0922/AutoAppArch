@@ -90,10 +90,31 @@ function countSyllables(text: string): number {
   return hangul ? hangul.length : text.length;
 }
 
+type Locale = "ko" | "en";
+
+/**
+ * 앱 네이밍 후보 생성
+ * 
+ * **CRITICAL: Language Enforcement for ENGLISH locale**
+ * 
+ * SYSTEM PROMPT ENFORCEMENT:
+ * When locale === "en", the following strict rules MUST be followed:
+ * 
+ * 1. ALL output fields MUST be generated entirely in English:
+ *    - Names: Must be in English only
+ *    - Taglines: Must be in English only (e.g., "An app that efficiently manages {keyword}")
+ *    - Reasons: Must be in English only
+ *    - Tags: Must be in English only (e.g., "Management", "Tracking")
+ * 
+ * 2. NO Korean characters ([가-힣]) are allowed in ANY field when locale === "en"
+ * 
+ * 3. If locale is "en", the function MUST return English-only content
+ */
 export function generateAppNaming(
   keywords: string[],
   selectedType: AppType,
-  finalCandidates: Array<{ title: string; summary: string }>
+  finalCandidates: Array<{ title: string; summary: string }>,
+  locale: Locale = "ko"
 ): AppNaming {
   const keywordStr = keywords.join(" ");
   const mainKeyword = keywords[0] || "";
@@ -115,7 +136,14 @@ export function generateAppNaming(
     const candidates: AppNamingCandidate[] = [];
     
     // 패턴 1: 키워드 + 도구/매니저 (다양한 도구 사용)
-    const tools = [
+    const tools = locale === "en" ? [
+      { suffix: "Manager", tagline: `An app that efficiently manages ${mainKeyword}`, reason: "Intuitively expresses management functions", tags: ["Management", "Efficiency"] },
+      { suffix: "Tracker", tagline: `An app that tracks and records ${mainKeyword}`, reason: "Tracking function is immediately apparent from the name", tags: ["Tracking", "Recording"] },
+      { suffix: "Guide", tagline: `An app that provides ${mainKeyword}-related guides and information`, reason: "Emphasizes guidance and guide functions", tags: ["Guide", "Information"] },
+      { suffix: "Planner", tagline: `An app that manages ${mainKeyword} plans and schedules`, reason: "Clearly expresses planning functions", tags: ["Planning", "Schedule"] },
+      { suffix: "Note", tagline: `An app that records and organizes ${mainKeyword}`, reason: "Intuitively conveys recording and organization functions", tags: ["Recording", "Organization"] },
+      { suffix: "Helper", tagline: `An app that helps with ${mainKeyword}-related tasks`, reason: "Emphasizes help and support functions", tags: ["Help", "Support"] },
+    ] : [
       { suffix: "매니저", tagline: `${mainKeyword}를 효율적으로 관리하는 앱`, reason: "관리 기능을 직관적으로 표현", tags: ["관리", "효율"] },
       { suffix: "트래커", tagline: `${mainKeyword}를 추적하고 기록하는 앱`, reason: "추적 기능이 이름에서 바로 드러남", tags: ["추적", "기록"] },
       { suffix: "가이드", tagline: `${mainKeyword} 관련 가이드와 정보를 제공하는 앱`, reason: "안내와 가이드 기능을 강조", tags: ["가이드", "안내"] },
@@ -138,7 +166,11 @@ export function generateAppNaming(
     
     // 패턴 2: 의미 단어 + 앱 기능 (다양한 표현)
     if (semanticPool.length > 1) {
-      const semanticTools = [
+      const semanticTools = locale === "en" ? [
+        { suffix: "Note", taglineFunc: (s: string) => `An app that records ${s}`, reason: "Expresses recording function with semantic words", tags: ["Recording", "Semantic"] },
+        { suffix: "Book", taglineFunc: (s: string) => `An app that collects ${s}-related information`, reason: "Emphasizes information collection function", tags: ["Information", "Collection"] },
+        { suffix: "Lab", taglineFunc: (s: string) => `An app that explores and experiments with ${s}`, reason: "Contains the meaning of exploration and experimentation", tags: ["Exploration", "Experiment"] },
+      ] : [
         { suffix: "노트", taglineFunc: (s: string) => `${s}를 기록하는 앱`, reason: "기록 기능을 의미 단어로 표현", tags: ["기록", "의미전달"] },
         { suffix: "북", taglineFunc: (s: string) => `${s} 관련 정보를 모은 앱`, reason: "정보 수집 기능을 강조", tags: ["정보", "수집"] },
         { suffix: "랩", taglineFunc: (s: string) => `${s}를 탐구하고 실험하는 앱`, reason: "탐구와 실험의 의미를 담음", tags: ["탐구", "실험"] },
@@ -169,7 +201,12 @@ export function generateAppNaming(
     const candidates: AppNamingCandidate[] = [];
     
     // 패턴 1: 성취/동기 관련 (앞에 붙이기)
-    const achievementWords = [
+    const achievementWords = locale === "en" ? [
+      { prefix: "Growth", tagline: `An app that grows through ${mainKeyword}`, reason: "A name that stimulates growth motivation", tags: ["Growth", "Motivation"] },
+      { prefix: "Challenge", tagline: `An app that challenges ${mainKeyword}`, reason: "Emphasizes spirit of challenge", tags: ["Challenge", "Will"] },
+      { prefix: "Goal", tagline: `An app that achieves ${mainKeyword} goals`, reason: "Emphasizes goal achievement", tags: ["Goal", "Achievement"] },
+      { prefix: "Achieve", tagline: `An app that gains satisfaction through ${mainKeyword}`, reason: "A name that stimulates sense of achievement", tags: ["Achievement", "Satisfaction"] },
+    ] : [
       { prefix: "성장", tagline: `${mainKeyword}를 통해 성장하는 앱`, reason: "성장 동기를 자극하는 이름", tags: ["성장", "동기부여"] },
       { prefix: "도전", tagline: `${mainKeyword}에 도전하는 앱`, reason: "도전 정신을 강조", tags: ["도전", "의지"] },
       { prefix: "목표", tagline: `${mainKeyword} 목표를 달성하는 앱`, reason: "목표 달성을 강조", tags: ["목표", "달성"] },
@@ -189,7 +226,11 @@ export function generateAppNaming(
     }
     
     // 패턴 2: 습관/일상 관련 (뒤에 붙이기)
-    const habitWords = [
+    const habitWords = locale === "en" ? [
+      { suffix: "Routine", tagline: `An app that makes ${mainKeyword} a daily routine`, reason: "Emphasizes daily habit formation", tags: ["Routine", "Habit"] },
+      { suffix: "Daily", tagline: `An app that makes ${mainKeyword} part of daily life`, reason: "A name that emphasizes daily integration", tags: ["Daily", "Integration"] },
+      { suffix: "Diary", tagline: `A diary-style app that records ${mainKeyword}`, reason: "Feels like recording in a diary", tags: ["Recording", "Daily"] },
+    ] : [
       { suffix: "루틴", tagline: `${mainKeyword}를 일상 루틴으로 만드는 앱`, reason: "일상적인 습관 형성 강조", tags: ["루틴", "습관"] },
       { suffix: "일상", tagline: `${mainKeyword}를 일상의 일부로 만드는 앱`, reason: "일상화를 강조하는 이름", tags: ["일상", "생활화"] },
       { suffix: "다이어리", tagline: `${mainKeyword}를 기록하는 일기형 앱`, reason: "일기처럼 기록하는 느낌", tags: ["기록", "일상"] },
@@ -217,7 +258,13 @@ export function generateAppNaming(
     const candidates: AppNamingCandidate[] = [];
     
     // 패턴 1: 전문성 강조
-    const professionalWords = [
+    const professionalWords = locale === "en" ? [
+      { suffix: "Pro", tagline: `An app that professionally handles ${mainKeyword}`, reason: "A name that emphasizes professionalism", tags: ["Professional", "Trust"] },
+      { suffix: "Master", tagline: `An app that perfectly masters ${mainKeyword}`, reason: "Emphasizes perfect proficiency", tags: ["Proficiency", "Perfect"] },
+      { suffix: "Center", tagline: `A hub app that collects everything related to ${mainKeyword}`, reason: "Feels like a comprehensive center", tags: ["Comprehensive", "Hub"] },
+      { suffix: "Lab", tagline: `An app that researches and develops ${mainKeyword}`, reason: "Meaning of research and development", tags: ["Research", "Development"] },
+      { suffix: "Studio", tagline: `An app that creates and expresses ${mainKeyword}`, reason: "Emphasizes creation and expression functions", tags: ["Creation", "Expression"] },
+    ] : [
       { suffix: "프로", tagline: `${mainKeyword}를 전문적으로 다루는 앱`, reason: "전문성을 강조하는 이름", tags: ["전문성", "신뢰"] },
       { suffix: "마스터", tagline: `${mainKeyword}를 완벽하게 마스터하는 앱`, reason: "완벽한 숙련을 강조", tags: ["숙련", "완벽"] },
       { suffix: "센터", tagline: `${mainKeyword} 관련 모든 것을 모은 허브 앱`, reason: "종합 센터의 느낌", tags: ["종합", "허브"] },
@@ -238,7 +285,10 @@ export function generateAppNaming(
     }
     
     // 패턴 2: 체계/관리 강조
-    const systemWords = [
+    const systemWords = locale === "en" ? [
+      { suffix: "System", tagline: `An app that systematically manages ${mainKeyword}`, reason: "Emphasizes systematic management system", tags: ["System", "Management"] },
+      { suffix: "Platform", tagline: `A platform app that provides all functions related to ${mainKeyword}`, reason: "Emphasizes platform comprehensiveness", tags: ["Platform", "Comprehensive"] },
+    ] : [
       { suffix: "시스템", tagline: `${mainKeyword}를 체계적으로 관리하는 앱`, reason: "체계적인 관리 시스템 강조", tags: ["체계", "관리"] },
       { suffix: "플랫폼", tagline: `${mainKeyword} 관련 모든 기능을 제공하는 플랫폼 앱`, reason: "플랫폼의 종합성 강조", tags: ["플랫폼", "종합"] },
     ];
@@ -265,7 +315,11 @@ export function generateAppNaming(
     const candidates: AppNamingCandidate[] = [];
     
     // 패턴 1: 친근한 접미사
-    const friendlyWords = [
+    const friendlyWords = locale === "en" ? [
+      { suffix: "Friend", tagline: `An app like a friend who does ${mainKeyword} together`, reason: "Feels friendly like a friend", tags: ["Friendly", "Comfortable"] },
+      { suffix: "Partner", tagline: `A partner app that does ${mainKeyword} together`, reason: "Emphasizes partnership", tags: ["Cooperation", "Partner"] },
+      { suffix: "Buddy", tagline: `A buddy app that does ${mainKeyword} together`, reason: "Light and friendly companion feeling", tags: ["Companion", "Friendly"] },
+    ] : [
       { suffix: "친구", tagline: `${mainKeyword}를 함께하는 친구 같은 앱`, reason: "친구처럼 친근한 느낌", tags: ["친근", "편안"] },
       { suffix: "파트너", tagline: `${mainKeyword}를 함께하는 파트너 앱`, reason: "파트너십을 강조", tags: ["협력", "파트너"] },
       { suffix: "버디", tagline: `${mainKeyword}를 함께하는 버디 앱`, reason: "가볍고 친근한 동반자 느낌", tags: ["동반", "친근"] },
@@ -285,7 +339,10 @@ export function generateAppNaming(
     
     // 패턴 2: 의미 단어 + 캐주얼 표현
     if (semanticPool.length > 1) {
-      const casualExpressions = [
+      const casualExpressions = locale === "en" ? [
+        { suffix: "Diary", taglineFunc: (s: string) => `A comfortable diary app that records ${s}`, reason: "Comfort of daily recording", tags: ["Daily", "Recording"] },
+        { suffix: "Box", taglineFunc: (s: string) => `A box app that collects ${s}`, reason: "Feels simple to collect", tags: ["Collection", "Simple"] },
+      ] : [
         { suffix: "다이어리", taglineFunc: (s: string) => `${s}를 기록하는 편안한 다이어리 앱`, reason: "일상 기록의 편안함", tags: ["일상", "기록"] },
         { suffix: "박스", taglineFunc: (s: string) => `${s}를 모아두는 박스 앱`, reason: "간단하게 모으는 느낌", tags: ["수집", "간단"] },
       ];
@@ -314,9 +371,15 @@ export function generateAppNaming(
         if (!candidates.some(c => normalizeKey(c.name) === normalizeKey(name))) {
           candidates.push({
             name,
-            tagline: `${mainKeyword}와 ${secondKeyword}를 함께하는 앱`,
-            reason: "키워드를 자연스럽게 결합한 간단한 이름",
-            tags: ["간결", "자연스러움"],
+            tagline: locale === "en" 
+              ? `An app that does ${mainKeyword} and ${secondKeyword} together`
+              : `${mainKeyword}와 ${secondKeyword}를 함께하는 앱`,
+            reason: locale === "en" 
+              ? "A simple name that naturally combines keywords"
+              : "키워드를 자연스럽게 결합한 간단한 이름",
+            tags: locale === "en" 
+              ? ["Concise", "Natural"]
+              : ["간결", "자연스러움"],
           });
         }
       }
@@ -380,26 +443,45 @@ export function generateAppNaming(
     return assigned.slice(0, minCount);
   };
   
-  const finalIntuitive = assignUnique(intuitiveCandidates, 3);
-  const finalEmotional = assignUnique(emotionalCandidates, 3);
-  const finalProfessional = assignUnique(professionalCandidates, 3);
-  const finalCasual = assignUnique(casualCandidates, 3);
+  // 선택된 옵션 개수 기반으로 추천 개수 계산 (최소 3개, 선택 개수 * 3배)
+  const selectedCount = finalCandidates.length > 0 ? finalCandidates.length : 1;
+  const recommendationCount = Math.max(3, selectedCount * 3);
+  
+  const finalIntuitive = assignUnique(intuitiveCandidates, recommendationCount);
+  const finalEmotional = assignUnique(emotionalCandidates, recommendationCount);
+  const finalProfessional = assignUnique(professionalCandidates, recommendationCount);
+  const finalCasual = assignUnique(casualCandidates, recommendationCount);
+  
+  // 모든 타입의 후보를 합쳐서 preview용으로 사용 (선택 개수 * 3개까지)
+  const allPreviewCandidates = [
+    ...finalIntuitive,
+    ...finalEmotional,
+    ...finalProfessional,
+    ...finalCasual,
+  ];
+  
+  // 중복 제거 (이미 assignUnique에서 처리되지만 안전을 위해)
+  const uniquePreviewCandidates = allPreviewCandidates.filter((candidate, index, self) =>
+    index === self.findIndex((c) => normalizeKey(c.name) === normalizeKey(candidate.name))
+  );
   
   // 미리보기용 (직관형 첫 번째)
   const preview: AppNamingPreview = {
-    name: finalIntuitive[0]?.name || `${mainKeyword}매니저`,
-    tagline: finalIntuitive[0]?.tagline || `${mainKeyword}를 관리하는 앱`,
-    reason: finalIntuitive[0]?.reason || "앱의 기능이 이름에서 바로 드러남",
-    tags: finalIntuitive[0]?.tags || ["관리", "직관적"],
+    name: finalIntuitive[0]?.name || (locale === "en" ? `${mainKeyword}Manager` : `${mainKeyword}매니저`),
+    tagline: finalIntuitive[0]?.tagline || (locale === "en" ? `An app that manages ${mainKeyword}` : `${mainKeyword}를 관리하는 앱`),
+    reason: finalIntuitive[0]?.reason || (locale === "en" ? "App functionality is immediately apparent from the name" : "앱의 기능이 이름에서 바로 드러남"),
+    tags: finalIntuitive[0]?.tags || (locale === "en" ? ["Management", "Intuitive"] : ["관리", "직관적"]),
   };
   
   return {
     preview,
     premium: {
-      intuitive: finalIntuitive.slice(0, 3),
-      emotional: finalEmotional.slice(0, 3),
-      professional: finalProfessional.slice(0, 3),
-      casual: finalCasual.slice(0, 3),
+      intuitive: finalIntuitive.slice(0, recommendationCount),
+      emotional: finalEmotional.slice(0, recommendationCount),
+      professional: finalProfessional.slice(0, recommendationCount),
+      casual: finalCasual.slice(0, recommendationCount),
     },
+    // 무료 사용자를 위한 추가 preview 후보 (선택 개수 * 3개)
+    freePreview: uniquePreviewCandidates.slice(0, recommendationCount),
   };
 }

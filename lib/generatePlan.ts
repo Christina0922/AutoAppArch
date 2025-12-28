@@ -1,9 +1,34 @@
 import { PlanResult, AppType } from "./types";
 
+type Locale = "ko" | "en";
+
+/**
+ * 앱 아키텍처 플랜 생성
+ * 
+ * **CRITICAL: Language Enforcement for ENGLISH locale**
+ * 
+ * SYSTEM PROMPT ENFORCEMENT:
+ * When locale === "en", the following strict rules MUST be followed:
+ * 
+ * 1. ALL output fields MUST be generated entirely in English:
+ *    - Target users: Must be in English only
+ *    - Features: Must be in English only
+ *    - Screens: Must be in English only
+ *    - Data entities: Must be in English only
+ *    - API endpoints: Must be in English only
+ *    - Architecture components: Must be in English only
+ *    - User perspective content: Must be in English only
+ *    - Developer perspective content: Must be in English only
+ * 
+ * 2. NO Korean characters ([가-힣]) are allowed in ANY field when locale === "en"
+ * 
+ * 3. If locale is "en", the function MUST return English-only content
+ */
 export function generatePlan(
   keywords: string[],
   selectedType: AppType = "app",
-  audienceHint?: string
+  audienceHint?: string,
+  locale: Locale = "ko"
 ): PlanResult {
   const keywordStr = keywords.join(" + ");
   // 모바일 앱만 지원
@@ -11,44 +36,85 @@ export function generatePlan(
   // 생성될 앱의 최종 사용자 (키워드 기반)
   const appTargetUsers: string[] = [];
   
-  if (keywords.some((k) => k.includes("학습") || k.includes("공부") || k.includes("교육"))) {
-    appTargetUsers.push("학습 및 자기계발에 관심 있는 사용자");
-    appTargetUsers.push("학생 및 교육 수요자");
-  }
-  if (keywords.some((k) => k.includes("소셜") || k.includes("커뮤니티") || k.includes("소통"))) {
-    appTargetUsers.push("커뮤니티 활동을 즐기는 사용자");
-    appTargetUsers.push("소셜 네트워킹을 원하는 사용자");
-  }
-  if (keywords.some((k) => k.includes("비즈니스") || k.includes("판매") || k.includes("상거래"))) {
-    appTargetUsers.push("온라인 비즈니스를 운영하는 사용자");
-    appTargetUsers.push("판매 및 마케팅에 관심 있는 사용자");
-  }
-  if (keywords.some((k) => k.includes("운동") || k.includes("건강") || k.includes("피트니스"))) {
-    appTargetUsers.push("건강 및 운동 관리를 원하는 사용자");
-    appTargetUsers.push("라이프스타일 개선을 추구하는 사용자");
-  }
-  if (keywords.some((k) => k.includes("영어") || k.includes("언어") || k.includes("외국어"))) {
-    appTargetUsers.push("언어 학습에 관심 있는 사용자");
-    appTargetUsers.push("국제 소통 능력 향상을 원하는 사용자");
-  }
-  
-  // 키워드 기반 사용자가 없으면 기본 사용자 추가
-  if (appTargetUsers.length === 0) {
-    appTargetUsers.push(`${keywordStr} 관련 활동을 하는 사용자`);
-    appTargetUsers.push(`${keywordStr}에 관심 있는 사용자`);
+  if (locale === "en") {
+    if (keywords.some((k) => k.toLowerCase().includes("study") || k.toLowerCase().includes("learn") || k.toLowerCase().includes("education"))) {
+      appTargetUsers.push("Users interested in learning and self-development");
+      appTargetUsers.push("Students and education seekers");
+    }
+    if (keywords.some((k) => k.toLowerCase().includes("social") || k.toLowerCase().includes("community") || k.toLowerCase().includes("communication"))) {
+      appTargetUsers.push("Users who enjoy community activities");
+      appTargetUsers.push("Users seeking social networking");
+    }
+    if (keywords.some((k) => k.toLowerCase().includes("business") || k.toLowerCase().includes("sell") || k.toLowerCase().includes("commerce"))) {
+      appTargetUsers.push("Users operating online businesses");
+      appTargetUsers.push("Users interested in sales and marketing");
+    }
+    if (keywords.some((k) => k.toLowerCase().includes("exercise") || k.toLowerCase().includes("health") || k.toLowerCase().includes("fitness"))) {
+      appTargetUsers.push("Users wanting health and exercise management");
+      appTargetUsers.push("Users pursuing lifestyle improvement");
+    }
+    if (keywords.some((k) => k.toLowerCase().includes("english") || k.toLowerCase().includes("language") || k.toLowerCase().includes("foreign"))) {
+      appTargetUsers.push("Users interested in language learning");
+      appTargetUsers.push("Users wanting to improve international communication skills");
+    }
+    
+    // 키워드 기반 사용자가 없으면 기본 사용자 추가
+    if (appTargetUsers.length === 0) {
+      appTargetUsers.push(`Users engaged in ${keywordStr} activities`);
+      appTargetUsers.push(`Users interested in ${keywordStr}`);
+    }
+  } else {
+    if (keywords.some((k) => k.includes("학습") || k.includes("공부") || k.includes("교육"))) {
+      appTargetUsers.push("학습 및 자기계발에 관심 있는 사용자");
+      appTargetUsers.push("학생 및 교육 수요자");
+    }
+    if (keywords.some((k) => k.includes("소셜") || k.includes("커뮤니티") || k.includes("소통"))) {
+      appTargetUsers.push("커뮤니티 활동을 즐기는 사용자");
+      appTargetUsers.push("소셜 네트워킹을 원하는 사용자");
+    }
+    if (keywords.some((k) => k.includes("비즈니스") || k.includes("판매") || k.includes("상거래"))) {
+      appTargetUsers.push("온라인 비즈니스를 운영하는 사용자");
+      appTargetUsers.push("판매 및 마케팅에 관심 있는 사용자");
+    }
+    if (keywords.some((k) => k.includes("운동") || k.includes("건강") || k.includes("피트니스"))) {
+      appTargetUsers.push("건강 및 운동 관리를 원하는 사용자");
+      appTargetUsers.push("라이프스타일 개선을 추구하는 사용자");
+    }
+    if (keywords.some((k) => k.includes("영어") || k.includes("언어") || k.includes("외국어"))) {
+      appTargetUsers.push("언어 학습에 관심 있는 사용자");
+      appTargetUsers.push("국제 소통 능력 향상을 원하는 사용자");
+    }
+    
+    // 키워드 기반 사용자가 없으면 기본 사용자 추가
+    if (appTargetUsers.length === 0) {
+      appTargetUsers.push(`${keywordStr} 관련 활동을 하는 사용자`);
+      appTargetUsers.push(`${keywordStr}에 관심 있는 사용자`);
+    }
   }
 
   const targetUsers = appTargetUsers.slice(0, 7);
 
   // [사용자 관점] - 문제/상황
-  const userProblems = [
+  const userProblems = locale === "en" ? [
+    `Want to efficiently manage ${keywordStr} activities but lack appropriate tools`,
+    `Difficulty in systematically organizing and tracking ${keywordStr} information`,
+    `Lack of clear guidance and feedback to achieve ${keywordStr} goals`,
+  ] : [
     `${keywordStr} 관련 활동을 효율적으로 관리하고 싶지만 적절한 도구가 없음`,
     `${keywordStr} 관련 정보를 체계적으로 정리하고 추적하기 어려움`,
     `${keywordStr} 관련 목표를 달성하기 위한 명확한 가이드와 피드백 부족`,
   ];
 
   // [사용자 관점] - 핵심 행동 흐름 (5~8단계)
-  const userActionFlow = [
+  const userActionFlow = locale === "en" ? [
+    `[User] Launch the app and set ${keywordStr} related goals`,
+    `[User] Enter personal profile and preferences to configure personalized experience`,
+    `[User] Explore main features and select necessary tools`,
+    `[User] Record ${keywordStr} related activities and track progress`,
+    `[User] Review results and receive feedback to identify improvement direction`,
+    `[User] Check achievements and statistics for continuous motivation`,
+    `[User] Exchange experiences with other users through sharing features`,
+  ].slice(0, Math.min(8, Math.max(5, 7))) : [
     `[사용자] 앱을 실행하고 ${keywordStr} 관련 목표를 설정`,
     `[사용자] 개인 프로필 및 선호도를 입력하여 맞춤형 경험 구성`,
     `[사용자] 주요 기능을 탐색하고 필요한 도구를 선택`,
@@ -59,7 +125,13 @@ export function generatePlan(
   ].slice(0, Math.min(8, Math.max(5, 7)));
 
   // [사용자 관점] - 핵심 기능
-  const userCoreFeatures = [
+  const userCoreFeatures = locale === "en" ? [
+    `[User] Set and manage ${keywordStr} related goals`,
+    `[User] Record activities and track progress`,
+    `[User] Provide personalized recommendations and guides`,
+    `[User] Visualize achievements and check statistics`,
+    `[User] Share experiences through community features`,
+  ] : [
     `[사용자] ${keywordStr} 관련 목표 설정 및 관리`,
     `[사용자] 활동 기록 및 진행 상황 추적`,
     `[사용자] 개인화된 추천 및 가이드 제공`,
@@ -68,7 +140,13 @@ export function generatePlan(
   ];
 
   // [사용자 관점] - 화면 흐름
-  const userScreenFlow = [
+  const userScreenFlow = locale === "en" ? [
+    `[User] Start screen: Goal setting and onboarding`,
+    `[User] Main dashboard: Current status and access to main features`,
+    `[User] Activity record screen: Input ${keywordStr} related data`,
+    `[User] Result review screen: Analysis and feedback provision`,
+    `[User] Profile screen: Settings and statistics check`,
+  ] : [
     `[사용자] 시작 화면: 목표 설정 및 온보딩`,
     `[사용자] 메인 대시보드: 현재 상태 및 주요 기능 접근`,
     `[사용자] 활동 기록 화면: ${keywordStr} 관련 데이터 입력`,
@@ -77,7 +155,12 @@ export function generatePlan(
   ];
 
   // [개발자 관점] - 수익화 (선택 옵션)
-  const developerMonetization = [
+  const developerMonetization = locale === "en" ? [
+    `[Developer] Premium subscription model: Provide advanced features through monthly/yearly subscriptions`,
+    `[Developer] In-app purchases: Individual purchase of specific features or content`,
+    `[Developer] Ad revenue: Show ads to free users (optional)`,
+    `[Developer] B2B license: Provide enterprise plans (optional)`,
+  ] : [
     `[개발자] 프리미엄 구독 모델: 월간/연간 구독으로 고급 기능 제공`,
     `[개발자] 인앱 구매: 특정 기능 또는 콘텐츠의 개별 구매`,
     `[개발자] 광고 수익: 무료 사용자에게 광고 노출 (선택적)`,
@@ -85,7 +168,12 @@ export function generatePlan(
   ];
 
   // [개발자 관점] - 저장 데이터 (최소/선택)
-  const developerDataStored = [
+  const developerDataStored = locale === "en" ? [
+    `[Developer] Minimum required: User account information (email, nickname), app usage logs`,
+    `[Developer] Optional: User settings and preferences, generated content/results`,
+    `[Developer] Optional: Payment information (encrypted tokens), in-app activity statistics`,
+    `[Developer] Privacy protection: Collect minimal data and require explicit consent`,
+  ] : [
     `[개발자] 최소 필수: 사용자 계정 정보 (이메일, 닉네임), 앱 사용 로그`,
     `[개발자] 선택적: 사용자 설정 및 선호도, 생성된 콘텐츠/결과물`,
     `[개발자] 선택적: 결제 정보 (암호화된 토큰), 앱 내 활동 통계`,
@@ -93,7 +181,12 @@ export function generatePlan(
   ];
 
   // [개발자 관점] - 운영/관리
-  const developerOperations = [
+  const developerOperations = locale === "en" ? [
+    `[Developer] User support: Operate FAQ and customer inquiry channels`,
+    `[Developer] Content management: Regular updates and new feature additions`,
+    `[Developer] Server management: Stable service operation and scalability`,
+    `[Developer] Data backup: Regular data backup and recovery system setup`,
+  ] : [
     `[개발자] 사용자 지원: FAQ, 고객 문의 채널 운영`,
     `[개발자] 콘텐츠 관리: 정기적인 업데이트 및 새로운 기능 추가`,
     `[개발자] 서버 관리: 안정적인 서비스 운영 및 확장성 확보`,
@@ -101,7 +194,12 @@ export function generatePlan(
   ];
 
   // [개발자 관점] - 리스크
-  const developerRisks = [
+  const developerRisks = locale === "en" ? [
+    `[Developer] Legal responsibility: Clarify terms of service and privacy policy`,
+    `[Developer] Data security: Build user data security and privacy protection systems`,
+    `[Developer] Competing services: Maintain competitiveness through differentiated features and user experience`,
+    `[Developer] Technical failures: Build monitoring systems and rapid response mechanisms`,
+  ] : [
     `[개발자] 법적 책임: 서비스 이용약관 및 개인정보 처리방침 명확화`,
     `[개발자] 데이터 보안: 사용자 데이터 보안 및 개인정보 보호 체계 구축`,
     `[개발자] 경쟁 서비스: 차별화된 기능과 사용자 경험으로 경쟁력 유지`,
@@ -109,7 +207,13 @@ export function generatePlan(
   ];
 
   // [개발자 관점] - 지표 (숫자 말고 항목)
-  const developerMetrics = [
+  const developerMetrics = locale === "en" ? [
+    `[Developer] User engagement: Daily Active Users (DAU), Weekly Active Users (WAU)`,
+    `[Developer] User retention: Return rate compared to new users, long-term user ratio`,
+    `[Developer] Feature usage rate: Usage frequency by main feature and popular feature identification`,
+    `[Developer] Revenue metrics: Subscription conversion rate, in-app purchase rate, ARPU (Average Revenue Per User)`,
+    `[Developer] User satisfaction: App store ratings, user feedback and reviews`,
+  ] : [
     `[개발자] 사용자 참여도: 일일 활성 사용자(DAU), 주간 활성 사용자(WAU)`,
     `[개발자] 사용자 유지율: 신규 사용자 대비 재방문율, 장기 사용자 비율`,
     `[개발자] 기능 사용률: 주요 기능별 사용 빈도 및 인기 기능 파악`,
@@ -118,7 +222,50 @@ export function generatePlan(
   ];
 
   // 렌더링용 섹션 - [사용자 관점]과 [개발자 관점]으로 구분
-  const sectionsForRendering = [
+  const sectionsForRendering = locale === "en" ? [
+    // [사용자 관점] 섹션들
+    {
+      heading: "[User Perspective] Target Users (End Users)",
+      bullets: targetUsers,
+    },
+    {
+      heading: "[User Perspective] Problems/Situations",
+      bullets: userProblems,
+    },
+    {
+      heading: "[User Perspective] Core Action Flow",
+      bullets: userActionFlow,
+    },
+    {
+      heading: "[User Perspective] Core Features",
+      bullets: userCoreFeatures,
+    },
+    {
+      heading: "[User Perspective] Screen Flow",
+      bullets: userScreenFlow,
+    },
+    // [개발자 관점] 섹션들
+    {
+      heading: "[Developer Perspective] Monetization (Optional)",
+      bullets: developerMonetization,
+    },
+    {
+      heading: "[Developer Perspective] Stored Data (Minimum/Optional)",
+      bullets: developerDataStored,
+    },
+    {
+      heading: "[Developer Perspective] Operations/Management",
+      bullets: developerOperations,
+    },
+    {
+      heading: "[Developer Perspective] Risks",
+      bullets: developerRisks,
+    },
+    {
+      heading: "[Developer Perspective] Metrics",
+      bullets: developerMetrics,
+    },
+  ] : [
     // [사용자 관점] 섹션들
     {
       heading: "[사용자 관점] 타겟 사용자(최종 사용자)",
@@ -164,11 +311,17 @@ export function generatePlan(
   ];
 
   // 하위 호환성을 위한 기존 필드 (사용하지 않지만 타입 호환성 유지)
-  const coreAction = `${keywordStr} 관련 기능을 통해 사용자가 주요 목표를 달성하는 행동`;
+  const coreAction = locale === "en" 
+    ? `Actions where users achieve main goals through ${keywordStr} related features`
+    : `${keywordStr} 관련 기능을 통해 사용자가 주요 목표를 달성하는 행동`;
 
   return {
-    title: `${keywordStr} 모바일 앱 설계안`,
-    tagline: `${keywordStr}를 중심으로 한 모바일 앱 기획서`,
+    title: locale === "en" 
+      ? `${keywordStr} Mobile App Architecture`
+      : `${keywordStr} 모바일 앱 설계안`,
+    tagline: locale === "en"
+      ? `Mobile app plan centered around ${keywordStr}`
+      : `${keywordStr}를 중심으로 한 모바일 앱 기획서`,
     targetUsers,
     coreAction,
     monetization: {
@@ -185,4 +338,3 @@ export function generatePlan(
     sectionsForRendering,
   };
 }
-

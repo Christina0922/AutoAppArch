@@ -9,14 +9,16 @@ import { normalizeAppType } from "@/lib/appType";
 import IdeaTree from "@/components/IdeaTree";
 import PaywallModal from "@/components/PaywallModal";
 import Link from "next/link";
-import { getLocaleFromPathname, withLocalePrefix } from "@/utils/localePath";
 import { getRouteLocale } from "@/utils/getRouteLocale";
+import { withLocalePrefix } from "@/utils/localePath";
+import { useTranslations } from "next-intl";
 
 export default function HistoryDetailPage() {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname() || "/";
   const locale = getRouteLocale(pathname);
+  const t = useTranslations("history");
   const [session, setSession] = useState<Session | null>(null);
   const [plan, setPlan] = useState<SavedPlan | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -42,13 +44,13 @@ export default function HistoryDetailPage() {
         setError(null);
         setIsLegacyPlan(true);
       } else {
-        setError("설계안을 찾을 수 없습니다.");
+        setError(locale === "en" ? "Plan not found." : "설계안을 찾을 수 없습니다.");
         setTimeout(() => {
           router.push(withLocalePrefix("/history", locale, pathname));
         }, 2000);
       }
     }
-  }, [params.id, router]);
+  }, [params.id, router, locale, pathname]);
 
   // Session 업데이트 (트리에서 변경 시)
   const handleNodesChange = (nodes: any[]) => {
@@ -87,11 +89,6 @@ export default function HistoryDetailPage() {
     setShowPaywall(true);
   };
 
-  // PRO 보기 버튼 클릭 핸들러
-  const handleShowPro = () => {
-    setShowPaywall(true);
-  };
-
   if (error) {
     return (
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
@@ -100,7 +97,7 @@ export default function HistoryDetailPage() {
             {error}
           </p>
           <p className="text-sm text-gray-500">
-            히스토리 페이지로 이동합니다...
+            {locale === "en" ? "Redirecting to history page..." : "히스토리 페이지로 이동합니다..."}
           </p>
         </div>
       </div>
@@ -112,7 +109,9 @@ export default function HistoryDetailPage() {
     return (
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
         <div className="bg-white rounded-lg border border-gray-100 p-12 text-center">
-          <p className="text-base text-gray-500" aria-live="polite">로딩 중...</p>
+          <p className="text-base text-gray-500" aria-live="polite">
+            {locale === "en" ? "Loading..." : "로딩 중..."}
+          </p>
         </div>
       </div>
     );
@@ -128,21 +127,21 @@ export default function HistoryDetailPage() {
             href={withLocalePrefix("/history", locale, pathname)}
             className="text-base text-gray-500 hover:text-gray-900 font-medium mb-6 inline-block transition-colors"
           >
-            ← 목록으로 돌아가기
+            ← {locale === "en" ? "Back to list" : "목록으로 돌아가기"}
           </Link>
         </div>
         <div className="bg-white rounded-lg border border-red-200 p-12 text-center">
           <p className="text-base text-red-600 mb-4" role="alert">
-            이 설계안은 이전 버전 형식입니다.
+            {locale === "en" ? "This plan is in an older format." : "이 설계안은 이전 버전 형식입니다."}
           </p>
           <p className="text-sm text-gray-500 mb-6">
-            새로운 마인드맵 형식으로 다시 생성해주세요.
+            {locale === "en" ? "Please generate a new one in the new mind map format." : "새로운 마인드맵 형식으로 다시 생성해주세요."}
           </p>
           <Link
             href={withLocalePrefix("/app", locale, pathname)}
             className="inline-block px-6 h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors"
           >
-            새로 만들기
+            {locale === "en" ? "Create New" : "새로 만들기"}
           </Link>
         </div>
       </div>
@@ -174,18 +173,22 @@ export default function HistoryDetailPage() {
             href={withLocalePrefix("/history", locale, pathname)}
             className="text-base text-gray-500 hover:text-gray-900 font-medium mb-6 inline-block transition-colors"
           >
-            ← 목록으로 돌아가기
+            ← {locale === "en" ? "Back to list" : "목록으로 돌아가기"}
           </Link>
           <div className="bg-white rounded-lg border border-gray-100 p-6 mb-6">
             <h1 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">
-              마인드맵 아이디어 트리
+              {locale === "en" ? "Mind Map Idea Tree" : "마인드맵 아이디어 트리"}
             </h1>
             <p className="text-sm text-gray-400 mb-1">
-              생성일: {new Date(session.createdAt).toLocaleString("ko-KR")}
+              {locale === "en" ? "Created: " : "생성일: "}
+              {new Date(session.createdAt).toLocaleString(locale === "en" ? "en-US" : "ko-KR")}
             </p>
-            <p className="text-xs text-gray-500 mb-1">모바일 앱 설계안 생성</p>
-            <p className="text-sm text-gray-700 mb-2">
-              키워드: <span className="font-medium text-gray-900">{(session.keywords || []).join(", ")}</span>
+            <p className="text-xs text-gray-500 mb-1">
+              {locale === "en" ? "Mobile app architecture generation" : "모바일 앱 설계안 생성"}
+            </p>
+            <p className="text-sm text-gray-700">
+              {locale === "en" ? "Keywords: " : "키워드: "}
+              <span className="font-medium text-gray-900">{(session.keywords || []).join(", ")}</span>
             </p>
           </div>
         </div>
@@ -199,13 +202,19 @@ export default function HistoryDetailPage() {
           selectedType={normalizeAppType(session.selectedType)}
           onNodesChange={handleNodesChange}
           onSelectionChange={handleSelectionChange}
+          onRegenerate={async () => {
+            // 재생성은 읽기 전용 모드에서 비활성화
+            console.log("Regenerate disabled in history view");
+          }}
+          session={session}
+          showSaveButton={false}
         />
 
         {/* 최종 후보 표시 (있는 경우) */}
         {hasFinalCandidates && (
           <div className="mt-8 bg-white rounded-lg border-2 border-gray-900 p-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 tracking-tight">
-              최종 후보 선택 완료
+              {locale === "en" ? "Final Candidate Selection Complete" : "최종 후보 선택 완료"}
             </h3>
             <div className="mb-6 space-y-2">
               {finalCandidates.map((node) => (
@@ -237,9 +246,9 @@ export default function HistoryDetailPage() {
           <button
             onClick={handleContinue}
             className="w-full h-12 bg-gray-900 text-white text-base font-medium rounded-md hover:bg-gray-800 transition-colors tracking-tight focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-            aria-label="이 세션으로 계속 진행하기"
+            aria-label={locale === "en" ? "Continue with this session" : "이 세션으로 계속 진행하기"}
           >
-            이 세션으로 계속 진행하기
+            {locale === "en" ? "Continue with this session" : "이 세션으로 계속 진행하기"}
           </button>
         </div>
 
