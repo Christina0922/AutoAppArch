@@ -6,6 +6,7 @@ import HistoryList from "@/components/HistoryList";
 import type { SavedPlan, Session } from "@/lib/types";
 import { getAllPlans, getAllSessions, deletePlan, deleteSession } from "@/lib/storage";
 import { getLocaleFromPathname, withLocalePrefix } from "@/utils/localePath";
+import { getRouteLocale } from "@/utils/getRouteLocale";
 
 type LoadingState = "loading" | "success" | "empty" | "error";
 

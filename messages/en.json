@@ -138,7 +138,8 @@
     "progressStep1": "① Idea Structuring",
     "progressStep2": "② Core Feature Organization",
     "progressStep3": "③ Screen Flow Design",
-    "progressStep4": "④ Implementation Preparation"
+    "progressStep4": "④ Implementation Preparation",
+    "backButton": "Back"
   },
   "appNaming": {
     "title": "App Name Recommendations (Premium)",

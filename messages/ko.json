@@ -138,7 +138,8 @@
     "progressStep1": "① 아이디어 구조화",
     "progressStep2": "② 핵심 기능 정리",
     "progressStep3": "③ 화면 흐름 설계",
-    "progressStep4": "④ 구현 준비 단계"
+    "progressStep4": "④ 구현 준비 단계",
+    "backButton": "뒤로가기"
   },
   "appNaming": {
     "title": "앱 이름 추천(프리미엄)",

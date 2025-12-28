@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 interface PaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onUpgrade?: () => void;
 }
 
 export default function PaywallModal({ isOpen, onClose }: PaywallModalProps) {

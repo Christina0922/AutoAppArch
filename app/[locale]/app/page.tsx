@@ -411,6 +411,7 @@ export default function AppPage() {
   if (showPaywall && !isPro) {
     return (
       <PaywallModal
+        isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
         onUpgrade={() => {
           setShowPaywall(false);
