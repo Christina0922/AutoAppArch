@@ -50,7 +50,7 @@ function ProgressSection(): React.ReactElement {
   );
 }
 
-export default function PlanDetail(props: PlanDetailProps): JSX.Element {
+export default function PlanDetail(props: PlanDetailProps): React.ReactElement {
   const { result, keywords = [], showProgress = false, isPremium = false, onShowPaywall = () => {}, onBack, finalSelected = false } = props;
   const t = useTranslations("planDetail");
   const shouldShowProgress: boolean = Boolean(showProgress as boolean);
