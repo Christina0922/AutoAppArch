@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getLocaleFromPathname, withLocalePrefix, type Locale } from "@/utils/localePath";
@@ -19,7 +19,7 @@ import SaveButton from "@/components/SaveButton";
 import PaywallModal from "@/components/PaywallModal";
 import PlanDetail from "@/components/PlanDetail";
 
-export default function AppPage() {
+function AppPageContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -455,5 +455,20 @@ export default function AppPage() {
         showSaveButton={true}
       />
     </div>
+  );
+}
+
+export default function AppPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-700">Loading...</p>
+        </div>
+      </div>
+    }>
+      <AppPageContent />
+    </Suspense>
   );
 }
