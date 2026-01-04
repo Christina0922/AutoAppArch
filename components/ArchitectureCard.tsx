@@ -394,11 +394,16 @@ export default function ArchitectureCard({
   };
 
 
+  // data-testid 생성 (테스트용)
+  const label = (node.label as string) ?? "";
+  const testId = label ? `option-card-${label}` : `option-card-${node.id}`;
+
   if (!hasSpec) {
     // 스펙이 없으면 기존 방식으로 표시
   return (
     <div
       data-card-id={node.id}
+      data-testid={testId}
       className={`${getBgClass()} rounded-lg border-2 p-6 cursor-pointer transition-all ${
         isSelected
           ? `${getBorderClass()} shadow-md`
@@ -445,9 +450,10 @@ export default function ArchitectureCard({
       </div>
     );
   }
-
+  
   return (
     <div
+      data-testid={testId}
       className={`${getBgClass()} rounded-lg border-2 p-6 transition-all relative flex flex-col gap-3 h-full ${
         isSelected
           ? `${getBorderClass()} shadow-md`

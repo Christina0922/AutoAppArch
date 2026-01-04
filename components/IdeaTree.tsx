@@ -1565,8 +1565,12 @@ function IdeaCard({
     return "bg-gray-100 text-gray-800";
   };
   
+  const label = (node.label as string) ?? "";
+  const testId = label ? `option-card-${label}` : `option-card-${node.id}`;
+  
   return (
     <div
+      data-testid={testId}
       className={`${getBgClass()} rounded-lg border-2 p-6 cursor-pointer transition-all ${
         isSelected
           ? `${getBorderClass()} shadow-md`

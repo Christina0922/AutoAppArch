@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   * {
@@ -22,7 +20,7 @@
 
   /* 접근성: 키보드 포커스 링 스타일 */
   *:focus-visible {
-    outline: 2px solid theme('colors.gray.900');
+    outline: 2px solid #111827; /* gray-900 */
     outline-offset: 2px;
   }
 

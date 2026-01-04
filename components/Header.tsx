@@ -28,6 +28,7 @@ export default function Header() {
           <Link
             href={withLocalePrefix("/app", locale as Locale, pathname)}
             className="text-lg font-semibold text-gray-900 tracking-tight hover:text-gray-700 transition-colors relative z-10"
+            data-testid="brand-link"
           >
             AutoAppArch
           </Link>
